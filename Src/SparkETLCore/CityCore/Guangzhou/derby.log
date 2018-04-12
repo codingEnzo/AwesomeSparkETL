@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Thu Apr 12 14:04:30 CST 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-0162-b874-936e-000005447c70 
+on database directory /home/chiufung/AwesomeSparkETL/Src/SparkETLCore/CityCore/Guangzhou/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@7e13c2f0 
+Loaded from file:/usr/lib/python2.7/site-packages/pyspark/jars/derby-10.12.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_162-b12
+user.dir=/home/chiufung/AwesomeSparkETL/Src/SparkETLCore/CityCore/Guangzhou
+os.name=Linux
+os.arch=amd64
+os.version=4.15.15-300.fc27.x86_64
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
