@@ -22,3 +22,12 @@ def cleanName(x):
 
 def numberTable(x):
     return Var.NUMTAB.get(x, '')
+
+
+def isInt(val):
+    try:
+        int(val)
+    except ValueError:
+        return False
+    else:
+        return True
