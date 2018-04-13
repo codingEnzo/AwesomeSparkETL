@@ -80,7 +80,7 @@ def promotionName(data):
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['RealEstateProjectId'] = str(Meth.jsonLoad(data['ExtraJson']).get('ExtraProjectID', ''))
+    data['RealEstateProjectID'] = str(Meth.jsonLoad(data['ExtraJson']).get('ExtraProjectID', ''))
     return Row(**data)
 
 
@@ -102,7 +102,7 @@ def regionName(data):
 def projectAddress(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['RealEstateProjectId'] = Meth.jsonLoad(
+    data['ProjectAddress'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectAddress', '')
     return Row(**data)
 
@@ -119,9 +119,9 @@ def onSaleState(data):
         'ExtraTotalUnsoldAmount', '0'))
     presaleNum = int(data.get('ApprovalPresaleAmount', '0'))
     if not presaleNum:
-        data['OnSaleState'] = '售馨'
+        data['OnSaleState'] = '售馨'.decode('utf-8')
     else:
-        data['OnSaleState'] = '售馨' if (unsoldNum / presaleNum) < 0.1 else '在售'
+        data['OnSaleState'] = '售馨'.decode('utf-8') if (unsoldNum / presaleNum) < 0.1 else '在售'.decode('utf-8')
     return Row(**data)
 
 
