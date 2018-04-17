@@ -1,198 +1,221 @@
 # coding = utf-8
-from Utils import Var, Meth, Config
+import datetime
+import demjson
+
+from pyspark.sql import Row
+ENGINE = getEngine("spark_test")
 
 
 def recordtime(data):
+    if not data.get("RecordTime"):
+        nt = datetime.datetime.now()
+        _d = data.asDict()
+        _d['RecordTime'] = nt
+        data = Row(**_d)
     return data
 
 
 def projectName(data):
-    return Meth.cleanName(str(data))
+    return data
 
 
 def promotionName(data):
     return data
 
 
-def realestateProjectId():
-    pass
+def realestateProjectId(data):
+    return data
 
 
-def projectUUID():
-    pass
+def projectUUID(data):
+    return data
 
 
-def districtName():
-    pass
+def districtName(data):
+    return data
 
 
-def regionName():
-    pass
+def regionName(data):
+    return data
 
 
-def projectAddress():
-    pass
+def projectAddress(data):
+    return data
 
 
-def projectType():
-    pass
+def projectType(data):
+    return data
 
 
-def onSaleState():
-    pass
+def onSaleState(data):
+    return data
 
 
-def landUse():
-    pass
+def landUse(data):
+    return data
 
 
-def housingCount():
-    pass
+def housingCount(data):
+    return data
 
 
-def developer():
-    pass
+def developer(data):
+    return data
 
 
-def floorArea():
-    pass
+def floorArea(data):
+    return data
 
 
-def totalBuidlingArea():
-    pass
+def totalBuidlingArea(data):
+    return data
 
 
-def buildingType():
-    pass
+def buildingType(data):
+    return data
 
 
-def houseUseType():
-    pass
+def houseUseType(data):
+    return data
 
 
-def propertyRightsDescription():
-    pass
+def propertyRightsDescription(data):
+    return data
 
 
-def projectApproveData():
-    pass
+def projectApproveData(data):
+    return data
 
 
-def projectBookingData():
-    pass
+def projectBookingData(data):
+    return data
 
 
-def lssueDate():
-    pass
+def lssueDate(data):
+    return data
 
 
-def presalePermitNumber():
-    pass
+def presalePermitNumber(data):
+    return data
 
 
-def houseBuildingCount():
-    pass
+def houseBuildingCount(data):
+    return data
 
 
-def approvalPresaleAmount():
-    pass
+def approvalPresaleAmount(data):
+    return data
 
 
-def approvalPresaleArea():
-    pass
+def approvalPresaleArea(data):
+    return data
 
 
-def averagePrice():
-    pass
+def averagePrice(data):
+    return data
 
 
-def earliestStartDate():
-    pass
+def earliestStartDate(data):
+    return data
 
 
-def completionDate():
-    pass
+def completionDate(data):
+    return data
 
 
-def earliestOpeningTime():
-    pass
+def earliestOpeningTime(data):
+    return data
 
 
-def latestDeliversHouseDate():
-    pass
+def latestDeliversHouseDate(data):
+    return data
 
 
-def presaleRegistrationManagementDepartment():
-    pass
+def presaleRegistrationManagementDepartment(data):
+    return data
 
 
-def landLevel():
-    pass
+def landLevel(data):
+    return data
 
 
-def greeningRate():
-    pass
+def greeningRate(data):
+    return data
 
 
-def floorAreaRatio():
-    pass
+def floorAreaRatio(data):
+    return data
 
 
-def managementFees():
-    pass
+def managementFees(data):
+    return data
 
 
-def managementCompany():
-    pass
+def managementCompany(data):
+    return data
 
 
-def otheRights():
-    pass
+def otheRights(data):
+    return data
 
 
-def certificateOfUseOfStateOwnedLand():
-    pass
+def certificateOfUseOfStateOwnedLand(data):
+    return data
 
 
-def constructionPermitNumber():
-    pass
+def constructionPermitNumber(data):
+    return data
 
 
-def qualificationNumber():
-    pass
+def qualificationNumber(data):
+    return data
 
 
-def landUsePermit():
-    pass
+def landUsePermit(data):
+    return data
 
 
-def buildingPermit():
-    pass
+def buildingPermit(data):
+    return data
 
 
-def legalPersonNumber():
-    pass
+def legalPersonNumber(data):
+    return data
 
 
-def legalPerson():
-    pass
+def legalPerson(data):
+    return data
 
 
-def sourceUrl():
-    pass
+def sourceUrl(data):
+    return data
 
 
-def decoration():
-    pass
+def decoration(data):
+    return data
 
 
-def parkingSpaceAmount():
-    pass
+def parkingSpaceAmount(data):
+    return data
 
 
-def remarks():
-    pass
+def remarks(data):
+    return data
 
 
-def extraJSON():
-    pass
+def extraJSON(data):
+    data = data.asDict()
+    extraj_origin = data.get('ExtraJson')
+    if extraj_origin:
+        extraj_origin = demjson.decode(extraj_origin)
+        extraj = {
+            'TotalBuidlingArea': extraj_origin['TotalBuidlingArea'],
+            'ExtraSaleAddress': extraj_origin['ExtraSaleAddress'],
+            'ExtraProjectPoint': extraj_origin['ExtraProjectPoint'],
+            'ExtraSoldAmount': extraj_origin['ExtraSoldAmount'],
+            'ExtraSoldArea': extraj_origin['ExtraSoldArea'],
+            'ExtraUnsoldAmount': extraj_origin['ExtraUnsoldAmount'],
+            'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
+        }
+        data['ExtraJson'] = extraj
+    return data
