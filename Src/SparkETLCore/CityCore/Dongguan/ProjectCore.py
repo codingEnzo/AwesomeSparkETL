@@ -168,17 +168,17 @@ def totalBuidlingArea(data):
 
 def buildingType(data):
     def check_floor_type(floorname):
-        if floorname <= 3:
+        if floorname <= '3':
             return '低层(1-3)'
-        elif floorname <= 6:
+        elif floorname <= '6':
             return '多层(4-6)'
-        elif floorname <= 11:
+        elif floorname <= '11':
             return '小高层(7-11)'
-        elif floorname <= 18:
+        elif floorname <= '18':
             return '中高层(12-18)'
-        elif floorname <= 32:
+        elif floorname <= '32':
             return '高层(19-32)'
-        elif floorname >= 33:
+        elif floorname >= '33':
             return '超高层(33)'
         else:
             return ''
@@ -360,7 +360,7 @@ def legalPerson(data):
 
 def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
-    data['sourceUrl'] = float(Meth.jsonLoad(data['ExtraJson']).get('ExtraSourceURL', ''))
+    data['sourceUrl'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraSourceURL', '')
     return Row(**data)
 
 
