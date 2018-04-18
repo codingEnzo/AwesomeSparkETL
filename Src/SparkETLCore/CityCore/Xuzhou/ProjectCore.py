@@ -1,9 +1,16 @@
 # coding = utf-8
 import datetime
-import demjson
+import sys
 
+import demjson
+import pandas as pd
 from pyspark.sql import Row
-ENGINE = getEngine("spark_test")
+
+from Utils import Meth
+
+sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
+
+ENGINE = Meth.getEngine("spark_test")
 
 
 def recordtime(data):
@@ -36,6 +43,20 @@ def districtName(data):
 
 
 def regionName(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['ExtraRegionName'] = query.apply(
+            lambda x: demjson.decode(x['ExtraJson']).get("ExtraRegionName", ""),
+            axis=1
+        )
+        _ = query.unique()
+        data['PresalePermitNumber'] = demjson.encode(list(_))
+        data = Row(**data)
+
     return data
 
 
@@ -52,6 +73,29 @@ def onSaleState(data):
 
 
 def landUse(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.LandUse FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+
+        def reshape(val):
+            result = []
+            if val:
+                val = val.replace('宅', '住宅') \
+                    .replace('宅宅', '宅') \
+                    .replace('住住', '住') \
+                    .replace('、', '/') \
+                    .replace('，', ',').strip('/,')
+                result = val.split(',')
+            return result
+
+        query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
+        _ = query['LandUse'][query['LandUse'] != ""].sum()
+        _d = demjson.encode(list(set(_)))
+        data['LandUse'] = demjson.encode(_d)
+        data = Row(**data)
     return data
 
 
@@ -64,6 +108,28 @@ def developer(data):
 
 
 def floorArea(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+
+        def reshape(val):
+            result = []
+            if val:
+                val = demjson.decode(val).get("ExtraLandCertificate", "")
+                val = Meth.cleanName(val).split(',')
+                result = sorted(val)
+            return result
+
+        query['ExtraLandCertificate'] = query.apply(
+            lambda x: reshape(x['ExtraLandCertificate']), axis=1)
+        g = query.groupby(
+            ['ExtraLandCertificate'])['ExtraFloorArea'].max().sum()
+        data['FloorArea'] = round(g, 2)
+        data = Row(**data)
+
     return data
 
 
@@ -92,10 +158,35 @@ def projectBookingData(data):
 
 
 def lssueDate(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.LssueDate FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['LssueDate'] = query.apply(
+            lambda x: Meth.cleanName(x['LssueDate']), axis=1)
+        _ = query['LssueDate'][query['LssueDate'] != ""] \
+            .unique().dropna()
+        data['LssueDate'] = demjson.encode(list(_))
+        data = Row(**data)
+
     return data
 
 
 def presalePermitNumber(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.PresalePermitNumber FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['PresalePermitNumber'] = query.apply(
+            lambda x: Meth.cleanName(x['PresalePermitNumber']), axis=1)
+        _ = query['PresalePermitNumber'][query['PresalePermitNumber'] != ""] \
+            .unique().dropna()
+        data['PresalePermitNumber'] = demjson.encode(list(_))
+        data = Row(**data)
     return data
 
 
@@ -160,10 +251,40 @@ def otheRights(data):
 
 
 def certificateOfUseOfStateOwnedLand(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['ExtraCertificateOfUseOfStateOwnedLand'] = query.apply(
+            lambda x: demjson.decode(x['ExtraJson']).get("ExtraCertificateOfUseOfStateOwnedLand", ""),
+            axis=1
+        )
+        _ = query[query['ExtraCertificateOfUseOfStateOwnedLand'] != ""].unique(
+        ).dropna()
+        data['CertificateOfUseOfStateOwnedLand'] = demjson.encode(list(_))
+        data = Row(**data)
+
     return data
 
 
 def constructionPermitNumber(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['ExtraConstructionPermitNumber'] = query.apply(
+            lambda x: demjson.decode(x['ExtraJson']).get("ExtraConstructionPermitNumber", ""),
+            axis=1
+        )
+        _ = query[
+            query['ExtraConstructionPermitNumber'] != ""].unique().dropna()
+        data['ConstructionPermitNumber'] = demjson.encode(list(_))
+        data = Row(**data)
+
     return data
 
 
@@ -172,6 +293,20 @@ def qualificationNumber(data):
 
 
 def landUsePermit(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+          "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['ExtraLandCertificate'] = query.apply(
+            lambda x: demjson.decode(x['ExtraJson']).get("ExtraLandCertificate", "").replace("、", ""),
+            axis=1
+        )
+        _ = query[query['ExtraLandCertificate'] != ""].unique().dropna()
+        data['LandUsePermit'] = demjson.encode(list(_))
+        data = Row(**data)
+
     return data
 
 
