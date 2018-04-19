@@ -369,7 +369,7 @@ def certificateOfUseOfStateOwnedLand(data):
             axis=1
         )
         _ = query['ExtraCertificateOfUseOfStateOwnedLand'][query['ExtraCertificateOfUseOfStateOwnedLand'] != ""] \
-            .unique().dropna()
+            .unique()
         data['CertificateOfUseOfStateOwnedLand'] = demjson.encode(list(_))
     data = Row(**data)
 
