@@ -61,11 +61,11 @@ def bisectCheckFloorType(floor):
 
 
 def getFloor(houseName):
-    hName = houseName.decode('utf8').lower().replace('铺', '').replace('阁', ''). \
+    hName = houseName.lower().replace('铺', '').replace('阁', ''). \
         replace('库', '').replace('跃', ''). \
         replace('j', '').replace('车', ''). \
         replace('商', '').replace('楼', ''). \
-        replace('gl', '').replace('g1', '').encode('utf-8')
+        replace('gl', '').replace('g1', '')
     floor = '1'
     if isInt(hName):
         _ = int(hName)
