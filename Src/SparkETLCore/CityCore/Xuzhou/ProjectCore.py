@@ -100,6 +100,16 @@ def landUse(data):
 
 
 def housingCount(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+        p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        _ = query['MeasuredBuildingArea'].count()
+        data['HousingCount'] = str(_)
+        data = Row(**data)
+
     return data
 
 
@@ -134,14 +144,47 @@ def floorArea(data):
 
 
 def totalBuidlingArea(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+        p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['MeasuredBuildingArea'] = query.apply(
+            lambda x: float(x['MeasuredBuildingArea']) if x else 0.0, axis=1)
+        _ = query['MeasuredBuildingArea'].sum()
+        data['TotalBuidlingArea'] = str(_)
+        data = Row(**data)
+
     return data
 
 
 def buildingType(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+        p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['Floor'] = query.apply(
+            lambda x: Meth.getFloor(query['HouseName']), axis=1)
+        _ = Meth.bisectCheckFloorType(query['Floor'].max())
+        data['BuildingType'] = _
+        data = Row(**data)
     return data
 
 
 def houseUseType(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT HouseInfoItem.HouseUseType FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+        p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        _ = query['HouseUseType'][query['HouseUseType'] != ""].unique()
+        data['HouseUseType'] = demjson.encode(_)
+        data = Row(**data)
+
     return data
 
 
@@ -191,6 +234,16 @@ def presalePermitNumber(data):
 
 
 def houseBuildingCount(data):
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+        p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        _ = query['BuildingName'][query['BuildingName'] != ""].unique()
+        data['HouseBuildingCount'] = len(_)
+        data = Row(**data)
+
     return data
 
 
