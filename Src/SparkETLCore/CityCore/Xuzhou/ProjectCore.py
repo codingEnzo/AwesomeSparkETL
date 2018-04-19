@@ -198,15 +198,9 @@ def buildingType(data):
         p_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
-        print('-------> ')
-        print('method', inspect.stack()[0][3])
-        print('uuid: ', p_uuid)
-        print('house_name_origin: ', query['HouseName'].iloc[0])
-        print('house_name: ', query['HouseName'].iloc[0].encode('utf8'))
         query['Floor'] = query.apply(
             lambda x: Meth.getFloor(query['HouseName'].iloc[0].encode('utf8')),
             axis=1)
-        print('<------- \n')
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
     data = Row(**data)
