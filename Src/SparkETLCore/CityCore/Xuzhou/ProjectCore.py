@@ -24,17 +24,17 @@ METHODS = [
     'presaleRegistrationManagementDepartment', 'projectAddress',
     'projectApproveData', 'projectBookingData', 'projectName', 'projectType',
     'projectUUID', 'promotionName', 'propertyRightsDescription',
-    'qualificationNumber', 'realestateProjectId', 'recordtime', 'regionName',
+    'qualificationNumber', 'realestateProjectId', 'recordTime', 'regionName',
     'remarks', 'sourceUrl', 'totalBuidlingArea'
 ]
 
 
-def recordtime(data):
+def recordTime(data):
+    data = data.asDict()
     if not data.get("RecordTime"):
         nt = datetime.datetime.now()
-        _d = data.asDict()
-        _d['RecordTime'] = nt
-        data = Row(**_d)
+        data['RecordTime'] = nt
+    data = Row(**data)
     return data
 
 
