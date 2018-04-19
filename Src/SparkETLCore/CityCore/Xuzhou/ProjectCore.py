@@ -70,8 +70,8 @@ def regionName(data):
             axis=1
         )
         _ = query.unique()
-        data['PresalePermitNumber'] = demjson.encode(list(_))
-        data = Row(**data)
+        data['RegionName'] = demjson.encode(list(_))
+    data = Row(**data)
 
     return data
 
@@ -111,7 +111,7 @@ def landUse(data):
         _ = query['LandUse'][query['LandUse'] != ""].sum()
         _d = demjson.encode(list(set(_)))
         data['LandUse'] = demjson.encode(_d)
-        data = Row(**data)
+    data = Row(**data)
     return data
 
 
@@ -124,7 +124,7 @@ def housingCount(data):
     if not query.empty:
         _ = query['MeasuredBuildingArea'].count()
         data['HousingCount'] = str(_)
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -154,7 +154,7 @@ def floorArea(data):
         g = query.groupby(
             ['ExtraLandCertificate'])['ExtraFloorArea'].max().sum()
         data['FloorArea'] = round(g, 2)
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -170,7 +170,7 @@ def totalBuidlingArea(data):
             lambda x: float(x['MeasuredBuildingArea']) if x else 0.0, axis=1)
         _ = query['MeasuredBuildingArea'].sum()
         data['TotalBuidlingArea'] = str(_)
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -186,7 +186,7 @@ def buildingType(data):
             lambda x: Meth.getFloor(query['HouseName']), axis=1)
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
-        data = Row(**data)
+    data = Row(**data)
     return data
 
 
@@ -199,7 +199,7 @@ def houseUseType(data):
     if not query.empty:
         _ = query['HouseUseType'][query['HouseUseType'] != ""].unique()
         data['HouseUseType'] = demjson.encode(_)
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -228,7 +228,7 @@ def lssueDate(data):
         _ = query['LssueDate'][query['LssueDate'] != ""] \
             .unique().dropna()
         data['LssueDate'] = demjson.encode(list(_))
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -245,7 +245,7 @@ def presalePermitNumber(data):
         _ = query['PresalePermitNumber'][query['PresalePermitNumber'] != ""] \
             .unique().dropna()
         data['PresalePermitNumber'] = demjson.encode(list(_))
-        data = Row(**data)
+    data = Row(**data)
     return data
 
 
@@ -258,8 +258,7 @@ def houseBuildingCount(data):
     if not query.empty:
         _ = query['BuildingName'][query['BuildingName'] != ""].unique()
         data['HouseBuildingCount'] = len(_)
-        data = Row(**data)
-
+    data = Row(**data)
     return data
 
 
@@ -333,7 +332,7 @@ def certificateOfUseOfStateOwnedLand(data):
         _ = query[query['ExtraCertificateOfUseOfStateOwnedLand'] != ""].unique(
         ).dropna()
         data['CertificateOfUseOfStateOwnedLand'] = demjson.encode(list(_))
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -352,7 +351,7 @@ def constructionPermitNumber(data):
         _ = query[
             query['ExtraConstructionPermitNumber'] != ""].unique().dropna()
         data['ConstructionPermitNumber'] = demjson.encode(list(_))
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -374,7 +373,7 @@ def landUsePermit(data):
         )
         _ = query[query['ExtraLandCertificate'] != ""].unique().dropna()
         data['LandUsePermit'] = demjson.encode(list(_))
-        data = Row(**data)
+    data = Row(**data)
 
     return data
 
@@ -422,5 +421,5 @@ def extraJSON(data):
             'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
         }
         data['ExtraJson'] = extraj
-        data = Row(**data)
+    data = Row(**data)
     return data
