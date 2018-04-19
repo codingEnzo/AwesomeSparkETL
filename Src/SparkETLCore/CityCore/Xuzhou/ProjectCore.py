@@ -11,6 +11,22 @@ from Utils import Meth
 sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
 
 ENGINE = Meth.getEngine("spark_test")
+METHODS = [
+    'approvalPresaleAmount', 'approvalPresaleArea', 'averagePrice',
+    'buildingPermit', 'buildingType', 'certificateOfUseOfStateOwnedLand',
+    'completionDate', 'constructionPermitNumber', 'decoration', 'developer',
+    'districtName', 'earliestOpeningTime', 'earliestStartDate', 'extraJSON',
+    'floorArea', 'floorAreaRatio', 'greeningRate', 'houseBuildingCount',
+    'houseUseType', 'housingCount', 'landLevel', 'landUse', 'landUsePermit',
+    'latestDeliversHouseDate', 'legalPerson', 'legalPersonNumber', 'lssueDate',
+    'managementCompany', 'managementFees', 'onSaleState', 'otheRights',
+    'parkingSpaceAmount', 'presalePermitNumber',
+    'presaleRegistrationManagementDepartment', 'projectAddress',
+    'projectApproveData', 'projectBookingData', 'projectName', 'projectType',
+    'projectUUID', 'promotionName', 'propertyRightsDescription',
+    'qualificationNumber', 'realestateProjectId', 'recordtime', 'regionName',
+    'remarks', 'sourceUrl', 'totalBuidlingArea'
+]
 
 
 def recordtime(data):
