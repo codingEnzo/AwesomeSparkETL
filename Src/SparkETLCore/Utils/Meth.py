@@ -116,11 +116,11 @@ def getFloor(houseName):
                         return _floor[:offset]
 
         elif re.search(r'[\u4E00-\u9FA5]', hName):
-            if u'号' in hName or u'单元' in hName:
+            if '号' in hName or '单元' in hName:
                 _ = re.search(r'号(\d+)|单元(\d+)', hName)
                 if _:
                     _floor = _.group(1)
                     if (len(_floor) - 5 < 0) and (len(_floor) - 2 > 0):
                         gap = len(_floor) - 2
                         floor = _floor[:gap]
-    return floor
+    return floor.encode('utf-8')
