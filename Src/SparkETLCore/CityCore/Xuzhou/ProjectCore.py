@@ -77,7 +77,7 @@ def regionName(data):
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraRegionName", ""),
             axis=1
         )
-        _ = query.unique()
+        _ = query['ExtraRegionName'].unique()
         data['RegionName'] = demjson.encode(list(_))
     data = Row(**data)
 
@@ -248,7 +248,7 @@ def lssueDate(data):
         query['LssueDate'] = query.apply(
             lambda x: Meth.cleanName(x['LssueDate']), axis=1)
         _ = query['LssueDate'][query['LssueDate'] != ""] \
-            .unique().dropna()
+            .unique()
         data['LssueDate'] = demjson.encode(list(_))
     data = Row(**data)
 
@@ -266,7 +266,7 @@ def presalePermitNumber(data):
         query['PresalePermitNumber'] = query.apply(
             lambda x: Meth.cleanName(x['PresalePermitNumber']), axis=1)
         _ = query['PresalePermitNumber'][query['PresalePermitNumber'] != ""] \
-            .unique().dropna()
+            .unique()
         data['PresalePermitNumber'] = demjson.encode(list(_))
     data = Row(**data)
     return data
@@ -388,8 +388,8 @@ def constructionPermitNumber(data):
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraConstructionPermitNumber", ""),
             axis=1
         )
-        _ = query[
-            query['ExtraConstructionPermitNumber'] != ""].unique().dropna()
+        _ = query['ExtraConstructionPermitNumber'][
+            query['ExtraConstructionPermitNumber'] != ""].unique()
         data['ConstructionPermitNumber'] = demjson.encode(list(_))
     data = Row(**data)
 
@@ -413,7 +413,8 @@ def landUsePermit(data):
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraLandCertificate", "").replace("、", ""),
             axis=1
         )
-        _ = query[query['ExtraLandCertificate'] != ""].unique().dropna()
+        _ = query['ExtraConstructionPermitNumber'][
+            query['ExtraLandCertificate'] != ""].unique()
         data['LandUsePermit'] = demjson.encode(list(_))
     data = Row(**data)
 
