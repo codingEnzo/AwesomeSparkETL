@@ -422,4 +422,5 @@ def extraJSON(data):
             'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
         }
         data['ExtraJson'] = extraj
+        data = Row(**data)
     return data
