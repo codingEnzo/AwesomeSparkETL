@@ -186,7 +186,7 @@ def buildingType(data):
             lambda x: Meth.getFloor(query['HouseName'].iloc[0].encode('utf8')),
             axis=1)
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
-        data['BuildingType'] = _.encode('utf8')
+        data['BuildingType'] = _
     data = Row(**data)
     return data
 
