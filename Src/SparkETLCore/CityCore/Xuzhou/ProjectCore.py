@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import inspect
 import sys
 
 import demjson
@@ -30,6 +31,7 @@ METHODS = [
 
 
 def recordTime(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     if not data.get("RecordTime"):
         nt = datetime.datetime.now()
@@ -39,26 +41,32 @@ def recordTime(data):
 
 
 def projectName(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def promotionName(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def realestateProjectId(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def projectUUID(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def districtName(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def regionName(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
@@ -77,18 +85,22 @@ def regionName(data):
 
 
 def projectAddress(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def projectType(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def onSaleState(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def landUse(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.LandUse FROM PresellInfoItem " \
@@ -116,6 +128,7 @@ def landUse(data):
 
 
 def housingCount(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
@@ -130,10 +143,12 @@ def housingCount(data):
 
 
 def developer(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def floorArea(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
@@ -160,6 +175,7 @@ def floorArea(data):
 
 
 def totalBuidlingArea(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
@@ -176,6 +192,7 @@ def totalBuidlingArea(data):
 
 
 def buildingType(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
@@ -193,6 +210,7 @@ def buildingType(data):
 
 def houseUseType(data):
     data = data.asDict()
+    print(inspect.stack()[0][3])
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.HouseUseType FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
         p_uuid)
@@ -206,18 +224,22 @@ def houseUseType(data):
 
 
 def propertyRightsDescription(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def projectApproveData(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def projectBookingData(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def lssueDate(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.LssueDate FROM PresellInfoItem " \
@@ -235,6 +257,7 @@ def lssueDate(data):
 
 
 def presalePermitNumber(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.PresalePermitNumber FROM PresellInfoItem " \
@@ -251,6 +274,7 @@ def presalePermitNumber(data):
 
 
 def houseBuildingCount(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
@@ -264,62 +288,77 @@ def houseBuildingCount(data):
 
 
 def approvalPresaleAmount(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def approvalPresaleArea(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def averagePrice(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def earliestStartDate(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def completionDate(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def earliestOpeningTime(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def latestDeliversHouseDate(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def presaleRegistrationManagementDepartment(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def landLevel(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def greeningRate(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def floorAreaRatio(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def managementFees(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def managementCompany(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def otheRights(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def certificateOfUseOfStateOwnedLand(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
@@ -339,6 +378,7 @@ def certificateOfUseOfStateOwnedLand(data):
 
 
 def constructionPermitNumber(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
@@ -358,10 +398,12 @@ def constructionPermitNumber(data):
 
 
 def qualificationNumber(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def landUsePermit(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
@@ -380,34 +422,42 @@ def landUsePermit(data):
 
 
 def buildingPermit(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def legalPersonNumber(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def legalPerson(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def sourceUrl(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def decoration(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def parkingSpaceAmount(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def remarks(data):
+    print(inspect.stack()[0][3])
     return data
 
 
 def extraJSON(data):
+    print(inspect.stack()[0][3])
     data = data.asDict()
     extraj_origin = data.get('ExtraJson')
     if extraj_origin:
