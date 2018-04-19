@@ -192,7 +192,6 @@ def totalBuidlingArea(data):
 
 
 def buildingType(data):
-    print(inspect.stack()[0][3])
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
@@ -202,8 +201,12 @@ def buildingType(data):
         query['Floor'] = query.apply(
             lambda x: Meth.getFloor(query['HouseName'].iloc[0].encode('utf8')),
             axis=1)
-        print(p_uuid, query['HouseName'].iloc[0].encode('utf8'),
-              query['Floor'].max())
+        print('-------> \n')
+        print('method', inspect.stack()[0][3])
+        print('uuid: ', p_uuid)
+        print('floor: ', query['Floor'].max())
+        print('house_name: ', query['HouseName'].iloc[0].encode('utf8'))
+        print('<------- \n')
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
     data = Row(**data)
