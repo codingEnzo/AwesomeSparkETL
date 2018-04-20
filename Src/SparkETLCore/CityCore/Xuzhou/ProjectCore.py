@@ -165,7 +165,7 @@ def floorArea(data):
             return result
 
         query['ExtraLandCertificate'] = query.apply(
-            lambda x: reshape(x['ExtraLandCertificate']), axis=1)
+            lambda x: reshape(x['ExtraJson']), axis=1)
         g = query.groupby(
             ['ExtraLandCertificate'])['ExtraFloorArea'].max().sum()
         data['FloorArea'] = round(g, 2)
