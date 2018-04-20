@@ -169,7 +169,7 @@ def floorArea(data):
         g = query.groupby(
             ['ExtraLandCertificate'])['ExtraFloorArea'].max().sum()
         print '------> '
-        print 'g: ', g, 'type: ', type(g)
+        print 'g: ', g, 'type: ', type(g), 'project_id: ', p_uuid
         print '<------ '
         data['FloorArea'] = round(g, 2)
     data = Row(**data)
