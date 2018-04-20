@@ -160,7 +160,6 @@ def floorArea(data):
             result = []
             if val:
                 val = demjson.decode(val).get("ExtraLandCertificate", "")
-                val = Meth.cleanName(val).split(',')
                 result = sorted(val)
             return result
 
@@ -171,9 +170,6 @@ def floorArea(data):
             axis=1)
         g = query.groupby(
             ['ExtraLandCertificate'])['ExtraFloorArea'].max().sum()
-        print('----> ')
-        print(g, '\n')
-        print('<---- \n')
         data['FloorArea'] = round(float(g), 2)
     data = Row(**data)
 
