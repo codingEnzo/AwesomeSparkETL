@@ -157,11 +157,9 @@ def floorArea(data):
     if not query.empty:
 
         def reshape(val):
-            result = []
             if val:
                 val = demjson.decode(val).get("ExtraLandCertificate", "")
-                result = sorted(val)
-            return result
+            return val
 
         query['ExtraLandCertificate'] = query.apply(
             lambda x: reshape(x['ExtraJson']), axis=1)
