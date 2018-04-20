@@ -463,7 +463,7 @@ def extraJSON(data):
     if extraj_origin:
         extraj_origin = demjson.decode(extraj_origin)
         extraj = {
-            'TotalBuidlingArea': extraj_origin['TotalBuidlingArea'],
+            'TotalBuidlingArea': data.get('TotalBuidlingArea', ''),
             'ExtraSaleAddress': extraj_origin['ExtraSaleAddress'],
             'ExtraProjectPoint': extraj_origin['ExtraProjectPoint'],
             'ExtraSoldAmount': extraj_origin['ExtraSoldAmount'],
