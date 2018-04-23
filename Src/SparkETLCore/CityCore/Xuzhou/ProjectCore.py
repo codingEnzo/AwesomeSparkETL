@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import datetime
 import inspect
 import sys
@@ -109,20 +110,18 @@ def landUse(data):
     if not query.empty:
 
         def reshape(val):
-            result = []
             if val:
-                val = val.decode("utf8").replace('宅', '住宅') \
+                val = val.replace('宅', '住宅') \
                     .replace('宅宅', '宅') \
                     .replace('住住', '住') \
                     .replace('、', '/') \
                     .replace('，', ',').strip('/,')
-                result = val.split(',')
-            return result
+                return val
+            return ""
 
-        query['LandUse'] = query.apply(
-            lambda x: reshape(x['LandUse'].encode('utf8')), axis=1)
+        query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
         _ = query['LandUse'][query['LandUse'] != ""].sum()
-        _d = list(set(_))
+        _d = list(set(_.split(',')))
         data['LandUse'] = demjson.encode(_d)
     data = Row(**data)
     return data
