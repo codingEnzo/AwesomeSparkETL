@@ -413,7 +413,7 @@ def landUsePermit(data):
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraLandCertificate", "").replace("、", ""),
             axis=1
         )
-        _ = query['ExtraConstructionPermitNumber'][
+        _ = query['ExtraLandCertificate'][
             query['ExtraLandCertificate'] != ""].unique()
         data['LandUsePermit'] = demjson.encode(list(_))
     data = Row(**data)
