@@ -104,10 +104,6 @@ def regionName(data):
 
 def projectAddress(data):
     # print(data, inspect.stack()[0][3])
-    # data = data.asDict()
-    # data['ProjectAddress'] = Meth.jsonLoad(
-        # data['ExtraJson']).get('ExtraProjectAddress', '')
-    # return Row(**data)
     return data
 
 
