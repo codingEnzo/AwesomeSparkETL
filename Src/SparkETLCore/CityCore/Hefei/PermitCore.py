@@ -1,14 +1,69 @@
+# coding=utf-8
+from __future__ import division
+import sys
+import datetime
+import inspect
+import pandas as pd
+import numpy as np
+import os 
+sys.path.append(os.path.dirname(os.getcwd()))
+from pyspark.sql import Row
+from SparkETLCore.Utils import  Meth, Config,Var
+nowtime = datetime.datetime.now() 
+
+METHODS =['approvalPresaleAmount',
+         'approvalPresaleArea',
+         'approvalPresaleHouseAmount',
+         'approvalPresaleHouseArea',
+         'approvalPresalePosition',
+         'builtFloorCount',
+         'constructionFloorCount',
+         'constructionTotalArea',
+         'contacts',
+         'earliestOpeningDate',
+         'earliestStartDate',
+         'groundArea',
+         'houseSpread',
+         'landUse',
+         'latestDeliversHouseDate',
+         'lssueDate',
+         'lssuingAuthority',
+         'periodsCount',
+         'presaleBuildingAmount',
+         'presaleBuildingSupportingAreaInfo',
+         'presaleHouseCount',
+         'presaleHousingLandIsMortgage',
+         'presalePermitNumber',
+         'presalePermitTie',
+         'presaleRegistrationManagementDepartment',
+         'presaleTotalBuidlingArea',
+         'projectName',
+         'realEstateProjectID',
+         'recordTime',
+         'remarks',
+         'sourceUrl',
+         'totalBuidlingArea',
+         'underGroundArea',
+         'validityDateClosingDate',
+         'validityDateDescribe',
+         'validityDateStartDate']
+
 def recordTime():
-    pass
+    data = data.asDict()
+    if not data['RecordTime']:
+        data['RecordTime'] = str(nowtime)
+    return Row(**data)
 
 def projectName():
-    pass
+    data = data.asDict()
+    data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+    return Row(**data)
 
 def realEstateProjectID():
-    pass
+    return data
 
 def presalePermitNumber():
-    pass
+    return data
 
 def totalBuidlingArea():
     pass
@@ -26,7 +81,11 @@ def approvalPresaleHouseArea():
     pass
 
 def presaleBuildingAmount():
-    pass
+    date = data.asDict()
+    pd = pd.read_sql(con=Var.ENGINE,sql="select count(distinct(BuildingID)) as col from BuildingInfoItem where PresalePermitNumber='{projectUUID}'".format(
+                         projectUUID=data['PresalePermitNumber']))
+    data['PresaleBuildingAmount'] = str(df.col.values[0])
+    return Row(**data)
 
 def constructionFloorCount():
     pass
@@ -50,7 +109,9 @@ def presaleTotalBuidlingArea():
     pass
 
 def contacts():
-    pass
+    data = data.asDict()
+    data['contacts'] = str(Meth.jsonLoad(data['ExtraJson']).get('ExtraBuildingSellPhone', ''))
+    return Row(**data)
 
 def presaleBuildingSupportingAreaInfo():
     pass

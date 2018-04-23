@@ -1,131 +1,267 @@
-def realEstateProjectID():
-    pass
+# coding=utf-8
+from __future__ import division
+import sys
+import inspect
+import pandas as pd
+import numpy as np
+import os 
+sys.path.append(os.path.dirname(os.getcwd()))
+from pyspark.sql import Row
+from SparkETLCore.Utils import  Meth, Config,Var
 
-def buildingID():
-    pass
 
-def houseID():
-    pass
+METHODS =   ['address',
+     'balconys',
+     'buildingCompletedYear',
+     'buildingID',
+     'buildingName',
+     'buildingStructure',
+     'caseFrom',
+     'caseTime',
+     'dealType',
+     'districtName',
+     'dwelling',
+     'floor',
+     'floors',
+     'forecastBuildingArea',
+     'forecastInsideOfBuildingArea',
+     'forecastPublicArea',
+     'houseID',
+     'houseName',
+     'houseNumber',
+     'houseUseType',
+     'isAttachment',
+     'isMortgage',
+     'isMoveBack',
+     'isPrivateUse',
+     'isSharedPublicMatching',
+     'measuredBuildingArea',
+     'measuredInsideOfBuildingArea',
+     'measuredSharedPublicArea',
+     'nominalFloor',
+     'presalePermitNumber',
+     'price',
+     'priceType',
+     'projectName',
+     'realEstateProjectID',
+     'regionName',
+     'remarks',
+     'sellSchedule',
+     'sellState',
+     'sourceLink',
+     'state',
+     'totalPrice',
+     'unenclosedBalconys',
+     'unitShape',
+     'unitStructure']
 
-def forecastBuildingArea():
-    pass
+def realEstateProjectID (data):
+    data = data.asDict()
+    data['ProjectUUID'] = data['ProjectUUID']
+    return Row(**data)
 
-def forecastInsideOfBuildingArea():
-    pass
+def buildingID (data):
+    data = data.asDict()
+    data['BuildingUUID'] = data['BuildingUUID']
+    return Row(**data)
 
-def forecastPublicArea():
-    pass
+def houseID (data):
+    data = data.asDict()
+    data['HouseUUID'] = data['HouseUUID']
+    return Row(**data)
 
-def measuredBuildingArea():
-    pass
+def forecastBuildingArea (data):
+    return data
 
-def measuredInsideOfBuildingArea():
-    pass
+def forecastInsideOfBuildingArea (data):
+    return data
 
-def measuredSharedPublicArea():
-    pass
+def forecastPublicArea (data):
+    return data
 
-def isMortgage():
-    pass
+def measuredBuildingArea(data):
+    data = data.asDict()
+    data['MeasuredBuildingArea'] = Meth.cleanUnit(data['MeasuredBuildingArea'])
+    return Row(**data)
 
-def isAttachment():
-    pass
+def measuredInsideOfBuildingArea(data):
+    data = data.asDict()
+    data['MeasuredInsideOfBuildingArea'] = Meth.cleanUnit(data['MeasuredInsideOfBuildingArea'])
+    return Row(**data)
 
-def isPrivateUse():
-    pass
+def measuredSharedPublicArea(data):
+    data = data.asDict()
+    data['MeasuredSharedPublicArea'] = Meth.cleanUnit(data['MeasuredSharedPublicArea'])
+    return Row(**data)
 
-def isMoveBack():
-    pass
+def isMortgage (data):
+    return data
 
-def isSharedPublicMatching():
-    pass
+def isAttachment (data):
+    return data
 
-def buildingStructure():
-    pass
+def isPrivateUse (data):
+    return data
 
-def sellSchedule():
-    pass
+def isMoveBack (data):
+    return data
 
-def sellState():
-    pass
+def isSharedPublicMatching (data):
+    return data
 
-def sourceLink():
-    pass
+def buildingStructure (data):
+    data = data.asDict()
+    data['BuildingStructure'] = Meth.cleanName(data['BuildingStructure']).replace('钢混','钢混结构')\
+                                                     .replace('框架','框架结构')\
+                                                     .replace('钢筋混凝土','钢混结构')\
+                                                     .replace('混合','混合结构')\
+                                                     .replace('结构结构','结构')\
+                                                     .replace('砖混','砖混结构')\
+                                                     .replace('框剪','框架剪力墙结构')\
+                                                     .replace('钢、','')
+    return Row(**data)
 
-def caseTime():
-    pass
+def sellSchedule (data):
+    return data
 
-def caseFrom():
-    pass
+def sellState (data):
+    data = data.asDict()
+    data['SellState'] = data['HouseState']
+    return Row(**data)
 
-def unitShape():
-    pass
+def sourceLink (data):
+    return data
 
-def unitStructure():
-    pass
+def caseTime (data):
+    data = data.asDict()
+    data['CaseTime'] = data['RecordTime']
+    return Row(**data)
 
-def balconys():
-    pass
+def caseFrom (data):
+    return data
 
-def unenclosedBalconys():
-    pass
+def unitShape (data):
+    data = data.asDict()
+    data['UnitShape'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8')
+    return Row(**data)
 
-def districtName():
-    pass
+def unitStructure (data):
+    return data
 
-def regionName():
-    pass
+def balconys (data):
+    return data
 
-def projectName():
-    pass
+def unenclosedBalconys (data):
+    return data
 
-def buildingName():
-    pass
+def districtName (data):
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select districtname  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                         projectUUID=data['ProjectUUID']))
+    data['DistrictName'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
 
-def presalePermitNumber():
-    pass
+def regionName (data):
+    return data
 
-def houseName():
-    pass
+def projectName(data):
+    data = data.asDict()
+    data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+    return Row(**data)
 
-def houseNumber():
-    pass
+def buildingName(data):
+    data = data.asDict()
+    data['BuildingName'] = Meth.cleanName(data['BuildingName'])
+    return Row(**data)
 
-def totalPrice():
-    pass
+def presalePermitNumber (data):
+    return data
 
-def price():
-    pass
+def houseNumber(data):
+    data = data.asDict()
+    data['HouseNumber'] = Meth.cleanName(data['HouseNumber'])
+    return Row(**data)
 
-def priceType():
-    pass
+def houseName(data):
+    data = data.asDict()
+    data['HouseName'] =  data['FloorName'].decode('utf-8')\
+                        +u'层'\
+                        +Meth.cleanName(data['HouseNumber']).decode('utf-8')
+    return Row(**data)
 
-def address():
-    pass
+def totalPrice (data):
+    data = data.asDict()
+    rule = re.compile('\d+\.?\d+')
+    price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
+    area  = Meth.cleanUnit(data['MeasuredBuildingArea'])
+    if price and area:
+        data['TotalPrice'] = round(float(price) *float(area),2)
+    else: 
+        data['TotalPrice'] = ''
+    return Row(**data)
 
-def buildingCompletedYear():
-    pass
+def price (data):
+    data = data.asDict()
+    rule = re.compile('\d+\.?\d+')
+    price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
+    if price:
+        data['Price'] = price.group()
+    else: 
+        data['Price'] = ''
+    return Row(**data)
 
-def floor():
-    pass
+def priceType (data):
+    data = data.asDict()
+    data['PriceType'] = '备案价格'.decode('utf-8')
+    return Row(**data)
 
-def nominalFloor():
-    pass
+def address(data):
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                         projectUUID=data['ProjectUUID']))
+    data['Address'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
 
-def floors():
-    pass
+def buildingCompletedYear (data):
+    return data
 
-def houseUseType():
-    pass
+def floor (data):
+    data = data.asDict()
+    data['ActualFloor'] =  data['FloorName'].decode('utf-8')
+    return Row(**data)
 
-def dwelling():
-    pass
+def nominalFloor (data):
+    return data
 
-def state():
-    pass
+def floors (data):
+    return data
 
-def dealType():
-    pass
+def houseUseType (data):
+    return data
 
-def remarks():
-    pass
+def dwelling (data):
+    return data
+
+def state (data):
+    data = data.asDict()
+    if data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"] \
+        and data['HouseStateLatest'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]:
+        data['State'] = '明确成交'.decode('utf-8')
+    
+    elif data['HouseState'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]\
+        and data['HouseStateLatest'] in ["可售","抵押可售","摇号销售","现房销售"]:
+        data['State'] = '明确退房'.decode('utf-8')
+    
+    elif data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"]\
+        and data['HouseStateLatest']=='':
+        data['State'] = '明确供应'.decode('utf-8')
+    else:
+        pass
+    return Row(**data)
+
+def dealType (data):
+    return data
+
+def remarks (data):
+    return data
+
