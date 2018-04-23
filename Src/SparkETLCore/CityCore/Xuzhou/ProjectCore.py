@@ -120,7 +120,7 @@ def landUse(data):
             return ""
 
         query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
-        print(query)
+        print(query['LandUse'][query['LandUse'] != ""])
         _ = sum(query['LandUse'][query['LandUse'] != ""])
         print(_)
         _d = list(set(_.split(',')))
