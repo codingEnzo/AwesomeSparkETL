@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
 import inspect
@@ -120,9 +119,7 @@ def landUse(data):
             return ""
 
         query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
-        print(query['LandUse'][query['LandUse'] != ""].sum())
-        _ = sum(query['LandUse'][query['LandUse'] != ""])
-        print(_)
+        _ = ','.join(list(query['LandUse'][query['LandUse'] != ""]))
         _d = list(set(_.split(',')))
         data['LandUse'] = demjson.encode(_d)
     data = Row(**data)
