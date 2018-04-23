@@ -166,8 +166,11 @@ def floorArea(data):
         query['ExtraFloorArea'] = query.apply(
             lambda x: demjson.decode(x['ExtraJson']).get('ExtraFloorArea'),
             axis=1)
-        g = query.groupby(['ExtraLandCertificate'])['ExtraFloorArea'] \
-            .max().astype(float).sum()
+        try:
+            g = query.groupby(['ExtraLandCertificate'])['ExtraFloorArea'] \
+                .max().astype(float).sum()
+        except ValueError:
+            print(p_uuid)
         data['FloorArea'] = round(g, 2)
     data = Row(**data)
 
