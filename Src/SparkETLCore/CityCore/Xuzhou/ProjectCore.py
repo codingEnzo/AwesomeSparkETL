@@ -183,7 +183,8 @@ def totalBuidlingArea(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['MeasuredBuildingArea'] = query.apply(
-            lambda x: float(x['MeasuredBuildingArea']) if x else 0.0, axis=1)
+            lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0,
+            axis=1)
         _ = query['MeasuredBuildingArea'].sum()
         data['TotalBuidlingArea'] = str(_)
     data = Row(**data)
