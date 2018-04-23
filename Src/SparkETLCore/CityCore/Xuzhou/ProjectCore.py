@@ -107,23 +107,20 @@ def landUse(data):
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
-        try:
 
-            def reshape(val):
-                result = []
-                if val:
-                    val = val.replace('宅', '住宅') \
-                        .replace('宅宅', '宅') \
-                        .replace('住住', '住') \
-                        .replace('、', '/') \
-                        .replace('，', ',').strip('/,')
-                    result = val.split(',')
-                return result
+        def reshape(val):
+            result = []
+            if val:
+                val = val.decode("utf8").replace('宅', '住宅') \
+                    .replace('宅宅', '宅') \
+                    .replace('住住', '住') \
+                    .replace('、', '/') \
+                    .replace('，', ',').strip('/,')
+                result = val.split(',')
+            return result
 
-            query['LandUse'] = query.apply(
-                lambda x: reshape(x['LandUse'].encode('utf8')), axis=1)
-        except Exception:
-            print(p_uuid)
+        query['LandUse'] = query.apply(
+            lambda x: reshape(x['LandUse'].encode('utf8')), axis=1)
         _ = query['LandUse'][query['LandUse'] != ""].sum()
         _d = list(set(_))
         data['LandUse'] = demjson.encode(_d)
