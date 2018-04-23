@@ -119,7 +119,8 @@ def landUse(data):
                 result = val.split(',')
             return result
 
-        query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
+        query['LandUse'] = query.apply(
+            lambda x: reshape(x['LandUse'].encode('utf8')), axis=1)
         _ = query['LandUse'][query['LandUse'] != ""].sum()
         _d = demjson.encode(list(set(_)))
         data['LandUse'] = demjson.encode(_d)
