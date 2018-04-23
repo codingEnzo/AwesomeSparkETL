@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import unicode_literals
 import bisect
 import datetime
 import json
@@ -31,6 +32,17 @@ def cleanName(x):
         .replace('】', ']').replace('【', '[') \
         .replace('，', ',').replace('－', '-') \
         .replace('〔', '[').replace('〕', ']').decode('utf-8')
+    return x
+
+
+def cleanBuildingStructure(x):
+    x = x.replace('钢混', '钢混结构') \
+        .replace('框架', '框架结构') \
+        .replace('钢筋混凝土', '钢混结构') \
+        .replace('混合', '混合结构') \
+        .replace('砖混', '砖混结构') \
+        .replace('框剪', '框架剪力墙结构') \
+        .replace('结构结构', '结构')
     return x
 
 
