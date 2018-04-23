@@ -120,7 +120,9 @@ def landUse(data):
             return ""
 
         query['LandUse'] = query.apply(lambda x: reshape(x['LandUse']), axis=1)
+        print(query)
         _ = sum(query['LandUse'][query['LandUse'] != ""])
+        print(_)
         _d = list(set(_.split(',')))
         data['LandUse'] = demjson.encode(_d)
     data = Row(**data)
