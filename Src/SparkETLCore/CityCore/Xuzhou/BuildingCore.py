@@ -15,6 +15,16 @@ sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
 
 ENGINE = Meth.getEngine("spark_test")
 
+METHODS = [
+    'address', 'buildingArea', 'buildingAveragePrice', 'buildingCategory',
+    'buildingHeight', 'buildingId', 'buildingName', 'buildingPriceRange',
+    'buildingStructure', 'buildingType', 'buildingUUID', 'elevaltorInfo',
+    'elevatorHouse', 'estimatedCompletionDate', 'extraJson', 'floors',
+    'housingCount', 'isHasElevator', 'onTheGroundFloor', 'presalePermitNumber',
+    'projectName', 'realestateProjectId', 'recordTime', 'remarks', 'sourceUrl',
+    'theGroundFloor', 'unitId', 'unitName', 'units', 'unsoldAmount'
+]
+
 
 def recordTime(data):
     print(inspect.stack()[0][3])
