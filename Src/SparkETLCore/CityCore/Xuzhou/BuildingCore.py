@@ -95,7 +95,7 @@ def onTheGroundFloor(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(query['HouseName']), axis=1)
+            lambda x: Meth.getFloor(query['HouseName'].encode('utf8')), axis=1)
         _ = query['MeasuredBuildingArea'][query['Floor'] > 0].count()
         data['OnTheGroundFloor'] = str(_)
 
@@ -111,8 +111,7 @@ def theGroundFloor(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(query['HouseName'].iloc[0].encode('utf8')),
-            axis=1)
+            lambda x: Meth.getFloor(query['HouseName'].encode('utf8')), axis=1)
         _ = query['MeasuredBuildingArea'][query['Floor'] < 1].count()
         data['OnTheGroundFloor'] = str(_)
 
@@ -144,7 +143,8 @@ def floors(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: int(Meth.getFloor(x['HouseName'])), axis=1)
+            lambda x: int(Meth.getFloor(x['HouseName'].encode('utf8'))),
+            axis=1)
         data['Floor'] = str(query['Floor'].count())
 
     data = Row(**data)
@@ -189,7 +189,7 @@ def buildingType(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(query['HouseName']), axis=1)
+            lambda x: Meth.getFloor(query['HouseName'].encode('utf8')), axis=1)
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
     data = Row(**data)
