@@ -132,7 +132,8 @@ def getFloor(houseName):
                 _ = re.search(r'号(\d+)|单元(\d+)', hName)
                 if _:
                     _floor = _.group(1)
-                    if (len(_floor) - 5 < 0) and (len(_floor) - 2 > 0):
-                        gap = len(_floor) - 2
-                        floor = _floor[:gap]
+                    if _floor:
+                        if (len(_floor) - 5 < 0) and (len(_floor) - 2 > 0):
+                            gap = len(_floor) - 2
+                            floor = _floor[:gap]
     return floor
