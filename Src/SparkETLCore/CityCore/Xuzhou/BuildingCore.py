@@ -130,7 +130,7 @@ def housingCount(data):
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
-        data['HousingCount'] = str(data['MeasuredBuildingArea'].count())
+        data['HousingCount'] = str(query['MeasuredBuildingArea'].count())
     data = Row(**data)
     return data
 
