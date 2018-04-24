@@ -64,7 +64,7 @@ def buildingUUID(data):
 def unitName(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.UnitName FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.UnitName FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -90,7 +90,7 @@ def address(data):
 def onTheGroundFloor(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -107,7 +107,7 @@ def onTheGroundFloor(data):
 def theGroundFloor(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -128,7 +128,7 @@ def estimatedCompletionDate(data):
 def housingCount(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -138,6 +138,17 @@ def housingCount(data):
 
 
 def floors(data):
+    data = data.asDict()
+    b_uuid = data['BuildingUUID']
+    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem " \
+        "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        query['Floor'] = query.apply(
+            lambda x: int(Meth.getFloor(x['HouseName'])), axis=1)
+        data['Floor'] = str(query['Floor'].count())
+
+    data = Row(**data)
     return data
 
 
@@ -156,7 +167,7 @@ def elevaltorInfo(data):
 def buildingStructure(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.BuildingStructure FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.BuildingStructure FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -174,13 +185,12 @@ def buildingStructure(data):
 def buildingType(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.BuildingUUID = '{}'".format(
-        b_uuid)
+    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem " \
+        "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(query['HouseName'].iloc[0].encode('utf8')),
-            axis=1)
+            lambda x: Meth.getFloor(query['HouseName']), axis=1)
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
     data = Row(**data)
@@ -215,13 +225,13 @@ def buildingPriceRange(data):
 def buildingArea(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem" \
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query["MeasuredBuildingArea"] = query.apply(
-            lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0
-        )
+            lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0,
+            axis=1)
         data['BuildingArea'] = str(query['MeasuredBuildingArea'].sum())
 
     data = Row(**data)
