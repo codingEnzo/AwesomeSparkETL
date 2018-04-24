@@ -169,7 +169,7 @@ def houseUseType(data):
   extraInfo = str(Meth.jsonLoad(
       data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
   HouseUseType = [x.get('HouseUsage', '') for x in eval(extraInfo)]
-  data['HouseUseType'] = ','.join(list(set(HouseUseType)))
+  data['HouseUseType'] = u','.join(list(set(HouseUseType)))
   return Row(**data)
 
 
