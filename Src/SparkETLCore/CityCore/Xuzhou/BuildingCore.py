@@ -143,8 +143,7 @@ def floors(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: int(Meth.getFloor(x['HouseName'].encode('utf8'))),
-            axis=1)
+            lambda x: int(Meth.getFloor(x['HouseName'])), axis=1)
         data['Floor'] = str(query['Floor'].count())
 
     data = Row(**data)
