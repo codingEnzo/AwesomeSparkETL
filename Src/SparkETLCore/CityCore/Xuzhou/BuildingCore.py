@@ -90,7 +90,7 @@ def address(data):
 def onTheGroundFloor(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem " \
+    sql = "SELECT HouseInfoItem.MeasuredBuilingArea, HouseInfoItem.HouseName FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
@@ -106,7 +106,7 @@ def onTheGroundFloor(data):
 def theGroundFloor(data):
     data = data.asDict()
     b_uuid = data['BuildingUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem " \
+    sql = "SELECT HouseInfoItem.MeasuredBuildingArea, HouseInfoItem.HouseName FROM HouseInfoItem " \
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
