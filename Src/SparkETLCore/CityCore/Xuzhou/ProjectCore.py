@@ -200,7 +200,7 @@ def buildingType(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(query['HouseName']), axis=1)
+            lambda x: Meth.getFloor(x['HouseName']), axis=1)
         _ = Meth.bisectCheckFloorType(query['Floor'].max())
         data['BuildingType'] = _
     data = Row(**data)
