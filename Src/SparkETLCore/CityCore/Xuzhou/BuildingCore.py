@@ -142,9 +142,12 @@ def floors(data):
         "WHERE HouseInfoItem.BuildingUUID = '{}'".format(b_uuid)
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
-        query['Floor'] = query.apply(
-            lambda x: int(Meth.getFloor(x['HouseName'])), axis=1)
-        data['Floor'] = str(query['Floor'].count())
+        try:
+            query['Floor'] = query.apply(
+                lambda x: int(Meth.getFloor(x['HouseName'])), axis=1)
+            data['Floor'] = str(query['Floor'].count())
+        except ValueError:
+            print('BuildingUUID: ', b_uuid)
 
     data = Row(**data)
     return data
