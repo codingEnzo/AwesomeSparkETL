@@ -116,7 +116,7 @@ def getFloor(houseName):
             else:
                 _floor = re.search(r'-(.+)', hName).group(1)
                 _floor = re.sub(r'[\u4E00-\u9FA5]', '', _floor)
-                if _floor.count('-') == 2:
+                if hName.count('-') == 2:
                     _floor = re.search(r'-(\d+)-', _floor).group(1)
                 elif (not _floor.startswith('0')) and (not re.search(
                         r'^[a-z]', _floor)):
