@@ -1,7 +1,15 @@
-import re
-import demjson
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-from Utils.Meth import isInt
+import re
+
+import pandas as pd
+import demjson
+from pyspark.sql import Row
+
+from Utils import Meth
+
+ENGINE = Meth.getEngine('spark_test')
 
 
 def caseTime(data):
@@ -25,14 +33,25 @@ def buildingId(data):
 
 
 def city(data):
+    data = data.asDict()
+    data['City'] = '徐州'
+    data = Row(**data)
     return data
 
 
 def districtname(data):
-    df = data['ProjectDF']
-    dSeq = df['DistrictName'][df.ProjectUUID == data['ProjectUUID']]
-    dName = '' if dSeq.empty else dSeq.first(0)
-    return dName.replace('金山桥经济开发区', '经济技术开发区')
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT ProjectInfoItem.DistrictName FROM ProjectInfoItem " \
+        "WHERE ProjectInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        _name = query.iloc[0]['DistrictName'] \
+            .replace('金山桥经济开发区', '经济技术开发区')
+        data['DistrictName'] = _name
+
+    data = Row(**data)
+    return data
 
 
 def unitName(data):
@@ -48,10 +67,7 @@ def houseNumber(data):
 
 
 def houseName(data):
-    hName = data['unitName'] + '单元' \
-        + data['floorName'] + '层' \
-        + str(data['houseNumber'])
-    return hName
+    return data
 
 
 def houseId(data):
@@ -70,69 +86,15 @@ def address(data):
 
 
 def floorName(data):
-    hName = data.lower().replace('铺', '').replace('阁', ''). \
-        replace('库', '').replace('跃', ''). \
-        replace('j', '').replace('车', ''). \
-        replace('商', '').replace('楼', ''). \
-        replace('gl', '').replace('g1', '')
-    floor = '1'
-    if isInt(hName):
-        _ = int(hName)
-        if (len(hName) - 4) > 0:
-            offset = len(hName) - 4 if _ > 0 else len(hName) - 3
-            return '{}'.format(hName[:offset])
-        elif (len(hName) - 2) > 0:
-            offset = len(hName) - 2 if _ > 0 else len(hName) - 1
-            return '{}'.format(hName[:offset])
-    else:
-        if re.search(r'^[a-z]', hName):
-            if re.search(r'\d+', hName):
-                _floor = re.search(r'\d+', hName).group(0)
-                if (len(_floor) - 4) > 0:
-                    offset = len(_floor) - 4
-                    return '{}'.format(_floor[:offset])
-                elif (len(_floor) - 2) > 0:
-                    offset = len(_floor) - 2
-                    return '{}'.format(_floor[:offset])
-        elif '-' in hName:
-            if hName.startswith('-35-'):
-                _ = re.search(r'\-.+\-(.+)', hName)
-                if _:
-                    _floor = _.group(1)
-                    if len(_floor) - 2 > 0:
-                        return _floor[1]
-                    else:
-                        return '-1'
-            elif hName.startswith('-'):
-                if re.search(
-                        r'^-[a-z]',
-                        hName) or len(hName) < 4 or hName.startswith('-0'):
-                    return '-1'
-                elif re.search(r'^-[1-9]', hName):
-                    return hName[:1]
-            else:
-                _floor = re.search(r'-(.+)', hName).group(1)
-                _floor = re.sub(r'[\u4E00-\u9FA5]', '', _floor)
-                if _floor.count('-') == 2:
-                    _floor = re.search(r'-(\d+)-', _floor).group(1)
-                elif (not _floor.startswith('0')) and (not re.search(
-                        r'^[a-z]', _floor)):
-                    if len(_floor) - 4 > 0:
-                        offset = len(_floor) - 4
-                        return _floor[:offset]
-                    elif len(_floor) - 2 > 0:
-                        offset = len(_floor) - 4
-                        return _floor[:offset]
-
-        elif re.search(r'[\u4E00-\u9FA5]', hName):
-            if '号' in hName or '单元' in hName:
-                _ = re.search(r'号(\d+)|单元(\d+)', hName)
-                if _:
-                    _floor = _.group(1)
-                    if (len(_floor) - 5 < 0) and (len(_floor) - 2 > 0):
-                        gap = len(_floor) - 2
-                        floor = _floor[:gap]
-    return floor
+    data = data.asDict()
+    house_name = data['HouseName']
+    floor_name = Meth.getFloor(house_name)
+    data['FloorName'] = floor_name
+    data['HouseNumber'] = house_name
+    data['HouseName'] = data['unitName'] + '单元' \
+        + floor_name + '层' + house_name
+    data = Row(**data)
+    return data
 
 
 def actualFloor(data):

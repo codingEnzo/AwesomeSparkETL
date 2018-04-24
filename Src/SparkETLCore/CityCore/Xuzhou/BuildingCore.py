@@ -112,7 +112,8 @@ def theGroundFloor(data):
     if not query.empty:
         query['Floor'] = query.apply(
             lambda x: Meth.getFloor(x['HouseName']), axis=1)
-        _ = query['MeasuredBuildingArea'][query['Floor'] < 1].count()
+        _ = query['MeasuredBuildingArea'][(query['Floor'] < 1)
+                                          & (query['Floor'] != 0)].count()
         data['OnTheGroundFloor'] = str(_)
 
     data = Row(**data)
