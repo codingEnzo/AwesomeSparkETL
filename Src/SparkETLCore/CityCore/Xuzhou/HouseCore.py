@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 import re
 
-import pandas as pd
 import demjson
+import pandas as pd
 from pyspark.sql import Row
 
 from Utils import Meth
@@ -39,7 +39,7 @@ def city(data):
     return data
 
 
-def districtname(data):
+def districtName(data):
     data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT ProjectInfoItem.DistrictName FROM ProjectInfoItem " \
@@ -79,10 +79,17 @@ def houseUUID(data):
 
 
 def address(data):
-    df = data['ProjectDF']
-    aSeq = df['ProjectAddress'][df.ProjectUUID == data['ProjectUUID']]
-    addr = '' if aSeq.empty else aSeq.first(0)
-    return addr
+    data = data.asDict()
+    p_uuid = data['ProjectUUID']
+    sql = "SELECT ProjectInfoItem.ProjectAddress FROM ProjectInfoItem " \
+        "WHERE ProjectInfoItem.ProjectUUID = '{}'".format(p_uuid)
+    query = pd.read_sql(sql, ENGINE)
+    if not query.empty:
+        _addr = query.iloc[0]['ProjectAddress']
+        data['Address'] = _addr
+
+    data = Row(**data)
+    return data
 
 
 def floorName(data):
@@ -206,7 +213,9 @@ def houseUseType(data):
 
 
 def buildingStructure(data):
-    data = data.replace('钢混', '钢混结构') \
+    data = data.asDict()
+    _ = data['BuildingStructure']
+    _ = _.replace('钢混', '钢混结构') \
         .replace('框架', '框架结构') \
         .replace('钢筋混凝土', '钢混结构') \
         .replace('混合', '混合结构') \
@@ -214,6 +223,8 @@ def buildingStructure(data):
         .replace('砖混', '砖混结构') \
         .replace('框剪', '框架剪力墙结构') \
         .replace('钢、', '')
+    data['BuildingStructure'] = _
+    data = Row(**data)
     return data
 
 
