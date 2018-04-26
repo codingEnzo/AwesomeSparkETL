@@ -117,11 +117,12 @@ def floorName(data):
     data = data.asDict()
     house_name = data['HouseName']
     floor_name = Meth.getFloor(house_name)
-    print('floor_name: ', floor_name)
     data['FloorName'] = floor_name
     data['HouseNumber'] = house_name
-    data['HouseName'] = data['unitName'] + '单元' \
+    _ = data['unitName'] + '单元' \
         + floor_name + '层' + house_name
+    print('_ : ', _)
+    data['HouseName'] = _.encode('utf8')
     data = Row(**data)
     return data
 
