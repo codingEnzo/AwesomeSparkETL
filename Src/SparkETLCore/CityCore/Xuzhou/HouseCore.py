@@ -115,11 +115,11 @@ def address(data):
 
 def floorName(data):
     data = data.asDict()
-    house_name = data['HouseName']
-    floor_name = Meth.getFloor(house_name)
+    house_name = data['HouseName'].encode('utf8')
+    floor_name = Meth.getFloor(house_name).encode('utf8')
     data['FloorName'] = floor_name
     data['HouseNumber'] = house_name
-    data['HouseName'] = data['unitName'] + '单元' \
+    data['HouseName'] = data['unitName'].encode('utf8') + '单元' \
         + floor_name + '层' + house_name
     data = Row(**data)
     return data
