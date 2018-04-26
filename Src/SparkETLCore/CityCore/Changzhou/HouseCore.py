@@ -185,17 +185,17 @@ def floorName(data):
 def actualFloor(data):
   # print(data, inspect.stack()[0][3])
   def getFloor(x):
-    if x=='':
-      return ''
+    if x == '':
+      return None
     x_match = re.search(r'(\d+)', x)
     if not x_match:
-      return ''
+      return None
     if len(x_match.group(1)) <= 3:
       res = x_match.group(1)[0]
     else:
       res = x_match.group(1)[0:2]
     if x[0] == '-':
-      res = '-'+res
+      res = '-' + res
     return res
   data = data.asDict()
   data['ActualFloor'] = str(getFloor(data['HouseName']))
@@ -354,6 +354,7 @@ def isPrivateUse(data):
   # print(data, inspect.stack()[0][3])
   return data
 
+
 def isMoveBack(data):
   # print(data, inspect.stack()[0][3])
   return data
@@ -362,6 +363,7 @@ def isMoveBack(data):
 def isSharedPublicMatching(data):
   # print(data, inspect.stack()[0][3])
   return data
+
 
 def sellState(data):
   return data

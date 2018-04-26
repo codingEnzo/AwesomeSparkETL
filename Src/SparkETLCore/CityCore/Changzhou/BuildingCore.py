@@ -118,7 +118,7 @@ def address(data):
 def onTheGroundFloor(data):
     # print(data, inspect.stack()[0][3])
     def getFloor(x):
-        if x=='':
+        if x == '':
             return 1
         if x[0] != '-':
             x_match = re.search(r'(\d+)', x)
@@ -137,23 +137,27 @@ def onTheGroundFloor(data):
                      sql="select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
                          buildingUUID=data['BuildingUUID']))
     df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    data['OnTheGroundFloor'] = str(df.ActualFloor.agg('max'))
+    ActualFloor = df.ActualFloor.agg('max')
+    if ActualFloor != 0:
+        data['OnTheGroundFloor'] = ActualFloor
+    else:
+        data['OnTheGroundFloor'] = None
     return Row(**data)
 
 
 def theGroundFloor(data):
     # print(data, inspect.stack()[0][3])
     def getFloor(x):
-        if x=='':
+        if x == '':
             return 0
         if x[0] == '-':
             x_match = re.search(r'(\d+)', x)
             if not x_match:
                 return 0
             if len(x_match.group(1)) <= 3:
-                res = -int(x_match.group(1)[0])
+                res = int(x_match.group(1)[0])
             else:
-                res = -int(x_match.group(1)[0:2])
+                res = int(x_match.group(1)[0:2])
         else:
             res = 0
         return res
@@ -163,7 +167,11 @@ def theGroundFloor(data):
                      sql="select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
                          buildingUUID=data['BuildingUUID']))
     df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    data['TheGroundFloor'] = str(df.ActualFloor.agg('max'))
+    ActualFloor = df.ActualFloor.agg('max')
+    if ActualFloor != 0:
+        data['TheGroundFloor'] = ActualFloor
+    else:
+        data['TheGroundFloor'] = None
     return Row(**data)
 
 
@@ -209,6 +217,8 @@ def buildingStructure(data):
 
 def buildingType(data):
     def check_floor_type(floorname):
+        if floorname == 0:
+            return None
         if floorname <= 3:
             return '低层(1-3)'
         elif floorname <= 6:
@@ -224,12 +234,11 @@ def buildingType(data):
     # print(data, inspect.stack()[0][3])
 
     def getFloor(x):
-        if x=='':
-            return 1
-
+        if x == '':
+            return 0
         x_match = re.search(r'(\d+)', x)
         if not x_match:
-            return 1
+            return 0
         if len(x_match.group(1)) <= 3:
             res = int(x_match.group(1)[0])
         else:
