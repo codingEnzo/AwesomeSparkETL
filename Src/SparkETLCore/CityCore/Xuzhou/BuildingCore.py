@@ -112,8 +112,8 @@ def theGroundFloor(data):
     if not query.empty:
         query['Floor'] = query.apply(
             lambda x: Meth.getFloor(x['HouseName']), axis=1)
-        _ = query['MeasuredBuildingArea'][(query['Floor'] < 1)
-                                          & (query['Floor'] != 0)].count()
+        _ = query['MeasuredBuildingArea'][(query['Floor'] < 1) & (query['Floor'] != 0)] \
+            .count()
         data['OnTheGroundFloor'] = str(_)
 
     data = Row(**data)
@@ -175,9 +175,7 @@ def buildingStructure(data):
     if not query.empty:
         _ = list(
             set(query['BuildingStructure'][query['BuildingStructure'] != ""]))
-        _ = list(
-            map(lambda i: Meth.cleanBuildingStructure(i['BuildingStructure']),
-                _))
+        _ = list(map(lambda i: Meth.cleanBuildingStructure(i), _))
         data['BuildingStructure'] = demjson.encode(_)
 
     data = Row(**data)
