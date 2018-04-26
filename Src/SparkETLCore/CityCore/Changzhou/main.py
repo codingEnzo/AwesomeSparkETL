@@ -3,8 +3,7 @@ import json
 import pandas as pd
 from pyspark.sql import SparkSession
 from sqlalchemy import create_engine
-import sys
-sys.path.append('/home/sun/AwesomeSparkETL/Src/SparkETLCore/Changzhou')
+
 import ProjectCore
 import HouseCore
 import BuildingCore
@@ -27,22 +26,27 @@ def getData(cls, data):
 
 def runFunc(func, sql, tosqlname):
     data = pd.read_sql(sql, ENGINE)
-    SparkSession.builder.appName(func)
-    spark = SparkSession.builder.appName(func).getOrCreate()
-    dataDF = spark.createDataFrame(data)
-    res = dataDF.rdd.map(lambda r: getData(func, r)).collect()
-    rdd = spark.sparkContext.parallelize(res)
-    pdf = rdd.toDF().toPandas()
-    pdf.to_sql(tosqlname, MIRROR_ENGINE,
-               if_exists='append', index=False)
+    if not  data.empty:
+        SparkSession.builder.appName(func.__name__)
+        spark = SparkSession.builder.appName(func.__name__).getOrCreate()
+        dataDF = spark.createDataFrame(data)
+        res = dataDF.rdd.map(lambda r: getData(func, r)).collect()
+        rdd = spark.sparkContext.parallelize(res)
+        pdf = rdd.toDF().toPandas()
+        methods = [x.lower() for x in func.METHODS]
+        housecols = [x for x in pdf.columns]
+        usecols = [x for x in housecols if x.lower() in methods]
+        pdf[usecols].to_sql(tosqlname, MIRROR_ENGINE,
+                   if_exists='append', index=False)
 
 
-quit_sql = "select * from HouseInfoItem where City='常州' and HouseStateLatest='已备案' and HouseState='未备案'"
-runFunc(QuitCaseCore, quit_sql, quit_case_changzhou)
+quit_sql = "select * from HouseInfoItem where City='常州' and HouseStateLatest='已备案' "
+runFunc(QuitCaseCore, quit_sql, 'quit_case_changzhou')
 supply_sql = "select * from HouseInfoItem where City='常州' and (HouseStateLatest='未备案' or HouseStateLatest='') and HouseState='未备案'"
-runFunc(SupplyCaseCore, supply_sql, quit_case_changzhou)
+runFunc(SupplyCaseCore, supply_sql, 'supply_case_changzhou')
 deal_sql = "select * from HouseInfoItem where City='常州' and HouseStateLatest='未备案' and HouseState='已备案'"
-runFunc(DealCaseCore, deal_sql, quit_case_changzhou)
+runFunc(DealCaseCore, deal_sql, 'deal_case_changzhou')
+
 # select_sql = "select * from HouseInfoItem where City='常州'"
 # data = pd.read_sql(select_sql, ENGINE)
 # SparkSession.builder.appName('spark')

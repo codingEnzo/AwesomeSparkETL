@@ -49,7 +49,7 @@ METHODS = [
     'priceType',
     'address',
     'buildingCompletedYear',
-    'gloor',
+    'loor',
     'nominalFloor',
     'floors',
     'houseUseType',
@@ -62,7 +62,7 @@ METHODS = [
 
 def realEstateProjectID(data):
     data = data.asDict()
-    data['RealEstateProjectID'] = data['ProjectID']
+    data['RealEstateProjectID'] = data['RealEstateProjectID']
     return Row(**data)
 
 
@@ -174,7 +174,9 @@ def districtName(data):
 
 def regionName(data):
     data = data.asDict()
-    data['RegionName'] = data['RegionName']
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+    data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
 
 
@@ -217,7 +219,7 @@ def price(data):
 
 def priceType(data):
     data = data.asDict()
-    data['PriceType'] = '成交均价'
+    data['PriceType'] = u'成交均价'
     return Row(**data)
 
 
@@ -306,9 +308,9 @@ def dwelling(data):
 def state(data):
     data = data.asDict()
     if data['HouseState'] == '未备案':
-        data['State'] = '明确成交'
+        data['State'] = u'明确成交'
     else:
-        data['State'] = '历史成交'
+        data['State'] = u'历史成交'
     return data
 
 
