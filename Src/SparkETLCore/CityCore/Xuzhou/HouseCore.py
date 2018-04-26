@@ -12,6 +12,25 @@ from Utils import Meth
 sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
 
 ENGINE = Meth.getEngine('spark_test')
+METHODS = [
+    'actualFloor', 'address', 'balconys', 'buildingId', 'buildingName',
+    'buildingStructure', 'caseTime', 'city', 'decoration', 'decorationPrice',
+    'districtName', 'dwelling', 'extraJSON', 'floorCount', 'floorName',
+    'floorRight', 'floorType', 'forecastBuildingArea',
+    'forecastInsideOfBuildingArea', 'forecastPublicArea', 'halls', 'houseId',
+    'houseLabel', 'houseLabelLatest', 'houseName', 'houseNature',
+    'houseNumber', 'houseSalePrice', 'houseShape', 'houseState',
+    'houseStateLatest', 'houseType', 'houseUUID', 'houseUseType',
+    'isAttachment', 'isMortgage', 'isMoveback', 'isPrivateUse',
+    'isSharedPublicMatching', 'kitchens', 'measuredBuildingArea',
+    'measuredInsideOfBuildingArea', 'measuredSharedPublicArea',
+    'measuredUndergroundArea', 'natureOfPropertyRight', 'price', 'priceType',
+    'projectName', 'realEstateProjectId', 'remarks', 'rooms',
+    'salePriceByBuildingArea', 'salePriceByInsideOfBuildingArea',
+    'sellSchedule', 'sellState', 'sourceUrl', 'toilets', 'totalPrice',
+    'toward', 'unEnclosedBalconys', 'unitId', 'unitName', 'unitShape',
+    'unitStructure'
+]
 
 
 def caseTime(data):
