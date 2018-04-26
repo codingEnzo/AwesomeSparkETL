@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
+
 import demjson
 import pandas as pd
 from pyspark.sql import Row
 
 from Utils import Meth
+
+sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
 
 ENGINE = Meth.getEngine('spark_test')
 
