@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import re
-
 import demjson
 import pandas as pd
 from pyspark.sql import Row
