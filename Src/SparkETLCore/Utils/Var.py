@@ -1,5 +1,7 @@
 # coding=utf-8
+import os 
 from sqlalchemy import *
+# sys.path.append(os.path.dirname(os.path.dirname(os.getcwd())))
 ENGINE = create_engine(
     'mysql+pymysql://root:gh001@10.30.1.70:3307/spark_test?charset=utf8')
 MIRROR_ENGINE = create_engine(

@@ -61,11 +61,10 @@ METHODS = ['approvalPresaleAmount',
 
 def test(data):
     data = data.asDict()
-    # print (data['ProjectName'])
-    data['ProjectName'] = (Meth.cleanName(data['ProjectName'])+u'123')
-    # print (data['ProjectName'])
+    print (data['ProjectName'])
+    data['ProjectName'] = Meth.cleanName(data['ProjectName'])+'1231'
+    print (data['ProjectName'])
     return Row(**data)
-
 def recordTime(data):
     # print(data, inspect.stack()[0][3])
     return data

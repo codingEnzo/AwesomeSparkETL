@@ -17,10 +17,6 @@ def cleanName(x):
         .replace('】', ']').replace('【', '[')\
         .replace('，', ',').replace('－', '-').\
         replace('〔', '[').replace('〕', ']').decode('utf-8')
-    # x = x.replace('（', '(').replace('）', ')')\
-    #     .replace('】', ']').replace('【', '[')\
-    #     .replace('，', ',').replace('－', '-').\
-    #     replace('〔', '[').replace('〕', ']')
     return x
 
 # def numberTable(x):

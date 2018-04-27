@@ -80,22 +80,21 @@ def unitID(data):
     return data
 
 def presalePermitNumber(data):
-    return data
+    data = data.asdict()
+    data['PresalePermitNumber'] = Meth.cleanName(data['PresalePermitNumber'])
+    return Row(**data)
 
 def address(data):
     data = data.asdict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjctAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['Address'] = df.col.values()[0]
+    data['address'] = Meth.cleanName(data['address'])
     return Row(**data)
 
 def onTheGroundFloor(data):
     data = data.asdict()
     if not data['OnTheGroundFloor']:
         df = pd.read_sql(con=Var.ENGINE,
-                         sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName >'0' "\
-                         .format(projectUUID=data['ProjectUUID']))
+                         sql="select count(FloorName)  as col from HouseInfoItem where BuildingUUID='{BuildingUUID}' and FloorName >'0' "\
+                         .format(BuildingUUID=data['BuildingUUID']))
         data['OnTheGroundFloor'] = str(df.col.values()[0])
     return Row(**data)
 
@@ -103,8 +102,8 @@ def theGroundFloor(data):
     data = data.asdict()
     if not data['TheGroundFloor']:
         df = pd.read_sql(con=Var.ENGINE,
-                         sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName <'0' "\
-                         .format(projectUUID=data['ProjectUUID']))
+                         sql="select count(FloorName)  as col from HouseInfoItem where BuildingUUID='{BuildingUUID}' and FloorName <'0' "\
+                         .format(BuildingUUID=data['BuildingUUID']))
         data['TheGroundFloor'] = str(df.col.values()[0])
     return Row(**data)
 
@@ -112,18 +111,13 @@ def estimatedCompletionDate(data):
     return data
 
 def housingCount(data):
-    data = data.asdict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(disctinct(HouseID)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['HousingCount'] = str(df.col.values()[0])
-    return Row(**data)
+    return data
 
 def floors(data):
     data = data.asdict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(disctinct(FloorName)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
+                     sql="select count(disctinct(FloorName)) as col from HouseInfoItem where BuildingUUID='{BuildingUUID}'"\
+                     .format(BuildingUUID=data['BuildingUUID']))
     data['Floors'] = str(df.col.values()[0])
     return Row(**data)
 
@@ -137,16 +131,7 @@ def elevaltorInfo(data):
     return data
 
 def buildingStructure(data):
-    data = data.asdict()
-    data['BuildingStructure'] = Building.buildingstructure.encode('utf-8').replace('钢混','钢混结构')\
-                                                 .replace('框架','框架结构')\
-                                                 .replace('钢筋混凝土','钢混结构')\
-                                                 .replace('混合','混合结构')\
-                                                 .replace('结构结构','结构')\
-                                                 .replace('砖混','砖混结构')\
-                                                 .replace('框剪','框架剪力墙结构')\
-                                                 .replace('钢、','').decode('utf-8')
-    return Row(**data)
+    return data    data['PresaleBuildingAmount'] = str(df.col.values[0])
 
 def buildingType(data):
     rule = re.compile('\-?\d+')
@@ -167,8 +152,8 @@ def buildingType(data):
             return ''
     data = data.asdict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select FloorName as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
+                     sql="select FloorName as col from HouseInfoItem where BuildingUUID='{BuildingUUID}'"\
+                     .format(BuildingUUID=data['BuildingUUID']))
     data['BuildingType'] = check_floor_type(
                             df.col.apply(lambda x:int(x) if rule.search(x) else 1).max())
     return Row(**data)
@@ -184,14 +169,14 @@ def units(data):
 
 def unsoldAmount(data):
     data = data.asdict()
-    ["可售","抵押可售","摇号销售","现房销售"]
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select HouseID,HouseState,RecordTime from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
+                     sql="select HouseID,HouseState,RecordTime from HouseInfoItem where BuildingUUID='{BuildingUUID}'"\
+                     .format(BuildingUUID=data['BuildingUUID']))
+
     df = df.sort_values(by='RecordTime',ascending=False)\
                             .groupby('HouseID')\
                             .apply(lambda x:x[:1])['HouseState']  
-    data['UnsoldAmount'] = df[df.HouseState.isin(["可售","抵押可售","摇号销售","现房销售"])].size.__str__()
+    data['UnsoldAmount'] = df[df.HouseState=="可售"].size.__str__()
     return Row(**data)
 
 def buildingAveragePrice(data):
@@ -201,18 +186,7 @@ def buildingPriceRange(data):
     return data
 
 def buildingArea(data):
-    data = data.asdict()
-    ["可售","抵押可售","摇号销售","现房销售"]
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select HouseID,MeasuredBuildingArea,RecordTime from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    df = df.sort_values(by='RecordTime',ascending=False)\
-                            .groupby('HouseID')\
-                            .apply(lambda x:x[:1])['MeasuredBuildingArea']  
-    data['UnsoldAmount'] = df.apply(Meth.cleanUnit)\
-                             .apply(lambda x:float(x) if x else 0.0)\
-                            .sum().__str__()
-    return Row(**data)
+    return data
 
 def remarks(data):
     return data

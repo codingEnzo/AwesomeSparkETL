@@ -48,122 +48,122 @@ METHODS =['approvalPresaleAmount',
          'validityDateDescribe',
          'validityDateStartDate']
 
-def recordTime(data):
+def recordTime():
     data = data.asDict()
     if not data['RecordTime']:
         data['RecordTime'] = str(nowtime)
     return Row(**data)
 
-def projectName(data):
+def projectName():
     data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return Row(**data)
 
-def realEstateProjectID(data):
+def realEstateProjectID():
     return data
 
-def presalePermitNumber(data):
+def presalePermitNumber():
     return data
 
-def totalBuidlingArea(data):
+def totalBuidlingArea():
     pass
 
-def approvalPresaleAmount(data):
+def approvalPresaleAmount():
     pass
 
-def approvalPresaleArea(data):
+def approvalPresaleArea():
     pass
 
-def approvalPresaleHouseAmount(data):
+def approvalPresaleHouseAmount():
     pass
 
-def approvalPresaleHouseArea(data):
+def approvalPresaleHouseArea():
     pass
 
-def presaleBuildingAmount(data):
+def presaleBuildingAmount():
     date = data.asDict()
-    pd = pd.read_sql(con=Var.ENGINE,sql="select count(distinct(BuildingID)) as col from BuildingInfoItem where PresalePermitNumber='{projectUUID}'".format(
-                         projectUUID=data['PresalePermitNumber']))
+    pd = pd.read_sql(con=Var.ENGINE,sql="select count(distinct(BuildingID)) as col from BuildingInfoItem where PresalePermitNumber='{PresalePermitNumber}'".format(
+                         PresalePermitNumber=data['PresalePermitNumber']))
     data['PresaleBuildingAmount'] = str(df.col.values[0])
     return Row(**data)
 
-def constructionFloorCount(data):
+def constructionFloorCount():
     pass
 
-def builtFloorCount(data):
+def builtFloorCount():
     pass
 
-def periodsCount(data):
+def periodsCount():
     pass
 
-def constructionTotalArea(data):
+def constructionTotalArea():
     pass
 
-def groundArea(data):
+def groundArea():
     pass
 
-def underGroundArea(data):
+def underGroundArea():
     pass
 
-def presaleTotalBuidlingArea(data):
+def presaleTotalBuidlingArea():
     pass
 
-def contacts(data):
+def contacts():
     data = data.asDict()
     data['contacts'] = str(Meth.jsonLoad(data['ExtraJson']).get('ExtraBuildingSellPhone', ''))
     return Row(**data)
 
-def presaleBuildingSupportingAreaInfo(data):
+def presaleBuildingSupportingAreaInfo():
     pass
 
-def presaleHousingLandIsMortgage(data):
+def presaleHousingLandIsMortgage():
     pass
 
-def validityDateStartDate(data):
+def validityDateStartDate():
     pass
 
-def validityDateClosingDate(data):
+def validityDateClosingDate():
     pass
 
-def lssueDate(data):
+def lssueDate():
     pass
 
-def lssuingAuthority(data):
+def lssuingAuthority():
     pass
 
-def presaleRegistrationManagementDepartment(data):
+def presaleRegistrationManagementDepartment():
     pass
 
-def validityDateDescribe(data):
+def validityDateDescribe():
     pass
 
-def approvalPresalePosition(data):
+def approvalPresalePosition():
     pass
 
-def landUse(data):
+def landUse():
     pass
 
-def earliestStartDate(data):
+def earliestStartDate():
     pass
 
-def latestDeliversHouseDate(data):
+def latestDeliversHouseDate():
     pass
 
-def earliestOpeningDate(data):
+def earliestOpeningDate():
     pass
 
-def houseSpread(data):
+def houseSpread():
     pass
 
-def presalePermitTie(data):
+def presalePermitTie():
     pass
 
-def presaleHouseCount(data):
+def presaleHouseCount():
     pass
 
-def remarks(data):
+def remarks():
     pass
 
-def sourceUrl(data):
+def sourceUrl():
     pass
 
