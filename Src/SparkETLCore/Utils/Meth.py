@@ -27,11 +27,11 @@ def jsonDumps(x):
 
 
 def cleanName(x):
-    x = x.encode('utf-8') \
+    x = x \
         .replace('（', '(').replace('）', ')') \
         .replace('】', ']').replace('【', '[') \
         .replace('，', ',').replace('－', '-') \
-        .replace('〔', '[').replace('〕', ']').decode('utf-8')
+        .replace('〔', '[').replace('〕', ']')
     return x
 
 
