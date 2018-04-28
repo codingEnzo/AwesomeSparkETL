@@ -240,7 +240,7 @@ def houseBuildingCount(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         _ = query['BuildingName'][query['BuildingName'] != ""].unique()
-        data['HouseBuildingCount'] = len(_)
+        data['HouseBuildingCount'] = str(len(_))
     return data
 
 
