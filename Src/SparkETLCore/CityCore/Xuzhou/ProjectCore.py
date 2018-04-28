@@ -8,9 +8,11 @@ import demjson
 import pandas as pd
 from pyspark.sql import Row
 
-from Utils import Meth
+sys.path.append('/home/spark/AwesomeSparkETL/Src')
+sys.path.append('/home/spark/AwesomeSparkETL/Src/Script')
+sys.path.append('/home/spark/AwesomeSparkETL/Src/SparkETLCore')
 
-sys.path.append('/home/lin/Dev/AwesomeSparkETL/Src/SparkETLCore')
+from Utils import Meth
 
 ENGINE = Meth.getEngine("spark_test")
 METHODS = [
