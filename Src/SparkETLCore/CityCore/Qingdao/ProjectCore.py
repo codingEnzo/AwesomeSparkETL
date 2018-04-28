@@ -8,6 +8,8 @@ import inspect
 import pandas as pd
 from pyspark.sql import Row
 
+sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+
 sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 
 from Utils import Var, Meth, Config
@@ -20,7 +22,6 @@ METHODS = ['approvalPresaleAmount',
 		   'certificateOfUseOfStateOwnedLand',
 		   'completionDate',
 		   'constructionPermitNumber',
-		   'city',
 		   'decoration',
 		   'developer',
 		   'districtName',
@@ -50,6 +51,7 @@ METHODS = ['approvalPresaleAmount',
 		   'projectAddress',
 		   'projectApproveData',
 		   'projectBookingdData',
+		   'projectID',
 		   'projectName',
 		   'projectType',
 		   'projectUUID',
@@ -63,10 +65,7 @@ METHODS = ['approvalPresaleAmount',
 		   'sourceUrl',
 		   'totalBuidlingArea']
 
-def city(data):
-	data = data.asDict()
-	data['City'] = '青岛'.decode('utf-8')
-	return Row(**data)
+
 def recordTime(data):
 	# print(data, inspect.stack()[0][3])
 	return data
@@ -84,6 +83,13 @@ def promotionName(data):
 	# print(data, inspect.stack()[0][3])
 	return data
 
+def projectID(data):
+	data = data.asDict()
+	df = pd.read_sql(con=Var.ENGINE,
+					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
+
+	data['ProjectID'] = df.col.values[0] if not df.empty else ''
+	return Row(**data)
 
 def realEstateProjectId(data):
 	# print(data, inspect.stack()[0][3])
@@ -282,8 +288,8 @@ def earliestOpeningTime(data):
 
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql="select min(EarliestOpeningDate) as col from PresellInfoItem where ProjectUUID='{"
-						 "projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
+						 "projectUUID}' and EarliestOpeningDate != '' ".format(
+						 projectUUID=data['ProjectUUID'])).fillna('')
 
 	data['EarliestOpeningTime'] = str(df.col.values[0]) if not df.empty else ''
 

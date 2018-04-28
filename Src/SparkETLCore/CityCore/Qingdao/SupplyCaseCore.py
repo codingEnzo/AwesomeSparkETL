@@ -6,7 +6,7 @@ import inspect
 import pandas as pd
 import numpy as np
 
-# sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 from pyspark.sql import Row
@@ -45,7 +45,6 @@ METHODS = ['address',
 		   'price',
 		   'priceType',
 		   'projectName',
-		   'projectID',
 		   'realEstateProjectID',
 		   'regionName',
 		   'remarks',
@@ -237,20 +236,20 @@ def projectName(data):
 	data['ProjectName'] = Meth.cleanName(data['ProjectName'])
 	return Row(**data)
 
-def projectID(data):
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}' AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
-
-	data['ProjectId'] = df.col.values[0] if not df.empty else ''
-	return Row(**data)
+# def projectID(data):
+# 	data = data.asDict()
+# 	df = pd.read_sql(con=Var.ENGINE,
+# 					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}' AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
+#
+# 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
+# 	return Row(**data)
 
 
 def realEstateProjectID(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql=" select RealEstateProjectID as col from ProjectInfoItem where ProjectUUID = '{projectUUID}' "
-						 "and RealEstateProjectID !='' limit 1 ".format(
+						 "and RealEstateProjectID !='' limit 0,1 ".format(
 						 projectUUID=data['ProjectUUID']))
 	data['RealEstateProjectID'] = str(df.col.values[0]) if not df.empty else ''
 	return Row(**data)

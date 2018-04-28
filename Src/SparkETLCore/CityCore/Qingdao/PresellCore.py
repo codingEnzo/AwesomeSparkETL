@@ -7,7 +7,7 @@ import inspect
 import pandas as pd
 import numpy as np
 
-# sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
@@ -65,9 +65,10 @@ def projectName(data):
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(" select RealEstateProjectID as col from ProjectInfoItem where ProjectUUID = '{projectUUID}' ".format(
-                             projectUUID = data['ProjectUUID']),Var.ENGINE)
-    data['RealEstateProjectID'] = str(df.col.values[0])
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql = " select RealEstateProjectID as col from ProjectInfoItem where ProjectUUID = '{projectUUID}' and RealEstateProjectID !='' limit 0,1 ".format(
+                             projectUUID = data['ProjectUUID']))
+    data['RealEstateProjectID'] = str(df.col.values[0]) if not df.empty else ''
     return Row(**data)
 
 
