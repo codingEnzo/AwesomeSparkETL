@@ -266,7 +266,8 @@ def presalePermitNumber(data):
     query = pd.read_sql(sql, ENGINE)
     if not query.empty:
         query['PresalePermitNumber'] = query.apply(
-            lambda x: Meth.cleanName(x['PresalePermitNumber']), axis=1)
+            lambda x: Meth.cleanName(x['PresalePermitNumber'].encode('utf8')),
+            axis=1)
         _ = query['PresalePermitNumber'][query['PresalePermitNumber'] != ""] \
             .unique()
         data['PresalePermitNumber'] = demjson.encode(list(_))
@@ -473,6 +474,6 @@ def extraJSON(data):
             'ExtraUnsoldAmount': extraj_origin['ExtraUnsoldAmount'],
             'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
         }
-        data['ExtraJson'] = extraj
+        data['ExtraJson'] = demjson.encode(extraj)
     data = Row(**data)
     return data
