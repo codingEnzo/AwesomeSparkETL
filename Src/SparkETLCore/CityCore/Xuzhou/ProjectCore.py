@@ -5,7 +5,6 @@ import sys
 
 import demjson
 import pandas as pd
-from pyspark.sql import Row
 
 sys.path.append('/home/spark/AwesomeSparkETL/Src')
 sys.path.append('/home/spark/AwesomeSparkETL/Src/Script')
@@ -112,13 +111,13 @@ def landUse(data):
 
 
 def housingCount(data):
-    p_uuid = data['ProjectUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-        p_uuid)
-    query = pd.read_sql(sql, ENGINE)
-    if not query.empty:
-        _ = query['MeasuredBuildingArea'].count()
-        data['HousingCount'] = str(_)
+    # p_uuid = data['ProjectUUID']
+    # sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+    #     p_uuid)
+    # query = pd.read_sql(sql, ENGINE)
+    # if not query.empty:
+    #     _ = query['MeasuredBuildingArea'].count()
+    #     data['HousingCount'] = str(_)
 
     return data
 
@@ -152,16 +151,16 @@ def floorArea(data):
 
 
 def totalBuidlingArea(data):
-    p_uuid = data['ProjectUUID']
-    sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-        p_uuid)
-    query = pd.read_sql(sql, ENGINE)
-    if not query.empty:
-        query['MeasuredBuildingArea'] = query.apply(
-            lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0,
-            axis=1)
-        _ = query['MeasuredBuildingArea'].sum()
-        data['TotalBuidlingArea'] = str(_)
+    # p_uuid = data['ProjectUUID']
+    # sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+    #     p_uuid)
+    # query = pd.read_sql(sql, ENGINE)
+    # if not query.empty:
+    #     query['MeasuredBuildingArea'] = query.apply(
+    #         lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0,
+    #         axis=1)
+    #     _ = query['MeasuredBuildingArea'].sum()
+    #     data['TotalBuidlingArea'] = str(_)
 
     return data
 
@@ -233,15 +232,13 @@ def presalePermitNumber(data):
 
 
 def houseBuildingCount(data):
-    p_uuid = data['ProjectUUID']
-    sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-        p_uuid)
-    query = pd.read_sql(sql, ENGINE)
-    data['HouseBuildingCount'] = ''
-    if not query.empty:
-        _ = query['BuildingName'][query['BuildingName'] != ""].unique()
-        print(_)
-        data['HouseBuildingCount'] = str(len(_))
+    # p_uuid = data['ProjectUUID']
+    # sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+    #     p_uuid)
+    # query = pd.read_sql(sql, ENGINE)
+    # if not query.empty:
+    #     _ = query['BuildingName'][query['BuildingName'] != ""].unique()
+    #     data['HouseBuildingCount'] = str(len(_))
     return data
 
 
@@ -385,17 +382,17 @@ def remarks(data):
 
 
 def extraJSON(data):
-    extraj_origin = data.get('ExtraJson')
-    if extraj_origin:
-        extraj_origin = demjson.decode(extraj_origin)
-        extraj = {
-            'TotalBuidlingArea': data.get('TotalBuidlingArea', ''),
-            'ExtraSaleAddress': extraj_origin['ExtraSaleAddress'],
-            'ExtraProjectPoint': extraj_origin['ExtraProjectPoint'],
-            'ExtraSoldAmount': extraj_origin['ExtraSoldAmount'],
-            'ExtraSoldArea': extraj_origin['ExtraSoldArea'],
-            'ExtraUnsoldAmount': extraj_origin['ExtraUnsoldAmount'],
-            'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
-        }
-        data['ExtraJson'] = demjson.encode(extraj)
+    # extraj_origin = data.get('ExtraJson')
+    # if extraj_origin:
+    #     extraj_origin = demjson.decode(extraj_origin)
+    #     extraj = {
+    #         'TotalBuidlingArea': data.get('TotalBuidlingArea', ''),
+    #         'ExtraSaleAddress': extraj_origin['ExtraSaleAddress'],
+    #         'ExtraProjectPoint': extraj_origin['ExtraProjectPoint'],
+    #         'ExtraSoldAmount': extraj_origin['ExtraSoldAmount'],
+    #         'ExtraSoldArea': extraj_origin['ExtraSoldArea'],
+    #         'ExtraUnsoldAmount': extraj_origin['ExtraUnsoldAmount'],
+    #         'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
+    #     }
+    #     data['ExtraJson'] = demjson.encode(extraj)
     return data
