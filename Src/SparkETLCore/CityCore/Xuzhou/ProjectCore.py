@@ -237,8 +237,10 @@ def houseBuildingCount(data):
     sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
         p_uuid)
     query = pd.read_sql(sql, ENGINE)
+    data['HouseBuildingCount'] = ''
     if not query.empty:
         _ = query['BuildingName'][query['BuildingName'] != ""].unique()
+        print(_)
         data['HouseBuildingCount'] = str(len(_))
     return data
 
