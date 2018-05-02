@@ -5,7 +5,6 @@ import sys
 
 import demjson
 import pandas as pd
-from pyspark.sql import Row
 
 from Utils import Meth
 
@@ -54,14 +53,11 @@ def buildingId(data):
 
 
 def city(data):
-    data = data.asDict()
     data['City'] = '徐州'
-    data = Row(**data)
     return data
 
 
 def districtName(data):
-    data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT ProjectInfoItem.DistrictName FROM ProjectInfoItem " \
         "WHERE ProjectInfoItem.ProjectUUID = '{}'".format(p_uuid)
@@ -71,7 +67,6 @@ def districtName(data):
             .replace('金山桥经济开发区', '经济技术开发区')
         data['DistrictName'] = _name
 
-    data = Row(**data)
     return data
 
 
@@ -100,7 +95,6 @@ def houseUUID(data):
 
 
 def address(data):
-    data = data.asDict()
     p_uuid = data['ProjectUUID']
     sql = "SELECT ProjectInfoItem.ProjectAddress FROM ProjectInfoItem " \
         "WHERE ProjectInfoItem.ProjectUUID = '{}'".format(p_uuid)
@@ -109,12 +103,10 @@ def address(data):
         _addr = query.iloc[0]['ProjectAddress']
         data['Address'] = _addr
 
-    data = Row(**data)
     return data
 
 
 def floorName(data):
-    data = data.asDict()
     house_name = data['HouseName']
     floor_name = Meth.getFloor(house_name)
     data['FloorName'] = floor_name
@@ -122,7 +114,6 @@ def floorName(data):
     _ = data['UnitName'] + '单元' \
         + floor_name + '层' + house_name
     data['HouseName'] = _
-    data = Row(**data)
     return data
 
 
@@ -235,7 +226,6 @@ def houseUseType(data):
 
 
 def buildingStructure(data):
-    data = data.asDict()
     _ = data['BuildingStructure']
     _ = _.replace('钢混', '钢混结构') \
         .replace('框架', '框架结构') \
@@ -246,7 +236,6 @@ def buildingStructure(data):
         .replace('框剪', '框架剪力墙结构') \
         .replace('钢、', '')
     data['BuildingStructure'] = _
-    data = Row(**data)
     return data
 
 
