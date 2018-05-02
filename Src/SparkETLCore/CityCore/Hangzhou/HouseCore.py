@@ -171,7 +171,11 @@ def floorName(data):
 
 
 def actualFloor(data):
-	return data
+	data = data.asDict()
+	if data['ActualFloor']:
+		c = re.search('-?\d+',data['ActualFloor'])
+		data['ActualFloor'] = str(c.group()) if c else ''
+	return Row(**data)
 
 
 def floorCount(data):

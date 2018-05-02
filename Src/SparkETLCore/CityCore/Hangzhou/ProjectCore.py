@@ -185,13 +185,17 @@ def buildingType(data):
             return '超高层(33)'
         else:
             return ''
+    def getNumber(num):
+        c = re.search('-?\d+',num)
+        return int(c.group()) if c else 0
 
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select max(ActualFloor) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+                     sql = "select ActualFloor as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
                              projectUUID = data['ProjectUUID']))
-    data['BuildingType'] = check_floor_type(df.col.values[0]).decode('utf-8')
+
+    data['BuildingType'] = check_floor_type(df['col'].apply(getNumber).max()).decode('utf-8')
     return Row(**data)
 
 
