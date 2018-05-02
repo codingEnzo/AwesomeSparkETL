@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
@@ -56,13 +57,14 @@ def realEstateProjectID(data):
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql="select ExtraJson as col from ProjectInfoItem where ProjectUUID='{projectUUID}' limit 1".format(
 						 projectUUID=data['ProjectUUID']))
-	data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
+	if not df.empty:
+		data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
 	return Row(**data)
 
 
 def buildingName(data):
 	data = data.asDict()
-	data['BuildingName'] = Meth.cleanName(str(data['BuildingName']))
+	data['BuildingName'] = Meth.cleanName(data['BuildingName'])
 	return Row(**data)
 
 
@@ -78,7 +80,7 @@ def buildingUUID(data):
 
 def unitName(data):
 	data = data.asDict()
-	data['unitName'] = Meth.cleanName(data['unitName'])
+	data['UnitName'] = Meth.cleanName(data['UnitName'])
 	return Row(**data)
 
 
@@ -123,11 +125,11 @@ def housingCount(data):
 def floors(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select ExtraBuildingFloor as col from HouseInfoItem where BuildingUUID='{"
-						 "buildingUUID}'".format(
-						 buildingUUID=data['BuildingUUID']))
-	string = str(Meth.jsonLoad(df.col.values[0]['ExtraJson']).get('ExtraBuildingFloor', ''))
-	data['Floors'] = re.search(r'\d+', string).group() if re.search(r'\d+', string) else ''
+					 sql="select ExtraJson as col from HouseInfoItem where BuildingUUID='{"
+						 "buildingUUID}' limit 1".format(buildingUUID=data['BuildingUUID']))
+	if not df.empty:
+		string = Meth.jsonLoad(df.col.values[0]).get('ExtraBuildingFloor', '')
+		data['Floors'] = re.search(r'-?\d+', string).group() if re.search(r'-?\d+', string) else ''
 	return Row(**data)
 
 
@@ -155,9 +157,8 @@ def buildingType(data):
 	data = data.asDict()
 	if data['Floors']:
 		data['BuildingType'] = check_floor_type(data['Floors']).decode('utf-8')
-		return Row(**data)
-	else:
-		return data
+	return Row(**data)
+
 
 
 def buildingHeight(data):

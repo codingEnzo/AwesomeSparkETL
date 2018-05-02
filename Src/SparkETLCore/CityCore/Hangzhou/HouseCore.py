@@ -8,6 +8,8 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
+
 
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
@@ -15,7 +17,7 @@ from Utils import Var, Meth, Config
 METHODS = ['actualFloor',
 		   'address',
 		   'balconys',
-		   'buildingId',
+		   'buildingID',
 		   'buildingName',
 		   'buildingStructure',
 		   'caseTime',
@@ -116,8 +118,13 @@ def buildingName(data):
 	return Row(**data)
 
 
-def buildingId(data):
-	return data
+def buildingID(data):
+	data = data.asDict()
+	df = pd.read_sql(con=Var.ENGINE,
+					 sql="SELECT BuildingID as col FROM BuildingInfoItem WHERE BuildingUUID = {buildingUUID} limit 1"\
+					 .format(buildingUUID=data['BuildingUUID']))
+	data['BuildingID'] = df.col.values[0] if not df.empty else ''
+	return Row(**data)
 
 
 def city(data):
@@ -174,7 +181,7 @@ def actualFloor(data):
 	data = data.asDict()
 	if data['ActualFloor']:
 		c = re.search('-?\d+',data['ActualFloor'])
-		data['ActualFloor'] = str(c.group()) if c else ''
+		data['ActualFloor'] = c.group() if c else ''
 	return Row(**data)
 
 
@@ -232,50 +239,52 @@ def dwelling(data):
 
 def forecastBuildingArea(data):
 	data = data.asDict()
-	data['ForecastBuildingArea'] = str(
-		data['ForecastBuildingArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastBuildingArea'])
+	data['ForecastBuildingArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def forecastInsideOfBuildingArea(data):
 	data = data.asDict()
-	data['ForecastInsideOfBuildingArea'] = str(
-		data['ForecastInsideOfBuildingArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastInsideOfBuildingArea'])
+	data['ForecastInsideOfBuildingArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def forecastPublicArea(data):
 	data = data.asDict()
-	data['ForecastPublicArea'] = str(
-		data['ForecastPublicArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastPublicArea'])
+	data['ForecastPublicArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def measuredBuildingArea(data):
 	data = data.asDict()
-	data['MeasuredBuildingArea'] = str(
-		data['MeasuredBuildingArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredBuildingArea'])
+	data['MeasuredBuildingArea'] = c.group() if c else ''
 	return Row(**data)
+
 
 
 def measuredInsideOfBuildingArea(data):
 	data = data.asDict()
-	data['MeasuredInsideOfBuildingArea'] = str(
-		data['MeasuredInsideOfBuildingArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredInsideOfBuildingArea'])
+	data['MeasuredInsideOfBuildingArea'] = c.group() if c else ''
 	return Row(**data)
+
 
 
 def measuredSharedPublicArea(data):
 	data = data.asDict()
-	data['MeasuredSharedPublicArea'] = str(
-		data['MeasuredSharedPublicArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredSharedPublicArea'])
+	data['MeasuredSharedPublicArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def measuredUndergroundArea(data):
 	data = data.asDict()
-	data['MeasuredUndergroundArea'] = str(
-		data['MeasuredUndergroundArea']).replace('㎡', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredUndergroundArea'])
+	data['MeasuredUndergroundArea'] = c.group() if c else ''
 	return Row(**data)
 
 
@@ -365,25 +374,26 @@ def houseLabelLatest(data):
 
 def totalPrice(data):
 	data = data.asDict()
-	data['TotalPrice'] = str(data['TotalPrice']).replace('元', '')
+	data['TotalPrice'] = data['TotalPrice'].replace('元'.decode('utf-8'), '')
 	return Row(**data)
 
 
 def price(data):
 	data = data.asDict()
-	data['Price'] = str(data['Price']).replace('元', '')
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['Price'])
+	data['Price'] = c.group() if c else ''
 	return Row(**data)
 
 
 def priceType(data):
 	data = data.asDict()
-	data['PriceType'] = '备案价格'
+	data['PriceType'] = '备案价格'.decode('utf-8')
 	return Row(**data)
 
 
 def decorationPrice(data):
 	data = data.asDict()
-	data['DecorationPrice'] = str(data['DecorationPrice']).replace('元', '')
+	data['DecorationPrice'] = data['DecorationPrice'].replace('元'.decode('utf-8'), '')
 	return Row(**data)
 
 

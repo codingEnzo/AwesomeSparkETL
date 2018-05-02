@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
@@ -23,7 +24,6 @@ METHODS = ['approvalPresaleAmount',
 		   'contacts',
 		   'earliestOpeningDate',
 		   'earliestStartDate',
-		   'extraJsondef',
 		   'groundArea',
 		   'houseSpread',
 		   'landUse',
@@ -31,7 +31,6 @@ METHODS = ['approvalPresaleAmount',
 		   'lssueDate',
 		   'lssuingAuthority',
 		   'periodsCount',
-		   'permitUUID',
 		   'presaleBuildingAmount',
 		   'presaleBuildingSupportingAreaInfo',
 		   'presaleHouseCount',
@@ -69,10 +68,10 @@ def projectName(data):
 def realEstateProjectID(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select ExtraJson as col from ProjectInfoItem where ProjectUUID='{projectUUID}' limit 0,"
-                         "1 ".format(
-						 projectUUID=data['ProjectUUID']))
-	data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
+					 sql="select ExtraJson as col from ProjectInfoItem where ProjectUUID='{projectUUID}' limit 1 "\
+					 .format(projectUUID=data['ProjectUUID']))
+	if not df.empty:
+		data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
 	return Row(**data)
 
 

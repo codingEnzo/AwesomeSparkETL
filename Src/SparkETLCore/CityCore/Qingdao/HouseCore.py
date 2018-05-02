@@ -15,7 +15,7 @@ from Utils import Meth, Var, Config
 METHODS = ['actualFloor',
 		   'address',
 		   'balconys',
-		   'buildingId',
+		   'buildingID',
 		   'buildingName',
 		   'buildingStructure',
 		   'caseTime',
@@ -86,7 +86,8 @@ def recordTime(data):
 def caseTime(data):
 	# print(data, inspect.stack()[0][3])
 	data = data.asDict()
-	data['CaseTime'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraCurTimeStamp', str(datetime.datetime.now()))
+	# data['CaseTime'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraCurTimeStamp', str(datetime.datetime.now()))
+	data['CaseTime'] = data['RecordTime']
 	return Row(**data)
 
 
@@ -115,13 +116,12 @@ def buildingName(data):
 	return Row(**data)
 
 
-def buildingId(data):
+def buildingID(data):
 	# print(data, inspect.stack()[0][3])
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select BuildingID as col from BuildingInfoItem where BuildingUUID='{buildingUUID}' order by "
-                         "RecordTime DESC limit 1".format(
-						 buildingUUID=data['BuildingUUID']))
+					 sql="select BuildingID as col from BuildingInfoItem where BuildingUUID='{buildingUUID}' limit 1"\
+					 .format(buildingUUID=data['BuildingUUID']))
 	data['BuildingID'] = df.col.values[-1] if not df.empty else ''
 	return Row(**data)
 

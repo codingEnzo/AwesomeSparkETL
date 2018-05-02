@@ -33,14 +33,14 @@ METHODS = ['approvalPresaleAmount',
            'periodsCount',
            'presaleBuildingAmount',
            'presaleBuildingSupportingAreaInfo',
-           'presaleHousecount',
+           'presaleHouseCount',
            'presaleHousingLandIsMortgage',
            'presalePermitNumber',
-           'presalePermittie',
+           'presalePermitTie',
            'presaleRegistrationManagementDepartment',
            'presaleTotalBuidlingArea',
            'projectName',
-           'realEstateProjectId',
+           'realEstateProjectID',
            'recordTime',
            'remarks',
            'sourceUrl',
@@ -62,7 +62,7 @@ def projectName(data):
     return Row(**data)
 
 
-def realEstateProjectId(data):
+def realEstateProjectID(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
@@ -219,7 +219,7 @@ def presalePermittie(data):
     return data
 
 
-def presaleHousecount(data):
+def presaleHouseCount(data):
     return data
 
 
