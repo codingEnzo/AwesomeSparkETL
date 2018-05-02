@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
-import inspect
 import sys
 
 import demjson
@@ -168,15 +167,15 @@ def totalBuidlingArea(data):
 
 
 def buildingType(data):
-    p_uuid = data['ProjectUUID']
-    sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-        p_uuid)
-    query = pd.read_sql(sql, ENGINE)
-    if not query.empty:
-        query['Floor'] = query.apply(
-            lambda x: Meth.getFloor(x['HouseName']), axis=1)
-        _ = Meth.bisectCheckFloorType(query['Floor'].max())
-        data['BuildingType'] = _
+    # p_uuid = data['ProjectUUID']
+    # sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+    #     p_uuid)
+    # query = pd.read_sql(sql, ENGINE)
+    # if not query.empty:
+    #     query['Floor'] = query.apply(
+    #         lambda x: Meth.getFloor(x['HouseName']), axis=1)
+    #     _ = Meth.bisectCheckFloorType(query['Floor'].max())
+    #     data['BuildingType'] = _
     return data
 
 
