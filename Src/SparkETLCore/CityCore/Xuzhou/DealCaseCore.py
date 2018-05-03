@@ -1,15 +1,23 @@
+from __future__ import unicode_literals
 from pyspark.sql import Row
+import demjson
 
 
-def realEstateProjectId(data):
+def realEstateProjectID(data):
     return data
 
 
-def buildingId(data):
+def buildingID(data):
+    data = data.asDict()
+    data['BuildingID'] = data['BuildingUUID']
     return data
 
 
-def houseId(data):
+def houseID(data):
+    data = data.asDict()
+    extraj = demjson.decode(data['ExtraJson'])
+    data['HouseID'] = extraj.get('ExtraHouseID')
+    data = Row(**data)
     return data
 
 
