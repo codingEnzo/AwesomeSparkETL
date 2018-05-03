@@ -175,10 +175,7 @@ def price(data):
 
 def priceType(data):
     data = data.asDict()
-    data['PriceType'] = 售单价
-    '.decode('
-    utf - 8
-    ')
+    data['PriceType'] = '预售单价'.decode('utf-8')
     return Row(**data)
 
 
@@ -201,8 +198,7 @@ def realEstateProjectID(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
                      sql = " select RealEstateProjectID as col from ProjectInfoItem where ProjectUUID = '{projectUUID}' "
-                           "and RealEstateProjectID !='' limit 0,1 ".format(
-                             projectUUID = data['ProjectUUID']))
+                           "and RealEstateProjectID !='' limit 0,1 ".format(projectUUID = data['ProjectUUID']))
     data['RealEstateProjectID'] = str(df.col.values[0]) if not df.empty else ''
     return Row(**data)
 
