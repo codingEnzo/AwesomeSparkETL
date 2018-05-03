@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-
 sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
+
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
 
@@ -23,14 +23,10 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
 
 def address(data):
     data = data.asDict()
-
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select ProjectAddress as col from ProjectInfoItem where ProjectUUID='{projectUUID}' order "
-                           "by "
-                           "RecordTime limit 1".format(
-                             projectUUID = data['ProjectUUID']))
+                     sql = "select ProjectAddress as col from ProjectInfoItem where ProjectUUID='{projectUUID}' "
+                           "and ProjectAddress != '' limit 1".format(projectUUID = data['ProjectUUID']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
     return Row(**data)
 
 
@@ -45,7 +41,7 @@ def buildingCompletedYear(data):
 def buildingID(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select BuildingID as col from where BuildingUUID='{buildingUUID}' "
+                     sql = "select BuildingID as col from BuildingInfoItem where BuildingUUID='{buildingUUID}' "
                            "and BuildingID != '' limit 1".format(buildingUUID = data['BuildingUUID']))
     data['BuildingID'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
@@ -80,8 +76,8 @@ def dealType(data):
 def districtName(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' order by "
-                           "RecordTime DESC limit 1".format(
+                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' "
+                           "order by RecordTime DESC limit 1".format(
                              projectUUID = data['ProjectUUID']))
     data['DistrictName'] = Meth.cleanName(df.col.values[-1]) if not df.empty else ''
     return Row(**data)
@@ -247,8 +243,8 @@ def state(data):
 
 def totalPrice(data):
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select BuildingAveragePrice as col from BuildingInfoItem where "
-                           "BuildingUUID = '{0}' order by RecordTime desc limit 1 ".format(data['BuildingUUID']))
+                     sql = "select BuildingAveragePrice as col from BuildingInfoItem where BuildingUUID = '{"
+                           "buildingUUID} order by RecordTime desc limit 1 '")
     if not df.empty:
         data = data.asDict()
         if data['MeasuredBuildingArea'] != '':
