@@ -176,7 +176,8 @@ def districtName(data):
 def regionName(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                         projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
 
@@ -220,14 +221,14 @@ def price(data):
 
 def priceType(data):
     data = data.asDict()
-    data['PriceType'] =u'成交均价'
+    data['PriceType'] = u'成交均价'
     return Row(**data)
 
 
 def address(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                     sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
@@ -239,7 +240,7 @@ def buildingCompletedYear(data):
 
 def floor(data):
     def getFloor(x):
-        if x == '':
+        if x == u'':
             return 0
         x_match = re.search(r'(\d+)', x)
         if not x_match:
@@ -254,7 +255,7 @@ def floor(data):
 
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    housefloor = getFloor(str(data['HouseName']))
+    housefloor = getFloor(data['HouseName'])
     if housefloor == 0:
         data['Floor'] = None
     else:
@@ -284,7 +285,7 @@ def floors(data):
 
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
                          buildingUUID=data['BuildingUUID']))
     df['ActualFloor'] = df['HouseName'].apply(getFloor)
     acttualfloor = df.ActualFloor.agg('max')

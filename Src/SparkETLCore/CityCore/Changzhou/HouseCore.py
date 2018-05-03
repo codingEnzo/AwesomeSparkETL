@@ -170,7 +170,7 @@ def address(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   df = pd.read_sql(con=Var.ENGINE,
-                   sql="select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                   sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
                        projectName=data['ProjectName']))
   data['Address'] = df.col.values[-1] if not df.empty else ''
   # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''

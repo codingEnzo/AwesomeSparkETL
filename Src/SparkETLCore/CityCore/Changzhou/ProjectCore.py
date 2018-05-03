@@ -199,7 +199,7 @@ def presalePermitNumber(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   df = pd.read_sql(con=Var.ENGINE,
-                   sql="select ExtraJson from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
+                   sql=u"select ExtraJson from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
   df['PresalePermitNumber'] = df.apply(lambda x: Meth.jsonLoad(
       x['ExtraJson']).get('ExtraPresalePermitNumber', ''), axis=1)
   data['PresalePermitNumber'] = ','.join(list(set(df['PresalePermitNumber'])))
@@ -210,7 +210,7 @@ def houseBuildingCount(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   df = pd.read_sql(con=Var.ENGINE,
-                   sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
+                   sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
   data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
   return Row(**data)
 

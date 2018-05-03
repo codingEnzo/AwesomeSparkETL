@@ -175,7 +175,7 @@ def districtName(data):
 def regionName(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
 
@@ -226,7 +226,7 @@ def priceType(data):
 def address(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                     sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
     return Row(**data)
@@ -283,7 +283,7 @@ def floors(data):
 
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
                          buildingUUID=data['BuildingUUID']))
     df['ActualFloor'] = df['HouseName'].apply(getFloor)
     acttualfloor = df.ActualFloor.agg('max')
