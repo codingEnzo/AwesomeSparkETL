@@ -18,7 +18,7 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
 		   'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching',
            'measuredBuildingArea',
 		   'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price',
-		   'priceType', 'projectName',
+		   'priceType', 'projectName','projectID',
 		   'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule', 'sellState', 'sourceLink', 'state',
 		   'totalPrice', 'unenclosedBalconys', 'unitShape', 'unitStructure']
 
@@ -151,17 +151,25 @@ def isPrivateUse(data):
 def isSharedPublicMatching(data):
 	return data
 
-
 def measuredBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredBuildingArea'])
+	data['MeasuredBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredInsideOfBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredInsideOfBuildingArea'])
+	data['MeasuredInsideOfBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredSharedPublicArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredSharedPublicArea'])
+	data['MeasuredSharedPublicArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def nominalFloor(data):
@@ -193,14 +201,15 @@ def projectName(data):
 	return Row(**data)
 
 
-# def projectID(data):
-# 	data = data.asDict()
-# 	df = pd.read_sql(con=Var.ENGINE,
-# 					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND
-# ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
-#
-# 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
-# 	return Row(**data)
+def projectID(data):
+	data = data.asDict()
+	df = pd.read_sql(con=Var.ENGINE,
+					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE "
+						   "ProjectUUID = '{projectUUID}'  AND ProjectID !='' LIMIT 1 "\
+					 .format(projectUUID = data['ProjectUUID']))
+
+	data['ProjectID'] = df.col.values[0] if not df.empty else ''
+	return Row(**data)
 
 def realEstateProjectID(data):
 	data = data.asDict()

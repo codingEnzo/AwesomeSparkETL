@@ -30,9 +30,9 @@ def approvalPresaleAmount(data):
     if not data['ApprovalPresaleAmount']:
         df = pd.read_sql(con = Var.ENGINE,
                          sql = "SELECT ApprovalPresaleAmount AS col FROM PresellInfoItem WHERE ProjectUUID" \
-                               " = '{0}' GROUP BY PresalePermitNumber".format(data['ProjectUUID'])).fillna('')
+                               " = '{0}' AND ApprovalPresaleAmount !='' GROUP BY PresalePermitNumber".format(data['ProjectUUID'])).fillna('')
         if not df.empty:
-            data['ApprovalPresaleAmount'] = df['col'].apply(lambda x: int(x)).sum()
+            data['ApprovalPresaleAmount'] = str(df['col'].apply(lambda x: int(x)).sum())
     return Row(**data)
 
 
@@ -354,5 +354,5 @@ def totalBuidlingArea(data):
                          sql = "SELECT TotalBuidlingArea AS col FROM PresellInfoItem WHERE " \
                                "ProjectUUID = '{0}' GROUP BY PresalePermitNumber".format(data['ProjectUUID']))
         if not df.empty:
-            data['TotalBuidlingArea'] = df['col'].apply(lambda x: float(x)).sum()
+            data['TotalBuidlingArea'] = str(round(df['col'].apply(lambda x: float(x)).sum(),2))
     return Row(**data)
