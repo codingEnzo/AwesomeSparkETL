@@ -254,9 +254,8 @@ def parkingSpaceAmount(data):
 def presalePermitNumber(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select distinct(PresalePermitNumber) as col from PresellInfoItem where ProjectUUID='{"
-                           "projectUUID}'".format(
-                             projectUUID = data['ProjectUUID']))
+                     sql = "select distinct(PresalePermitNumber) as col from PresellInfoItem "
+                           "where ProjectUUID='{0}'".format(data['ProjectUUID']))
     if not df.empty:
         data['PresalePermitNumber'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
     return Row(**data)

@@ -16,7 +16,7 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
            'caseFrom', 'caseTime', 'dealType', 'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
            'forecastInsideOfBuildingArea', 'forecastPublicArea', 'houseID', 'houseName', 'houseNumber', 'houseUseType',
            'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching', 'measuredBuildingArea',
-           'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price',
+           'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price','projectID',
            'priceType', 'projectName', 'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule', 'sellState',
            'sourceLink', 'state', 'totalPrice', 'unenclosedBalconys', 'unitShape', 'unitStructure']
 
@@ -80,9 +80,8 @@ def dealType(data):
 def districtName(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' order by "
-                           "RecordTime DESC limit 1".format(
-                             projectUUID = data['ProjectUUID']))
+                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' "
+                           " limit 1".format(projectUUID = data['ProjectUUID']))
     data['DistrictName'] = Meth.cleanName(df.col.values[-1]) if not df.empty else ''
     return Row(**data)
 
@@ -200,13 +199,13 @@ def projectName(data):
     return Row(**data)
 
 
-# def projectID(data):
-# 	data = data.asDict()
-# 	df = pd.read_sql(con=Var.ENGINE,
-# 					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}' AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
-#
-# 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
-# 	return Row(**data)
+def projectID(data):
+	data = data.asDict()
+	df = pd.read_sql(con=Var.ENGINE,
+					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}' AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
+
+	data['ProjectID'] = df.col.values[0] if not df.empty else ''
+	return Row(**data)
 
 
 def realEstateProjectID(data):
