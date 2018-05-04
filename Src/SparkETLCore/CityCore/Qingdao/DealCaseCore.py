@@ -17,21 +17,17 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
            'forecastInsideOfBuildingArea', 'forecastPublicArea', 'houseID', 'houseName', 'houseNumber', 'houseUseType',
            'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching', 'measuredBuildingArea',
            'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price',
-           'priceType', 'projectName',
+           'priceType', 'projectName', 'projectID',
            'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule', 'sellState', 'sourceLink', 'state',
            'totalPrice', 'unenclosedBalconys', 'unitShape', 'unitStructure']
 
 
 def address(data):
     data = data.asDict()
-
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select ProjectAddress as col from ProjectInfoItem where ProjectUUID='{projectUUID}' order "
-                           "by "
-                           "RecordTime limit 1".format(
-                             projectUUID = data['ProjectUUID']))
+                     sql = "select ProjectAddress as col from ProjectInfoItem where ProjectUUID='{0}' limit 1" \
+                     .format(data['ProjectUUID']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
     return Row(**data)
 
 
@@ -81,9 +77,8 @@ def dealType(data):
 def districtName(data):
     data = data.asDict()
     df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' order by "
-                           "RecordTime DESC limit 1".format(
-                             projectUUID = data['ProjectUUID']))
+                     sql = "select DistrictName as col from ProjectInfoItem where ProjectUUID='{0}' order by "
+                           "RecordTime DESC limit 1".format( data['ProjectUUID']))
     data['DistrictName'] = Meth.cleanName(df.col.values[-1]) if not df.empty else ''
     return Row(**data)
 
@@ -201,13 +196,13 @@ def projectName(data):
     return Row(**data)
 
 
-# def projectID(data):
-# 	data = data.asDict()
-# 	df = pd.read_sql(con=Var.ENGINE,
-# 					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
-#
-# 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
-# 	return Row(**data)
+def projectID(data):
+    data = data.asDict()
+    df = pd.read_sql(con = Var.ENGINE,
+                     sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}' "
+                           "AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
+    data['ProjectID'] = df.col.values[0] if not df.empty else ''
+    return Row(**data)
 
 
 def realEstateProjectID(data):
@@ -237,7 +232,10 @@ def sellState(data):
 
 
 def sourceLink(data):
-    return data
+    data = data.asDict()
+    if data['SourceUrl']:
+        data['SourceLink'] = data['SourceUrl']
+    return Row(**data)
 
 
 def state(data):
@@ -250,14 +248,13 @@ def totalPrice(data):
     df = pd.read_sql(con = Var.ENGINE,
                      sql = "select BuildingAveragePrice as col from BuildingInfoItem where BuildingUUID = '{0}' "
                            "order by RecordTime desc limit 1".format(data['BuildingUUID']))
+    data = data.asDict()
     if not df.empty:
-        data = data.asDict()
         if data['MeasuredBuildingArea'] != '':
             price = float(df.col.values[-1])
             area = float(data['MeasuredBuildingArea'])
-            data['TotalPrice'] = str(price * area)
-            return Row(**data)
-    return data
+            data['TotalPrice'] = str(round(price * area, 2))
+    return Row(**data)
 
 
 def unenclosedBalconys(data):

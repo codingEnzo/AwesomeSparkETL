@@ -245,17 +245,17 @@ def state(data):
 
 
 def totalPrice(data):
+    data = data.asDict()
+
     df = pd.read_sql(con = Var.ENGINE,
                      sql = "select BuildingAveragePrice as col from BuildingInfoItem where "
                            "BuildingUUID = '{0}' order by RecordTime desc limit 1 ".format(data['BuildingUUID']))
     if not df.empty:
-        data = data.asDict()
         if data['MeasuredBuildingArea'] != '':
             price = float(df.col.values[-1])
             area = float(data['MeasuredBuildingArea'])
-            data['TotalPrice'] = str(price * area)
-            return Row(**data)
-    return data
+            data['TotalPrice'] = str(round(price * area, 2))
+    return Row(**data)
 
 
 def unenclosedBalconys(data):
