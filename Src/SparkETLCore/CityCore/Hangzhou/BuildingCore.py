@@ -48,15 +48,21 @@ def recordtime(data):
 
 def projectName(data):
 	data = data.asDict()
-	data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+	if data['ProjectName']:
+		data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+	else:
+		df = pd.read_sql(con=Var.ENGINE,
+						 sql="SELECT ProjectName AS col FROM ProjectInfoItem WHERE "
+							 "ProjectUUID = '{0}' AND ProjectName != '' LIMIT 1".format(data['ProjectUUID']))
+		data['ProjectName'] =Meth.cleanName(df.col.values[0]) if not df.empty else ''
 	return Row(**data)
 
 
 def realEstateProjectID(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select ExtraJson as col from ProjectInfoItem where ProjectUUID='{projectUUID}' limit 1".format(
-						 projectUUID=data['ProjectUUID']))
+					 sql="select ExtraJson as col from ProjectInfoItem "
+						 "where ProjectUUID='{0}' limit 1".format(data['ProjectUUID']))
 	if not df.empty:
 		data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
 	return Row(**data)
@@ -115,9 +121,8 @@ def estimatedCompletionDate(data):
 def housingCount(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select count(HouseUUID) as col from HouseInfoItem where BuildingUUID='{"
-						 "buildingUUID}'".format(
-						 buildingUUID=data['BuildingUUID']))
+					 sql="select count(HouseUUID) as col from HouseInfoItem where "
+						 "BuildingUUID='{0}'".format(data['BuildingUUID']))
 	data['HousingCount'] = str(df.col.values[0])
 	return Row(**data)
 
