@@ -132,13 +132,15 @@ def address(data):
 
 
 def floorName(data):
-    return data
+    data = data.asDict()
+    data['FloorName'] = Meth.cleanName(data['FloorName'])
+    return Row(**data)
 
 
 def actualFloor(data):
     data = data.asDict()
-    if data['ActualFloor']:
-        c = re.search('-?\d+', data['ActualFloor'])
+    if data['FloorName']:
+        c = re.search('-?\d+', data['FloorName'])
         data['ActualFloor'] = c.group() if c else ''
     return Row(**data)
 
@@ -148,7 +150,27 @@ def floorCount(data):
 
 
 def floorType(data):
-    return data
+    def check_floor_type(floorname):
+        if floorname <= 3:
+            return '低层(1-3)'
+        elif floorname <= 6:
+            return '多层(4-6)'
+        elif floorname <= 11:
+            return '小高层(7-11)'
+        elif floorname <= 18:
+            return '中高层(12-18)'
+        elif floorname <= 32:
+            return '高层(19-32)'
+        elif floorname >= 33:
+            return '超高层(33)'
+        else:
+            return ''
+    data = data.asDict()
+    if data['FloorName']:
+        c = re.search('-?\d+', data['FloorName'])
+        if c:
+            data['FloorType'] = check_floor_type(int(c.group()))
+    return Row(**data)
 
 
 def floorRight(data):

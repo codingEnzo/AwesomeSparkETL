@@ -23,10 +23,7 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
 
 def address(data):
     data = data.asDict()
-    df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select ProjectAddress as col from ProjectInfoItem where ProjectUUID='{projectUUID}' "
-                           "and ProjectAddress != '' limit 1".format(projectUUID = data['ProjectUUID']))
-    data['Address'] = df.col.values[-1] if not df.empty else ''
+    data['Address'] = Meth.cleanName(data['Address'])
     return Row(**data)
 
 
@@ -89,7 +86,11 @@ def dwelling(data):
 
 
 def floor(data):
-    return data
+    data = data.asDict()
+    if data['FloorName']:
+        c = re.search('-?\d+', data['FloorName'])
+        data['Floor'] = c.group() if c else ''
+    return Row(**data)
 
 
 def floors(data):
@@ -167,7 +168,9 @@ def measuredSharedPublicArea(data):
 
 
 def nominalFloor(data):
-    return data
+    data = data.asDict()
+    data['NominalFloor'] = Meth.cleanName(data['FloorName'])
+    return Row(**data)
 
 
 def presalePermitNumber(data):
