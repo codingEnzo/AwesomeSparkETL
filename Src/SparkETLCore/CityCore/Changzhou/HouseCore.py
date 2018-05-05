@@ -6,10 +6,9 @@ import inspect
 import re
 import pandas as pd
 import numpy as np
-sys.path.append('/home/sun/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
-from Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth, Var, Config
 
 METHODS = ['actualFloor',
            'address',
@@ -83,7 +82,7 @@ def recordTime(data):
   nowtime = str(datetime.datetime.now())
   if data['RecordTime'] == '':
     data['RecordTime'] = nowtime
-  return Row(**data)
+  return data
 
 
 def caseTime(data):
@@ -91,42 +90,42 @@ def caseTime(data):
   data = data.asDict()
   data['CaseTime'] = str(datetime.datetime.now()
                          ) if data['CaseTime'] == '' else data['CaseTime']
-  return Row(**data)
+  return data
 
 
 def projectName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-  return Row(**data)
+  return data
 
 
 def realEstateProjectId(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['RealEstateProjectID'] = data['ProjectUUID']
-  return Row(**data)
+  return data
 
 
 def buildingName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-  return Row(**data)
+  return data
 
 
 def buildingId(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['BuildingID'] = data['BuildingUUID']
-  return Row(**data)
+  return data
 
 
 def city(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['City'] = u'常州'
-  return Row(**data)
+  return data
 
 
 def districtName(data):
@@ -151,19 +150,19 @@ def houseName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['HouseName'] = data['HouseName']
-  return Row(**data)
+  return data
 
 
 def houseId(data):
   data = data.asDict()
   data['HouseID'] = data['HouseID']
-  return Row(**data)
+  return data
 
 
 def houseUUID(data):
   data = data.asDict()
   data['HouseUUID'] = data['HouseUUID']
-  return Row(**data)
+  return data
 
 
 def address(data):
@@ -174,7 +173,7 @@ def address(data):
                        projectName=data['ProjectName']))
   data['Address'] = df.col.values[-1] if not df.empty else ''
   # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
-  return Row(**data)
+  return data
 
 
 def floorName(data):
@@ -199,7 +198,7 @@ def actualFloor(data):
     return res
   data = data.asDict()
   data['ActualFloor'] = str(getFloor(data['HouseName']))
-  return Row(**data)
+  return data
 
 
 def floorCount(data):
@@ -279,7 +278,7 @@ def measuredBuildingArea(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
-  return Row(**data)
+  return data
 
 
 def measuredInsideOfBuildingArea(data):
@@ -320,7 +319,7 @@ def houseUseType(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['HouseUseType'] = data['HouseUseType']
-  return Row(**data)
+  return data
 
 
 def buildingStructure(data):

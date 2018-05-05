@@ -6,9 +6,8 @@ import pandas as pd
 import numpy as np
 import datetime
 from pyspark.sql import Row
-sys.path.append('/home/sun/AwesomeSparkETL/Src/SparkETLCore')
 
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount',
            'approvalPresaleArea',
@@ -67,14 +66,14 @@ def recordTime(data):
   nowtime = str(datetime.datetime.now())
   if data['RecordTime'] == '':
     data['RecordTime'] = nowtime
-  return Row(**data)
+  return data
 
 
 def projectName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-  return Row(**data)
+  return data
 
 
 def promotionName(data):
@@ -91,7 +90,7 @@ def projectUUID(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ProjectUUID'] = data['ProjectUUID']
-  return Row(**data)
+  return data
 
 
 def districtName(data):
@@ -103,14 +102,14 @@ def regionName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['RegionName'] = data['RegionName']
-  return Row(**data)
+  return data
 
 
 def projectAddress(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ProjectAddress'] = data['ProjectAddress']
-  return Row(**data)
+  return data
 
 
 def projectType(data):
@@ -134,14 +133,14 @@ def housingCount(data):
       data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
   housenum = [int(x.get('HouseTotalNum', 0)) for x in eval(extraInfo)]
   data['HousingCount'] = sum(housenum)
-  return Row(**data)
+  return data
 
 
 def developer(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['Developer'] = data['Developer']
-  return Row(**data)
+  return data
 
 
 def floorArea(data):
@@ -156,7 +155,7 @@ def totalBuidlingArea(data):
       data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
   housearea = [float(x.get('HouseTotalArea', 0.00)) for x in eval(extraInfo)]
   data['otalBuidlingArea'] = sum(housearea)
-  return Row(**data)
+  return data
 
 
 def buildingType(data):
@@ -170,7 +169,7 @@ def houseUseType(data):
       data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
   HouseUseType = [x.get('HouseUsage', '') for x in eval(extraInfo)]
   data['HouseUseType'] = u','.join(list(set(HouseUseType)))
-  return Row(**data)
+  return data
 
 
 def propertyRightsDescription(data):
@@ -203,7 +202,7 @@ def presalePermitNumber(data):
   df['PresalePermitNumber'] = df.apply(lambda x: Meth.jsonLoad(
       x['ExtraJson']).get('ExtraPresalePermitNumber', ''), axis=1)
   data['PresalePermitNumber'] = ','.join(list(set(df['PresalePermitNumber'])))
-  return Row(**data)
+  return data
 
 
 def houseBuildingCount(data):
@@ -212,7 +211,7 @@ def houseBuildingCount(data):
   df = pd.read_sql(con=Var.ENGINE,
                    sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
   data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
-  return Row(**data)
+  return data
 
 
 def approvalPresaleAmount(data):
@@ -220,7 +219,7 @@ def approvalPresaleAmount(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ApprovalPresaleAmount'] = data['ApprovalPresaleAmount']
-  return Row(**data)
+  return data
 
 
 def approvalPresaleArea(data):
@@ -228,7 +227,7 @@ def approvalPresaleArea(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
   data['ApprovalPresaleArea'] = data['ApprovalPresaleArea']
-  return Row(**data)
+  return data
 
 
 def averagePrice(data):

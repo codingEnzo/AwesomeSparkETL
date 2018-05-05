@@ -9,10 +9,9 @@ import re
 import pandas as pd
 import numpy as np
 
-sys.path.append('/home/sun/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
-from Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth, Var, Config
 
 METHODS = [
     'realEstateProjectID',
@@ -64,19 +63,19 @@ METHODS = [
 def realEstateProjectID(data):
     data = data.asDict()
     data['RealEstateProjectID'] = data['RealEstateProjectID']
-    return Row(**data)
+    return data
 
 
 def buildingID(data):
     data = data.asDict()
     data['BuildingID'] = data['BuildingID']
-    return Row(**data)
+    return data
 
 
 def houseID(data):
     data = data.asDict()
     data['HouseID'] = data['HouseID']
-    return Row(**data)
+    return data
 
 
 def forecastBuildingArea(data):
@@ -94,7 +93,7 @@ def forecastPublicArea(data):
 def measuredBuildingArea(data):
     data = data.asDict()
     data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
-    return Row(**data)
+    return data
 
 
 def measuredInsideOfBuildingArea(data):
@@ -146,7 +145,7 @@ def caseTime(data):
     data = data.asDict()
     data['CaseTime'] = str(datetime.datetime.now()
                            ) if data['CaseTime'] == '' else data['CaseTime']
-    return Row(**data)
+    return data
 
 
 def caseFrom(data):
@@ -178,31 +177,31 @@ def regionName(data):
     df = pd.read_sql(con=Var.ENGINE,
                      sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
-    return Row(**data)
+    return data
 
 def projectName(data):
     data = data.asDict()
     data['ProjectName'] = data['ProjectName']
-    return Row(**data)
+    return data
 
 
 def buildingName(data):
     data = data.asDict()
     data['BuildingName'] = data['BuildingName']
-    return Row(**data)
+    return data
 
 
 def presalePermitNumber(data):
     data = data.asDict()
     data['PresalePermitNumber'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
-    return Row(**data)
+    return data
 
 
 def houseName(data):
     data = data.asDict()
     data['HouseName'] = data['HouseName']
-    return Row(**data)
+    return data
 
 
 def houseNumber(data):
@@ -220,7 +219,7 @@ def price(data):
 def priceType(data):
     data = data.asDict()
     data['PriceType'] = u'成交均价'
-    return Row(**data)
+    return data
 
 
 def address(data):
@@ -229,7 +228,7 @@ def address(data):
                      sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def buildingCompletedYear(data):
@@ -257,7 +256,7 @@ def floor(data):
         data['Floor'] = None
     else:
         data['Floor'] = str(housefloor)
-    return Row(**data)
+    return data
 
 
 def nominalFloor(data):
@@ -290,14 +289,14 @@ def floors(data):
         data['Floors'] = None
     else:
         data['Floors'] = str(acttualfloor)
-    return Row(**data)
+    return data
 
 
 def houseUseType(data):
     data = data.asDict()
     data['HouseUseType'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraHouseUseType', ''))
-    return Row(**data)
+    return data
 
 
 def dwelling(data):
@@ -307,7 +306,7 @@ def dwelling(data):
 def state(data):
     data = data.asDict()
     data['State'] = u'明确供应'
-    return Row(**data)
+    return data
 
 
 def remarks(data):
