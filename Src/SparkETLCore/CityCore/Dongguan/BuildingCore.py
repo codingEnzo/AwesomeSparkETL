@@ -100,8 +100,10 @@ def unitId(data):
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['PresalePermitNumber'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql=u"select PresalePermitNumber as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                         projectName=data['ProjectName']))
+    data['PresalePermitNumber'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -117,61 +119,11 @@ def address(data):
 
 def onTheGroundFloor(data):
     # print(data, inspect.stack()[0][3])
-    def getFloor(x):
-        if x == '':
-            return 1
-        if x[0] != '-':
-            x_match = re.search(r'(\d+)', x)
-            if not x_match:
-                return 1
-            if len(x_match.group(1)) <= 3:
-                res = int(x_match.group(1)[0])
-            else:
-                res = int(x_match.group(1)[0:2])
-        else:
-            res = 1
-        return res
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    ActualFloor = df.ActualFloor.agg('max')
-    if ActualFloor != 0:
-        data['OnTheGroundFloor'] = ActualFloor
-    else:
-        data['OnTheGroundFloor'] = None
     return data
 
 
 def theGroundFloor(data):
     # print(data, inspect.stack()[0][3])
-    def getFloor(x):
-        if x == '':
-            return 0
-        if x[0] == '-':
-            x_match = re.search(r'(\d+)', x)
-            if not x_match:
-                return 0
-            if len(x_match.group(1)) <= 3:
-                res = int(x_match.group(1)[0])
-            else:
-                res = int(x_match.group(1)[0:2])
-        else:
-            res = 0
-        return res
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    ActualFloor = df.ActualFloor.agg('max')
-    if ActualFloor != 0:
-        data['TheGroundFloor'] = ActualFloor
-    else:
-        data['TheGroundFloor'] = None
     return data
 
 
@@ -182,11 +134,6 @@ def estimatedCompletionDate(data):
 
 def housingCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['TheGroundFloor'] = str(df.col.values[0])
     return data
 
 
@@ -238,10 +185,7 @@ def units(data):
 def unsoldAmount(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and HouseState='未备案'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['UnsoldAmount'] = str(df.col.values[0])
+    data['UnsoldAmount'] = data['UnsoldAmount']
     return data
 
 
@@ -267,7 +211,8 @@ def remarks(data):
 def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['SourceUrl'] = data['SourceUrl']
+    data['SourceUrl'] = str(Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraSourceUrl', ''))
     return data
 
 
