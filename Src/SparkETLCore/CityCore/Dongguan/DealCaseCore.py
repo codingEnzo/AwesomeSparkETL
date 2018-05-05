@@ -233,7 +233,7 @@ def districtName(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select DistrictName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                     sql=u"select DistrictName as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['DistrictName'] = df.col.values[-1] if not df.empty else ''
     return data
@@ -242,7 +242,7 @@ def districtName(data):
 def regionName(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                     sql=u"select RegionName as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return data
