@@ -189,7 +189,7 @@ def districtName(data):
 def regionName(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+                     sql=u"select RegionName as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return data
 
@@ -240,7 +240,7 @@ def priceType(data):
 def address(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                     sql=u"select ProjectAddress as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
     return data
