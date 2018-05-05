@@ -31,7 +31,7 @@ METHODS = [
     'buildingStructure',
     'sellSchedule',
     'sellState',
-    'sourceLink',
+    'SourceUrl',
     'caseTime',
     'caseFrom',
     'unitShape',
@@ -50,8 +50,8 @@ METHODS = [
     'priceType',
     'address',
     'buildingCompletedYear',
-    'floor',
-    'nominalFloor',
+    'ActualFloor',
+    'FloorName',
     'floors',
     'houseUseType',
     'dwelling',
@@ -136,7 +136,7 @@ def sellState(data):
     return data
 
 
-def sourceLink(data):
+def SourceUrl(data):
     return data
 
 
@@ -234,7 +234,7 @@ def address(data):
 def buildingCompletedYear(data):
     return data
 
-def floor(data):
+def ActualFloor(data):
     def getFloor(x):
         if x == '':
             return 0
@@ -259,7 +259,7 @@ def floor(data):
     return data
 
 
-def nominalFloor(data):
+def FloorName(data):
     return data
 
 

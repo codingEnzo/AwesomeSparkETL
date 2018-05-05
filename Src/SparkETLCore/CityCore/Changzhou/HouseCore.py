@@ -88,8 +88,7 @@ def recordTime(data):
 def caseTime(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
-  data['CaseTime'] = str(datetime.datetime.now()
-                         ) if data['CaseTime'] == '' else data['CaseTime']
+  data['CaseTime'] = str(datetime.datetime.now()) if data['CaseTime'] == '' else data['CaseTime']
   return data
 
 
