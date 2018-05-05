@@ -7,7 +7,6 @@ import re
 import pandas as pd
 import numpy as np
 
-
 from pyspark.sql import Row
 from SparkETLCore.Utils import Meth, Var, Config
 
@@ -58,7 +57,16 @@ METHODS = [
     'state',
     'dealType',
     'remarks',
+    'unitUUID',
 ]
+
+
+
+
+def unitUUID(data):
+    return data
+
+
 def recordTime(data):
     data = data.asDict()
     nowtime = str(datetime.datetime.now())
@@ -92,74 +100,73 @@ def houseID(data):
 
 
 def forecastBuildingArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['ForecastBuildingArea'] = data['ForecastBuildingArea']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['ForecastBuildingArea'] = data['ForecastBuildingArea']
+    return data
 
 
 def forecastInsideOfBuildingArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
+    return data
 
 
 def forecastPublicArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['ForecastPublicArea'] = data['ForecastPublicArea']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['ForecastPublicArea'] = data['ForecastPublicArea']
+    return data
 
 
 def measuredBuildingArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
+    return data
 
 
 def measuredInsideOfBuildingArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
+    return data
 
 
 def measuredSharedPublicArea(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
-  return data
-
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
+    return data
 
 
 def isMortgage(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['IsMortgage'] = data['IsMortgage']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['IsMortgage'] = data['IsMortgage']
+    return data
 
 
 def isAttachment(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['IsAttachment'] = data['IsAttachment']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['IsAttachment'] = data['IsAttachment']
+    return data
 
 
 def isPrivateUse(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['IsPrivateUse'] = data['IsPrivateUse']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['IsPrivateUse'] = data['IsPrivateUse']
+    return data
 
 
 def isMoveBack(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['IsMoveBack'] = data['IsMoveBack']
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    data['IsMoveBack'] = data['IsMoveBack']
+    return data
 
 
 def isSharedPublicMatching(data):
@@ -224,19 +231,20 @@ def unenclosedBalconys(data):
 
 
 def districtName(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  df = pd.read_sql(con=Var.ENGINE,
-                   sql=u"select DistrictName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
-                       projectName=data['ProjectName']))
-  data['DistrictName'] = df.col.values[-1] if not df.empty else ''
-  return data
+    # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql=u"select DistrictName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                         projectName=data['ProjectName']))
+    data['DistrictName'] = df.col.values[-1] if not df.empty else ''
+    return data
 
 
 def regionName(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+                     sql=u"select RegionName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+                         projectName=data['ProjectName']))
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return data
 
