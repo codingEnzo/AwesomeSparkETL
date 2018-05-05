@@ -67,14 +67,14 @@ def recordTime(data):
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
-    return Row(**data)
+    return data
 
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def promotionName(data):
@@ -121,7 +121,7 @@ def onSaleState(data):
         data['OnSaleState'] = '售馨'.decode('utf-8')
     else:
         data['OnSaleState'] = '在售'.decode('utf-8')
-    return Row(**data)
+    return data
 
 
 def landUse(data):
@@ -136,14 +136,14 @@ def housingCount(data):
     #                  sql="select count(MeasuredBuildingArea) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
     #                      projectUUID=data['ProjectUUID']))
     # data['HousingCount'] = str(df.col.values[0])
-    # return Row(**data)
+    # return data
     return data
 
 def developer(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['Developer'] = Meth.cleanName(data['Developer'])
-    return Row(**data)
+    return data
 
 
 def floorArea(data):
@@ -159,7 +159,7 @@ def totalBuidlingArea(data):
     ProjectSaledArea = float(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectSaledArea', 0.00))
     data['TotalBuidlingArea'] = ProjectSaleArea + ProjectSaledArea
-    return Row(**data)
+    return data
 
 
 def buildingType(data):
@@ -173,7 +173,7 @@ def houseUseType(data):
                      sql=u"select distinct(HouseUseType) as col from house_info_dongguan where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
     data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
-    return Row(**data)
+    return data
 
 
 def propertyRightsDescription(data):
@@ -209,7 +209,7 @@ def houseBuildingCount(data):
     df = pd.read_sql(con=Var.ENGINE,
                      sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
     data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
-    return Row(**data)
+    return data
 
 
 def approvalPresaleAmount(data):
@@ -293,7 +293,7 @@ def certificateOfUseOfStateOwnedLand(data):
     data = data.asDict()
     data['CertificateOfUseOfStateOwnedLand'] = Meth.cleanName(
         data['CertificateOfUseOfStateOwnedLand'])
-    return Row(**data)
+    return data
 
 
 def constructionPermitNumber(data):
@@ -302,7 +302,7 @@ def constructionPermitNumber(data):
     data = data.asDict()
     data['ConstructionPermitNumber'] = Meth.cleanName(
         data['ConstructionPermitNumber'])
-    return Row(**data)
+    return data
 
 
 def qualificationNumber(data):
@@ -320,7 +320,7 @@ def buildingPermit(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['BuildingPermit'] = Meth.cleanName(data['BuildingPermit'])
-    return Row(**data)
+    return data
 
 
 def legalPersonNumber(data):
@@ -337,7 +337,7 @@ def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
     data['sourceUrl'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraSourceURL', ''))
-    return Row(**data)
+    return data
 
 
 def decoration(data):
@@ -351,7 +351,7 @@ def parkingSpaceAmount(data):
     data = data.asDict()
     data['ParkingSpaceAmount'] = Meth.cleanName(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraParkingTotalSoldAmount', ''))
-    return Row(**data)
+    return data
 
 
 def remarks(data):

@@ -49,42 +49,42 @@ def recordTime(data):
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
-    return Row(**data)
+    return data
 
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+    return data
 
 
 def buildingName(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-    return Row(**data)
+    return data
 
 
 def buildingId(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['BuildingID'] = data['BuildingID']
-    return Row(**data)
+    return data
 
 
 def buildingUUID(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['BuildingUUID'] = data['BuildingUUID']
-    return Row(**data)
+    return data
 
 
 def unitName(data):
@@ -102,7 +102,7 @@ def presalePermitNumber(data):
     data = data.asDict()
     data['PresalePermitNumber'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
-    return Row(**data)
+    return data
 
 
 def address(data):
@@ -112,7 +112,7 @@ def address(data):
                      sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
                          projectName=data['ProjectName']))
     data['Address'] = df.col.values[-1] if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def onTheGroundFloor(data):
@@ -142,7 +142,7 @@ def onTheGroundFloor(data):
         data['OnTheGroundFloor'] = ActualFloor
     else:
         data['OnTheGroundFloor'] = None
-    return Row(**data)
+    return data
 
 
 def theGroundFloor(data):
@@ -172,7 +172,7 @@ def theGroundFloor(data):
         data['TheGroundFloor'] = ActualFloor
     else:
         data['TheGroundFloor'] = None
-    return Row(**data)
+    return data
 
 
 def estimatedCompletionDate(data):
@@ -187,7 +187,7 @@ def housingCount(data):
                      sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
                          buildingUUID=data['BuildingUUID']))
     data['TheGroundFloor'] = str(df.col.values[0])
-    return Row(**data)
+    return data
 
 
 def floors(data):
@@ -242,7 +242,7 @@ def unsoldAmount(data):
                      sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and HouseState='未备案'".format(
                          buildingUUID=data['BuildingUUID']))
     data['UnsoldAmount'] = str(df.col.values[0])
-    return Row(**data)
+    return data
 
 
 def buildingAveragePrice(data):
@@ -268,7 +268,7 @@ def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['SourceUrl'] = data['SourceUrl']
-    return Row(**data)
+    return data
 
 
 def extrajson(data):
