@@ -275,10 +275,14 @@ def houseNumber(data):
 
 
 def totalPrice(data):
+    data = data.asDict()
+    data['TotalPrice'] = data['TotalPrice'].replace(",", "")
     return data
 
 
 def price(data):
+    data = data.asDict()
+    data['Price'] = data['Price'].replace(",", "")
     return data
 
 
@@ -315,6 +319,11 @@ def FloorName(data):
 
 
 def floors(data):
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql=u"select Floors as col from BuildingInfoItem where City = '东莞' and ProjectName='{projectName}' order by RecordTime".format(
+                         BuildingName=data['BuildingName']))
+    data['Floors'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -330,7 +339,7 @@ def dwelling(data):
 
 def state(data):
     data = data.asDict()
-    if data['HouseState'] == '未备案':
+    if data['HouseSaleStateLatest'] == u'可售':
         data['State'] = u'明确成交'
     else:
         data['State'] = u'历史成交'

@@ -227,6 +227,7 @@ def approvalPresaleArea(data):
 def averagePrice(data):
     # 均价
     # print(data, inspect.stack()[0][3])
+    data['averageprice'] = data['averageprice']
     return data
 
 

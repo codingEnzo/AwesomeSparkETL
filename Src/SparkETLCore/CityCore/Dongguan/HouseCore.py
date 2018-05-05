@@ -401,8 +401,7 @@ def sellSchedule(data):
 
 def houseState(data):
     data = data.asDict()
-    data['HouseState'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraHouseState', ''))
+    data['HouseState'] = data['HouseState']
     return data
 
 
@@ -426,10 +425,14 @@ def houseLabelLatest(data):
 
 
 def totalPrice(data):
+    data = data.asDict()
+    data['TotalPrice'] = data['TotalPrice'].replace(",", "")
     return data
 
 
 def price(data):
+    data = data.asDict()
+    data['Price'] = data['Price'].replace(",", "")
     return data
 
 
