@@ -83,7 +83,7 @@ def projectUUID(data):
 
 def buildingUUID(data):
     data = data.asDict()
-    data['BuildingID'] = data['BuildingID']
+    data['BuildingUUID'] = data['BuildingUUID']
     return data
 
 

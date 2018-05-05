@@ -72,16 +72,16 @@ def recordTime(data):
     return data
 
 
+
 def projectUUID(data):
     data = data.asDict()
-    data['ProjectID'] = data['RealEstateProjectID']
+    data['ProjectUUID'] = data['RealEstateProjectID']
     return data
-
 
 
 def buildingUUID(data):
     data = data.asDict()
-    data['BuildingID'] = data['BuildingID']
+    data['BuildingUUID'] = data['BuildingUUID']
     return data
 
 

@@ -13,8 +13,10 @@ from pyspark.sql import Row
 from SparkETLCore.Utils import Meth, Var, Config
 
 METHODS = [
-    'realEstateProjectID',
-    'buildingID',
+    'RecordTime',
+    'projectUUID',
+    'buildingUUID',
+    'houseUUID',
     'houseID',
     'forecastBuildingArea',
     'forecastInsideOfBuildingArea',
@@ -57,17 +59,29 @@ METHODS = [
     'state',
     'remarks',
 ]
-
-
-def realEstateProjectID(data):
+def recordTime(data):
     data = data.asDict()
-    data['RealEstateProjectID'] = data['RealEstateProjectID']
+    nowtime = str(datetime.datetime.now())
+    if data['RecordTime'] == '':
+        data['RecordTime'] = nowtime
     return data
 
 
-def buildingID(data):
+def projectUUID(data):
     data = data.asDict()
-    data['BuildingID'] = data['BuildingID']
+    data['ProjectUUID'] = data['RealEstateProjectID']
+    return data
+
+
+def buildingUUID(data):
+    data = data.asDict()
+    data['BuildingUUID'] = data['BuildingUUID']
+    return data
+
+
+def houseUUID(data):
+    data = data.asDict()
+    data['HouseUUID'] = data['HouseUUID']
     return data
 
 
