@@ -171,7 +171,7 @@ def floorType(data):
 	if data['FloorName']:
 		c = re.search('-?\d+', data['FloorName'])
 		if c:
-			data['FloorType'] = check_floor_type(int(c.group())).decode('utf-8')
+			data['FloorType'] = check_floor_type(int(c.group()))
 	return Row(**data)
 
 
@@ -297,11 +297,17 @@ def buildingStructure(data):
 
 
 def houseSalePrice(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['HouseSalePrice'])
+	data['HouseSalePrice'] = c.group() if c else ''
+	return Row(**data)
 
 
 def salePriceByBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['SalePriceByBuildingArea'])
+	data['SalePriceByBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def salePriceByInsideOfBuildingArea(data):
@@ -361,21 +367,19 @@ def totalPrice(data):
 
 def price(data):
 	data = data.asDict()
-	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['Price'])
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['HouseSalePrice'])
 	data['Price'] = c.group() if c else ''
 	return Row(**data)
 
 
 def priceType(data):
 	data = data.asDict()
-	data['PriceType'] = '备案价格'.decode('utf-8')
+	data['PriceType'] = '预售方案备案单价'.decode('utf-8')
 	return Row(**data)
 
 
 def decorationPrice(data):
-	data = data.asDict()
-	data['DecorationPrice'] = data['DecorationPrice'].replace('元'.decode('utf-8'), '')
-	return Row(**data)
+	return data
 
 
 def remarks(data):
