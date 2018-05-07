@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
-import sys
 
 import demjson
 import pandas as pd
 
-sys.path.append('/home/spark/AwesomeSparkETL/Src')
-sys.path.append('/home/spark/AwesomeSparkETL/Src/Script')
-sys.path.append('/home/spark/AwesomeSparkETL/Src/SparkETLCore')
-
-from Utils import Meth
+from SparkETLCore.Utils import Meth
 
 ENGINE = Meth.getEngine("spark_test")
 METHODS = [
