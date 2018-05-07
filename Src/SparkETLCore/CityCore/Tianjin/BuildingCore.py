@@ -6,7 +6,6 @@ import inspect
 import pandas as pd
 import numpy as np
 import datetime
-sys.path.append('/home/sun/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Var, Meth, Config

@@ -7,8 +7,6 @@ import numpy as np
 import datetime
 from pyspark.sql import Row
 
-sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-
 from Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount',
