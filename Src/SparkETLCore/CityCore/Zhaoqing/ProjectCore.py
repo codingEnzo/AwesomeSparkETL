@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
+sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
@@ -76,7 +77,7 @@ def projectName(data):
 def promotionName(data):
 	data = data.asDict()
 	data['PromotionName'] = Meth.cleanName(data['PromotionName'])
-	return data
+	return Row(**data)
 
 
 def realEstateProjectId(data):
@@ -110,14 +111,22 @@ def projectType(data):
 
 
 def onSaleState(data):
+	def getNum(key,info):
+		v = info.get(key)
+		if v:
+			c = re.search('\d+',v)
+			return int(c.group()) if c else 0
+		return 0
+
 	data = data.asDict()
 	info = Meth.jsonLoad(data['ExtraJson']).get('ExtraProjectSaleInfo')
 	if info:
-		n1 = int(info.get('已售非住宅套数', 0))
-		n2 = int(info.get('已售住宅套数', 0))
-		n3 = int(info.get('总套数', 0))
+		info = eval(info)
+		n1 = getNum('已售非住宅套数',info)
+		n2 = getNum('已售住宅套数',info)
+		n3 = getNum('总套数',info)
 		if n3 != 0:
-			data['OnSaleState'] = '售罄' if (n1 + n2) / n3 < 0.1 else '在售'
+			data['OnSaleState'] = '售罄'.decode('utf-8') if (n1 + n2) / n3 < 0.1 else '在售'.decode('utf-8')
 		else:
 			data['OnSaleState'] = ''
 	return Row(**data)
@@ -252,7 +261,7 @@ def earliestOpeningTime(data):
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql="select min(LssueDate) as col from PresellInfoItem where ProjectUUID='{projectUUID}'" \
 					 .format(projectUUID=data['ProjectUUID']))
-	data['EarliestOpeningTime'] = str(df.col.values[0])
+	data['EarliestOpeningTime'] = str(df.col.values[0]) if not df.empty else ''
 	return Row(**data)
 
 
