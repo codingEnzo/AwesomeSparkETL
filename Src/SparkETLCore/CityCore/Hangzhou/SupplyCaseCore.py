@@ -13,7 +13,7 @@ from pyspark.sql import Row
 from Utils import Var, Meth, Config
 
 METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildingName', 'buildingStructure',
-		   'caseFrom', 'caseTime', 'dealType', 'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
+		   'caseFrom', 'caseTime',  'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
 		   'forecastInsideOfBuildingArea', 'forecastPublicArea', 'houseID', 'houseName', 'houseNumber', 'houseUseType',
 		   'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching',
            'measuredBuildingArea',
@@ -64,11 +64,6 @@ def caseTime(data):
 	data['CaseTime'] = data['RecordTime']
 	return Row(**data)
 
-
-def dealType(data):
-	data = data.asDict()
-	data['DealType'] = '最新成交'.decode('utf-8')
-	return Row(**data)
 
 
 def districtName(data):
@@ -188,17 +183,15 @@ def presalePermitNumber(data):
 
 
 def price(data):
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select BuildingAveragePrice as col from BuildingInfoItem where "
-						 "BuildingUUID = '{0}' order by RecordTime desc limit 1 ".format(data['BuildingUUID']))
 	data = data.asDict()
-	data['Price'] = str(df.col.values[-1]) if not df.empty else ''
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['Price'])
+	data['Price'] = c.group() if c else ''
 	return Row(**data)
 
 
 def priceType(data):
 	data = data.asDict()
-	data['PriceType'] = '预售单价'.decode('utf-8')
+	data['PriceType'] = '预售方案备案单价'.decode('utf-8')
 	return Row(**data)
 
 

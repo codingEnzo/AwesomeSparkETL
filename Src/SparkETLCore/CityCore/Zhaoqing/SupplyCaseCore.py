@@ -7,18 +7,18 @@ import pandas as pd
 import numpy as np
 
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-
 sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
+
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
 
 METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildingName', 'buildingStructure',
-		   'caseFrom', 'caseTime', 'dealType', 'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
+		   'caseFrom', 'caseTime', 'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
 		   'forecastInsideOfBuildingArea', 'forecastPublicArea', 'houseID', 'houseName', 'houseNumber', 'houseUseType',
 		   'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching',
            'measuredBuildingArea',
 		   'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price',
-		   'priceType', 'projectID', 'projectName', 'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule',
+		   'projectID', 'priceType', 'projectName', 'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule',
 		   'sellState', 'sourceLink', 'state', 'totalPrice', 'unenclosedBalconys', 'unitShape', 'unitStructure']
 
 
@@ -41,7 +41,7 @@ def buildingID(data):
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql="select BuildingID as col from BuildingInfoItem where BuildingUUID='{0}' "
 						 "and BuildingID != '' limit 1".format(data['BuildingUUID']))
-	data['BuildingID'] = df.col.values[0] if not df.empty else ''
+	data['BuildingID'] = df.col.values[-1] if not df.empty else ''
 	return Row(**data)
 
 
@@ -65,11 +65,6 @@ def caseTime(data):
 	return Row(**data)
 
 
-def dealType(data):
-	data = data.asDict()
-	data['DealType'] = '最新成交'.decode('utf-8')
-	return Row(**data)
-
 
 def districtName(data):
 	data = data.asDict()
@@ -87,7 +82,11 @@ def dwelling(data):
 
 
 def floor(data):
-	return data
+	data = data.asDict()
+	if data['FloorName']:
+		c = re.search('-?\d+', data['FloorName'])
+		data['Floor'] = c.group() if c else ''
+	return Row(**data)
 
 
 def floors(data):
@@ -153,19 +152,30 @@ def isSharedPublicMatching(data):
 
 
 def measuredBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredBuildingArea'])
+	data['MeasuredBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredInsideOfBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredInsideOfBuildingArea'])
+	data['MeasuredInsideOfBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredSharedPublicArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredSharedPublicArea'])
+	data['MeasuredSharedPublicArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def nominalFloor(data):
-	return data
+	data = data.asDict()
+	data['NominalFloor'] = Meth.cleanName(data['FloorName'])
+	return Row(**data)
 
 
 def presalePermitNumber(data):
@@ -195,9 +205,7 @@ def projectID(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql=" SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND "
-                         "ProjectID !='' LIMIT 1 ".format(
-						 projectUUID=data['ProjectUUID']))
-
+						 "ProjectID !='' LIMIT 1 ".format(projectUUID=data['ProjectUUID']))
 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
 	return Row(**data)
 
@@ -209,7 +217,6 @@ def realEstateProjectID(data):
 						 "and RealEstateProjectID !='' limit 0,1 ".format(projectUUID=data['ProjectUUID']))
 	data['RealEstateProjectID'] = str(df.col.values[0]) if not df.empty else ''
 	return Row(**data)
-
 
 def regionName(data):
 	return data
@@ -233,7 +240,7 @@ def sourceLink(data):
 
 def state(data):
 	data = data.asDict()
-	data['State'] = '明确成交'.decode('utf-8')
+	data['State'] = '明确供应'.decode('utf-8')
 	return Row(**data)
 
 

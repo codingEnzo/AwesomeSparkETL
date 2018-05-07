@@ -360,14 +360,14 @@ def houseLabelLatest(data):
 
 def totalPrice(data):
 	data = data.asDict()
-	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['TotalPrice'])
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['HouseSalePrice'])
 	data['TotalPrice'] = c.group() if c else ''
 	return Row(**data)
 
 
 def price(data):
 	data = data.asDict()
-	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['HouseSalePrice'])
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['SalePriceByBuildingArea'])
 	data['Price'] = c.group() if c else ''
 	return Row(**data)
 

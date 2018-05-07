@@ -16,7 +16,7 @@ METHODS = ['address', 'balconys', 'buildingCompletedYear', 'buildingID', 'buildi
 		   'caseFrom', 'caseTime', 'dealType', 'districtName', 'dwelling', 'floor', 'floors', 'forecastBuildingArea',
 		   'forecastInsideOfBuildingArea', 'forecastPublicArea', 'houseID', 'houseName', 'houseNumber', 'houseUseType',
 		   'isAttachment', 'isMortgage', 'isMoveBack', 'isPrivateUse', 'isSharedPublicMatching',
-           'measuredBuildingArea',
+		   'measuredBuildingArea',
 		   'measuredInsideOfBuildingArea', 'measuredSharedPublicArea', 'nominalFloor', 'presalePermitNumber', 'price',
 		   'priceType', 'projectID', 'projectName', 'realEstateProjectID', 'regionName', 'remarks', 'sellSchedule',
 		   'sellState', 'sourceLink', 'state', 'totalPrice', 'unenclosedBalconys', 'unitShape', 'unitStructure']
@@ -67,7 +67,8 @@ def caseTime(data):
 
 def dealType(data):
 	data = data.asDict()
-	data['DealType'] = '最新成交'.decode('utf-8')
+	data['DealType'] = '最新成交'.decode('utf-8') if data['houseStateLatest'] in (u'期房待售', u'现房待售') \
+		else u'历史成交'.decode('utf-8')
 	return Row(**data)
 
 
@@ -87,7 +88,11 @@ def dwelling(data):
 
 
 def floor(data):
-	return data
+	data = data.asDict()
+	if data['FloorName']:
+		c = re.search('-?\d+', data['FloorName'])
+		data['Floor'] = c.group() if c else ''
+	return Row(**data)
 
 
 def floors(data):
@@ -96,19 +101,22 @@ def floors(data):
 
 def forecastBuildingArea(data):
 	data = data.asDict()
-	data['ForecastBuildingArea'] = data['ForecastBuildingArea']
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastBuildingArea'])
+	data['ForecastBuildingArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def forecastInsideOfBuildingArea(data):
 	data = data.asDict()
-	data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastInsideOfBuildingArea'])
+	data['ForecastInsideOfBuildingArea'] = c.group() if c else ''
 	return Row(**data)
 
 
 def forecastPublicArea(data):
 	data = data.asDict()
-	data['ForecastPublicArea'] = data['ForecastPublicArea']
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['ForecastPublicArea'])
+	data['ForecastPublicArea'] = c.group() if c else ''
 	return Row(**data)
 
 
@@ -118,7 +126,7 @@ def houseID(data):
 
 def houseName(data):
 	data = data.asDict()
-	data['HouseName'] = data['HouseName']
+	data['HouseName'] = Meth.cleanName(data['HouseName'])
 	return Row(**data)
 
 
@@ -153,19 +161,30 @@ def isSharedPublicMatching(data):
 
 
 def measuredBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredBuildingArea'])
+	data['MeasuredBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredInsideOfBuildingArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredInsideOfBuildingArea'])
+	data['MeasuredInsideOfBuildingArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def measuredSharedPublicArea(data):
-	return data
+	data = data.asDict()
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['MeasuredSharedPublicArea'])
+	data['MeasuredSharedPublicArea'] = c.group() if c else ''
+	return Row(**data)
 
 
 def nominalFloor(data):
-	return data
+	data = data.asDict()
+	data['NominalFloor'] = Meth.cleanName(data['FloorName'])
+	return Row(**data)
 
 
 def presalePermitNumber(data):
@@ -174,7 +193,7 @@ def presalePermitNumber(data):
 
 def price(data):
 	data = data.asDict()
-	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['Price'])
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['SalePriceByBuildingArea'])
 	data['Price'] = c.group() if c else ''
 	return Row(**data)
 
@@ -187,7 +206,13 @@ def priceType(data):
 
 def projectName(data):
 	data = data.asDict()
-	data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+	if data['ProjectName']:
+		data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+	else:
+		df = pd.read_sql(con=Var.ENGINE,
+						 sql="SELECT ProjectName AS col FROM ProjectInfoItem WHERE ProjectUUID = '{0}' "
+							 "AND ProjectName !='' LIMIT 1".format(data['ProjectUUID']))
+		data['ProjectName'] = df.col.values[0] if not df.empty else ''
 	return Row(**data)
 
 
@@ -195,9 +220,7 @@ def projectID(data):
 	data = data.asDict()
 	df = pd.read_sql(con=Var.ENGINE,
 					 sql=" SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND "
-                         "ProjectID !='' LIMIT 1 ".format(
-						 projectUUID=data['ProjectUUID']))
-
+						 "ProjectID !='' LIMIT 1 ".format(projectUUID=data['ProjectUUID']))
 	data['ProjectID'] = df.col.values[0] if not df.empty else ''
 	return Row(**data)
 
@@ -239,7 +262,7 @@ def state(data):
 
 def totalPrice(data):
 	data = data.asDict()
-	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['TotalPrice'])
+	c = re.search('([1-9]\d*\.\d*|0\.\d*[1-9]\d*)|\d+', data['HouseSalePrice'])
 	data['TotalPrice'] = c.group() if c else ''
 	return Row(**data)
 
