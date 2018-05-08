@@ -3,11 +3,9 @@ from __future__ import unicode_literals
 import datetime
 
 import demjson
-import pandas as pd
 
 from SparkETLCore.Utils import Meth
 
-ENGINE = Meth.getEngine("spark_test")
 METHODS = [
     'approvalPresaleAmount', 'approvalPresaleArea', 'averagePrice',
     'buildingPermit', 'buildingType', 'certificateOfUseOfStateOwnedLand',
@@ -26,38 +24,38 @@ METHODS = [
 ]
 
 
-def recordTime(data):
+def recordTime(spark, data):
     if not data.get("RecordTime"):
         nt = datetime.datetime.now()
         data['RecordTime'] = nt
     return data
 
 
-def projectName(data):
+def projectName(spark, data):
     return data
 
 
-def promotionName(data):
+def promotionName(spark, data):
     return data
 
 
-def realestateProjectId(data):
+def realestateProjectId(spark, data):
     return data
 
 
-def projectUUID(data):
+def projectUUID(spark, data):
     return data
 
 
-def districtName(data):
+def districtName(spark, data):
     return data
 
 
-def regionName(data):
+def regionName(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['ExtraRegionName'] = query.apply(
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraRegionName", ""),
@@ -69,23 +67,23 @@ def regionName(data):
     return data
 
 
-def projectAddress(data):
+def projectAddress(spark, data):
     return data
 
 
-def projectType(data):
+def projectType(spark, data):
     return data
 
 
-def onSaleState(data):
+def onSaleState(spark, data):
     return data
 
 
-def landUse(data):
+def landUse(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.LandUse FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
 
         def reshape(val):
@@ -105,27 +103,19 @@ def landUse(data):
     return data
 
 
-def housingCount(data):
-    # p_uuid = data['ProjectUUID']
-    # sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-    #     p_uuid)
-    # query = pd.read_sql(sql, ENGINE)
-    # if not query.empty:
-    #     _ = query['MeasuredBuildingArea'].count()
-    #     data['HousingCount'] = str(_)
-
+def housingCount(spark, data):
     return data
 
 
-def developer(data):
+def developer(spark, data):
     return data
 
 
-def floorArea(data):
+def floorArea(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
 
         def reshape(val):
@@ -145,39 +135,19 @@ def floorArea(data):
     return data
 
 
-def totalBuidlingArea(data):
-    # p_uuid = data['ProjectUUID']
-    # sql = "SELECT HouseInfoItem.MeasuredBuildingArea FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-    #     p_uuid)
-    # query = pd.read_sql(sql, ENGINE)
-    # if not query.empty:
-    #     query['MeasuredBuildingArea'] = query.apply(
-    #         lambda x: float(x['MeasuredBuildingArea']) if x['MeasuredBuildingArea'] else 0.0,
-    #         axis=1)
-    #     _ = query['MeasuredBuildingArea'].sum()
-    #     data['TotalBuidlingArea'] = str(_)
-
+def totalBuidlingArea(spark, data):
     return data
 
 
-def buildingType(data):
-    # p_uuid = data['ProjectUUID']
-    # sql = "SELECT HouseInfoItem.HouseName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-    #     p_uuid)
-    # query = pd.read_sql(sql, ENGINE)
-    # if not query.empty:
-    #     query['Floor'] = query.apply(
-    #         lambda x: Meth.getFloor(x['HouseName']), axis=1)
-    #     _ = Meth.bisectCheckFloorType(query['Floor'].max())
-    #     data['BuildingType'] = _
+def buildingType(spark, data):
     return data
 
 
-def houseUseType(data):
+def houseUseType(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT HouseInfoItem.HouseUseType FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
         p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         _ = query['HouseUseType'][query['HouseUseType'] != ""].unique()
         data['HouseUseType'] = demjson.encode(_)
@@ -185,23 +155,23 @@ def houseUseType(data):
     return data
 
 
-def propertyRightsDescription(data):
+def propertyRightsDescription(spark, data):
     return data
 
 
-def projectApproveData(data):
+def projectApproveData(spark, data):
     return data
 
 
-def projectBookingData(data):
+def projectBookingData(spark, data):
     return data
 
 
-def lssueDate(data):
+def lssueDate(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.LssueDate FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['LssueDate'] = query.apply(
             lambda x: Meth.cleanName(x['LssueDate']), axis=1)
@@ -212,11 +182,11 @@ def lssueDate(data):
     return data
 
 
-def presalePermitNumber(data):
+def presalePermitNumber(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.PresalePermitNumber FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['PresalePermitNumber'] = query.apply(
             lambda x: Meth.cleanName(x['PresalePermitNumber']), axis=1)
@@ -226,78 +196,78 @@ def presalePermitNumber(data):
     return data
 
 
-def houseBuildingCount(data):
+def houseBuildingCount(spark, data):
     # p_uuid = data['ProjectUUID']
     # sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
     #     p_uuid)
-    # query = pd.read_sql(sql, ENGINE)
+    # query = spark.sql(sql).toPandas()
     # if not query.empty:
     #     _ = query['BuildingName'][query['BuildingName'] != ""].unique()
     #     data['HouseBuildingCount'] = str(len(_))
     return data
 
 
-def approvalPresaleAmount(data):
+def approvalPresaleAmount(spark, data):
     return data
 
 
-def approvalPresaleArea(data):
+def approvalPresaleArea(spark, data):
     return data
 
 
-def averagePrice(data):
+def averagePrice(spark, data):
     return data
 
 
-def earliestStartDate(data):
+def earliestStartDate(spark, data):
     return data
 
 
-def completionDate(data):
+def completionDate(spark, data):
     return data
 
 
-def earliestOpeningTime(data):
+def earliestOpeningTime(spark, data):
     return data
 
 
-def latestDeliversHouseDate(data):
+def latestDeliversHouseDate(spark, data):
     return data
 
 
-def presaleRegistrationManagementDepartment(data):
+def presaleRegistrationManagementDepartment(spark, data):
     return data
 
 
-def landLevel(data):
+def landLevel(spark, data):
     return data
 
 
-def greeningRate(data):
+def greeningRate(spark, data):
     return data
 
 
-def floorAreaRatio(data):
+def floorAreaRatio(spark, data):
     return data
 
 
-def managementFees(data):
+def managementFees(spark, data):
     return data
 
 
-def managementCompany(data):
+def managementCompany(spark, data):
     return data
 
 
-def otheRights(data):
+def otheRights(spark, data):
     return data
 
 
-def certificateOfUseOfStateOwnedLand(data):
+def certificateOfUseOfStateOwnedLand(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['ExtraCertificateOfUseOfStateOwnedLand'] = query.apply(
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraCertificateOfUseOfStateOwnedLand", ""),
@@ -310,11 +280,11 @@ def certificateOfUseOfStateOwnedLand(data):
     return data
 
 
-def constructionPermitNumber(data):
+def constructionPermitNumber(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['ExtraConstructionPermitNumber'] = query.apply(
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraConstructionPermitNumber", ""),
@@ -327,15 +297,15 @@ def constructionPermitNumber(data):
     return data
 
 
-def qualificationNumber(data):
+def qualificationNumber(spark, data):
     return data
 
 
-def landUsePermit(data):
+def landUsePermit(spark, data):
     p_uuid = data['ProjectUUID']
     sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
-    query = pd.read_sql(sql, ENGINE)
+    query = spark.sql(sql).toPandas()
     if not query.empty:
         query['ExtraLandCertificate'] = query.apply(
             lambda x: demjson.decode(x['ExtraJson']).get("ExtraLandCertificate", "").replace("、", ""),
@@ -348,46 +318,33 @@ def landUsePermit(data):
     return data
 
 
-def buildingPermit(data):
+def buildingPermit(spark, data):
     return data
 
 
-def legalPersonNumber(data):
+def legalPersonNumber(spark, data):
     return data
 
 
-def legalPerson(data):
+def legalPerson(spark, data):
     return data
 
 
-def sourceUrl(data):
+def sourceUrl(spark, data):
     return data
 
 
-def decoration(data):
+def decoration(spark, data):
     return data
 
 
-def parkingSpaceAmount(data):
+def parkingSpaceAmount(spark, data):
     return data
 
 
-def remarks(data):
+def remarks(spark, data):
     return data
 
 
-def extraJSON(data):
-    # extraj_origin = data.get('ExtraJson')
-    # if extraj_origin:
-    #     extraj_origin = demjson.decode(extraj_origin)
-    #     extraj = {
-    #         'TotalBuidlingArea': data.get('TotalBuidlingArea', ''),
-    #         'ExtraSaleAddress': extraj_origin['ExtraSaleAddress'],
-    #         'ExtraProjectPoint': extraj_origin['ExtraProjectPoint'],
-    #         'ExtraSoldAmount': extraj_origin['ExtraSoldAmount'],
-    #         'ExtraSoldArea': extraj_origin['ExtraSoldArea'],
-    #         'ExtraUnsoldAmount': extraj_origin['ExtraUnsoldAmount'],
-    #         'ExtraUnsoldArea': extraj_origin['ExtraUnsoldArea'],
-    #     }
-    #     data['ExtraJson'] = demjson.encode(extraj)
+def extraJSON(spark, data):
     return data
