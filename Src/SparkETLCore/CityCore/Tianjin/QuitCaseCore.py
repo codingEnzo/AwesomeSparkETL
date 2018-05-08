@@ -15,6 +15,7 @@ METHODS = [
     'projectUUID',
     'buildingUUID',
     'houseUUID',
+    'unitUUID',
     'houseID',
     'forecastBuildingArea',
     'forecastInsideOfBuildingArea',
@@ -49,16 +50,16 @@ METHODS = [
     'priceType',
     'address',
     'buildingCompletedYear',
-    'ActualFloor',
-    'FloorName',
+    'actualFloor',
+    'floorName',
     'floors',
     'houseUseType',
     'dwelling',
     'state',
     'dealType',
     'remarks',
-    'unitUUID',
 ]
+
 
 def unitUUID(data):
     return data
@@ -70,7 +71,6 @@ def recordTime(data):
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
-
 
 
 def projectUUID(data):
@@ -249,13 +249,13 @@ def regionName(data):
 
 def projectName(data):
     data = data.asDict()
-    data['ProjectName'] = data['ProjectName']
+    data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return data
 
 
 def buildingName(data):
     data = data.asDict()
-    data['BuildingName'] = data['BuildingName']
+    data['BuildingName'] = Meth.cleanName(data['BuildingName'])
     return data
 
 
@@ -311,13 +311,13 @@ def buildingCompletedYear(data):
     return data
 
 
-def ActualFloor(data):
+def actualFloor(data):
     data = data.asDict()
     data['ActualFloor'] = data['ActualFloor']
     return data
 
 
-def FloorName(data):
+def floorName(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     data['FloorName'] = data['FloorName']

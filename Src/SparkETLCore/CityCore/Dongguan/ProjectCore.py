@@ -170,7 +170,7 @@ def houseUseType(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
     df = pd.read_sql(con=Var.MIRROR_ENGINE,
-                     sql=u"select distinct(HouseUseType) as col from house_info_dongguan where ProjectUUID='{projectUUID}'".format(
+                     sql=u"select distinct(HouseUseType) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
     data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
     return data

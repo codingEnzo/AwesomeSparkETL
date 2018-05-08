@@ -98,11 +98,6 @@ def unitId(data):
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select PresalePermitNumber as col from ProjectInfoItem where City='天津' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['PresalePermitNumber'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -158,6 +153,11 @@ def elevaltorInfo(data):
 
 def buildingStructure(data):
     # print(data, inspect.stack()[0][3])
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql=u"select ExtraJson as col from ProjectInfoItem where City='天津' and ProjectName='{projectName}' order by RecordTime limit 1".format(
+                         projectName=data['ProjectName']))
+    data['BuildingStructure'] = str(Meth.jsonLoad(df.col.values[-1]).get('ExtraBuildingStructure', '')) if not df.empty else ''
     return data
 
 

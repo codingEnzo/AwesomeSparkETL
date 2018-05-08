@@ -156,19 +156,15 @@ def houseNumber(data):
 def houseName(data):
   # print(data, inspect.stack()[0][3])
   data = data.asDict()
-  data['HouseName'] = data['HouseName']
+  data['HouseName'] = Meth.cleanName(data['HouseName'])
   return data
 
 
 def houseId(data):
-  data = data.asDict()
-  data['HouseID'] = data['HouseID']
   return data
 
 
 def houseUUID(data):
-  data = data.asDict()
-  data['HouseUUID'] = data['HouseUUID']
   return data
 
 
@@ -179,28 +175,18 @@ def address(data):
                    sql=u"select ProjectAddress as col from ProjectInfoItem where City='天津' and ProjectName='{projectName}' order by RecordTime".format(
                        projectName=data['ProjectName']))
   data['Address'] = df.col.values[-1] if not df.empty else ''
-  # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
   return data
 
 
 def floorName(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['FloorName'] = data['FloorName']
   return data
 
 
 def actualFloor(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['ActualFloor'] = data['ActualFloor']
   return data
 
 
 def floorCount(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['FloorCount'] = data['FloorCount']
   return data
 
 
@@ -209,9 +195,6 @@ def floorType(data):
 
 
 def floorHight(data):
-  # print(data, inspect.stack()[0][3])
-  data = data.asDict()
-  data['FloorHight'] = data['FloorHight']
   return data
 
 
@@ -235,26 +218,17 @@ def halls(data):
 
 
 def kitchens(data):
-    data = data.asDict()
-    data['Kitchens'] = data['Kitchens']
     return data
 
 
 def toilets(data):
-    data = data.asDict()
-    data['Toilets'] = data['Toilets']
     return data
 
 def balconys(data):
-    data = data.asDict()
-    data['Balconys'] = data['Balconys']
     return data
 
 
 def unenclosedBalconys(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['UnenclosedBalconys'] = data['UnenclosedBalconys']
     return data
 
 
@@ -268,43 +242,31 @@ def dwelling(data):
 
 def forecastBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['ForecastBuildingArea'] = data['ForecastBuildingArea']
     return data
 
 
 def forecastInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
     return data
 
 
 def forecastPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['ForecastPublicArea'] = data['ForecastPublicArea']
     return data
 
 
 def measuredBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
     return data
 
 
 def measuredInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
     return data
 
 
 def measuredSharedPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
     return data
 
 
@@ -334,8 +296,6 @@ def natureOfPropertyRight(data):
 
 def houseUseType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['HouseUseType'] = data['HouseUseType']
     return data
 
 
@@ -358,36 +318,26 @@ def salePriceByInsideOfBuildingArea(data):
 
 def isMortgage(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['IsMortgage'] = data['IsMortgage']
     return data
 
 
 def isAttachment(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['IsAttachment'] = data['IsAttachment']
     return data
 
 
 def isPrivateUse(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['IsPrivateUse'] = data['IsPrivateUse']
     return data
 
 
 def isMoveBack(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['IsMoveBack'] = data['IsMoveBack']
     return data
 
 
 def isSharedPublicMatching(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['IsSharedPublicMatching'] = data['IsSharedPublicMatching']
     return data
 
 
@@ -400,27 +350,18 @@ def sellSchedule(data):
 
 
 def houseState(data):
-    data = data.asDict()
-    data['HouseState'] = data['HouseState']
     return data
 
 
 def houseStateLatest(data):
-    data = data.asDict()
-    data['HouseStateLatest'] = data['HouseStateLatest']
-
     return data
 
 
 def houseLabel(data):
-    data = data.asDict()
-    data['HouseLabel'] = data['HouseLabel']
     return data
 
 
 def houseLabelLatest(data):
-    data = data.asDict()
-    data['HouseLabelLatest'] = data['HouseLabelLatest']
     return data
 
 

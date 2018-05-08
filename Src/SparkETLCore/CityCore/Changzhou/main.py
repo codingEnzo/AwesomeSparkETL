@@ -62,7 +62,7 @@ def runFunc(func, tosqlname):
     # spark = SparkSession.builder.appName(func.__name__).getOrCreate()
     # dataDF = spark.createDataFrame(data)
     jdbcDF =jdbcDF.where((jdbcDF.City==u'常州') & (jdbcDF.HouseStateLatest==u'已备案'))
-    res = jdbcDF.rdd.map(lambda r: Row(**getData(func, r)))
+    res = jdbcDF.rdd.map(lambda r: getData(func, r))
     result = res.map(lambda x:lambda x: write_data2sql(x,tosqlname,func.METHODS))
     result.pprint()
     # res = jdbcDF.rdd.map(lambda r: getData(func, r)).collect()

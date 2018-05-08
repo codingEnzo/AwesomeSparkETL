@@ -105,13 +105,6 @@ def projectType(data):
 
 
 def onSaleState(data):
-    data = data.asDict()
-    unsoldNum = int(Meth.jsonLoad(data['ExtraJson']).get(
-        'ExtraProjectSaleNum', '0'))
-    if unsoldNum == 0:
-        data['OnSaleState'] = '售馨'.decode('utf-8')
-    else:
-        data['OnSaleState'] = '在售'.decode('utf-8')
     return data
 
 
@@ -120,13 +113,11 @@ def landUse(data):
 
 
 def housingCount(data):
-    # data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(MeasuredBuildingArea) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-    #                      projectUUID=data['ProjectUUID']))
-    # data['HousingCount'] = str(df.col.values[0])
-    # return data
-    return data
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql=u"SELECT sum(c.HousingCount) as col FROM (select a.BuildingName,a.HousingCount,a.ProjectName from BuildingInfoItem a where City = '天津' AND RecordTime = (select max(b.RecordTime) from BuildingInfoItem b where City = '天津' AND b.BuildingName = a.BuildingName) order by a.BuildingName) as cwhere c.ProjectName='{}';".format(
+                         projectName=data['ProjectName']))
+    data['HousingCount'] = df.col.values[-1] if not df.empty else ''
 
 
 def developer(data):
@@ -141,11 +132,9 @@ def floorArea(data):
 
 def totalBuidlingArea(data):
     data = data.asDict()
-    ProjectSaleArea = float(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraProjectSaleArea', 0.00))
-    ProjectSaledArea = float(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraProjectSaledArea', 0.00))
-    data['TotalBuidlingArea'] = ProjectSaleArea + ProjectSaledArea
+    TotalBuidlingArea = float(Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraTotalBuidlingArea', ''))
+    data['TotalBuidlingArea'] = TotalBuidlingArea
     return data
 
 
@@ -154,11 +143,6 @@ def buildingType(data):
 
 
 def houseUseType(data):
-    data = data.asDict()
-    df = pd.read_sql(con=Var.MIRROR_ENGINE,
-                     sql=u"select distinct(HouseUseType) as col from house_info_dongguan where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
     return data
 
 
@@ -189,7 +173,7 @@ def presalePermitNumber(data):
 def houseBuildingCount(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+                     sql=u"select distinct(BuildingName) as col from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
     data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
     return data
@@ -207,10 +191,8 @@ def approvalPresaleArea(data):
     return data
 
 
-def averagePrice(data):
+def averagel(data):
     # 均价
-
-    data['averageprice'] = data['averageprice']
     return data
 
 
@@ -223,6 +205,10 @@ def completionDate(data):
 
 
 def earliestOpeningTime(data):
+    data = data.asDict()
+    EarliestOpeningTime = float(Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraEarliestOpeningTime', ''))
+    data['EarliestOpeningTime'] = EarliestOpeningTime
     return data
 
 
@@ -265,18 +251,11 @@ def otheRights(data):
 
 
 def certificateOfUseOfStateOwnedLand(data):
-    data = data.asDict()
-    data['CertificateOfUseOfStateOwnedLand'] = Meth.cleanName(
-        data['CertificateOfUseOfStateOwnedLand'])
     return data
 
 
 def constructionPermitNumber(data):
     # 施工许可证号
-
-    data = data.asDict()
-    data['ConstructionPermitNumber'] = Meth.cleanName(
-        data['ConstructionPermitNumber'])
     return data
 
 
@@ -291,8 +270,6 @@ def landUsePermit(data):
 
 
 def buildingPermit(data):
-    data = data.asDict()
-    data['BuildingPermit'] = Meth.cleanName(data['BuildingPermit'])
     return data
 
 
@@ -305,14 +282,11 @@ def legalPerson(data):
 
 
 def sourceUrl(data):
-    data['sourceUrl'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraSourceURL', ''))
     return data
 
 
 def decoration(data):
     # 装修
-
     return data
 
 
