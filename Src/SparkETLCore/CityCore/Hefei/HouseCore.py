@@ -166,30 +166,6 @@ def floorCount(data):
 
 
 def floorType(data):
-    # rule = re.compile('\-?\d+')
-    # def check_floor_type(floorname,):
-    #     if floorname <= 3:
-    #         return '低层(1-3)'
-    #     elif floorname <= 6:
-    #         return '多层(4-6)'
-    #     elif floorname <= 11:
-    #         return '小高层(7-11)'
-    #     elif floorname <= 18:
-    #         return '中高层(12-18)'
-    #     elif floorname <= 32:
-    #         return '高层(19-32)'
-    #     elif floorname >= 33:
-    #         return '超高层(33)'
-    #     else:
-    #         return ''
-    # # print(data, inspect.stack()[0][3])
-    # data = data.asDict()
-    # if rule.search(data['FloorName']):
-    #     floor = int(rule.search(data['FloorName']).group())
-    # else:
-    #     floor =1
-    # data['FloorType'] = check_floor_type(floor).decode('utf-8')
-    # return Row(**data)
     return data
 
 def floorRight(data):

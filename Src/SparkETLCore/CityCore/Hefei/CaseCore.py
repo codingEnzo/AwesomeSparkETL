@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import sys
+import re
 import inspect
 import pandas as pd
 import numpy as np
@@ -77,18 +78,22 @@ def houseUUID (data):
 
 def realEstateProjectID (data):
     data = data.asDict()
-    data['ProjectUUID'] = data['ProjectID']
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select ProjectID  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                         projectUUID=data['ProjectUUID']))
+    data['RealEstateProjectID'] = df.col[df.col!=''].fillna('').values[0]
     return Row(**data)
 
 def buildingID (data):
     data = data.asDict()
-    data['BuildingUUID'] = data['BuildingID']
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select BuildingID  as col from BuildingInfoItem where BuildingUUID='{buildingUUID}'".format(
+                         buildingUUID=data['BuildingUUID']))
+    data['BuildingID'] = df.col[df.col!=''].fillna('').values[0]
     return Row(**data)
 
 def houseID (data):
-    data = data.asDict()
-    data['HouseUUID'] = data['HouseID']
-    return Row(**data)
+    return data
 
 def forecastBuildingArea (data):
     return data
@@ -145,17 +150,13 @@ def sellSchedule (data):
     return data
 
 def sellState (data):
-    data = data.asDict()
-    data['SellState'] = data['HouseState']
-    return Row(**data)
+    return data
 
 def sourceLink (data):
     return data
 
 def caseTime (data):
-    data = data.asDict()
-    data['CaseTime'] = data['RecordTime']
-    return Row(**data)
+    return data
 
 def caseFrom (data):
     return data
@@ -180,6 +181,7 @@ def districtName (data):
                      sql="select districtname  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
     data['DistrictName'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
+    return Row(**data)
 
 def regionName (data):
     return data
@@ -217,7 +219,9 @@ def totalPrice (data):
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     area  = Meth.cleanUnit(data['MeasuredBuildingArea'])
     if price and area:
-        data['TotalPrice'] = round(float(price) *float(area),2)
+        # print (area)
+        # print (price)
+        data['TotalPrice'] = round(float(price.group()) *float(area),2)
     else: 
         data['TotalPrice'] = ''
     return Row(**data)
@@ -264,7 +268,7 @@ def floors (data):
                      sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
     data['Address'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
-    return data
+    return Row(**data)
 
 def houseUseType (data):
     return data
@@ -274,15 +278,15 @@ def dwelling (data):
 
 def state (data):
     data = data.asDict()
-    if data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"] \
+    if data['SellState'] in ["可售","抵押可售","摇号销售","现房销售"] \
         and data['HouseStateLatest'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]:
         data['State'] = '明确成交'.decode('utf-8')
     
-    elif data['HouseState'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]\
+    elif data['SellState'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]\
         and data['HouseStateLatest'] in ["可售","抵押可售","摇号销售","现房销售"]:
         data['State'] = '明确退房'.decode('utf-8')
     
-    elif data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"]\
+    elif data['SellState'] in ["可售","抵押可售","摇号销售","现房销售"]\
         and data['HouseStateLatest']=='':
         data['State'] = '明确供应'.decode('utf-8')
     else:
@@ -290,8 +294,10 @@ def state (data):
     return Row(**data)
 
 def dealType (data):
-    data = data.asDict() 
-    data['DealType'] = ''
+    data = data.asDict()
+    if data['SellState'] in ["可售","抵押可售","摇号销售","现房销售"] \
+        and data['HouseStateLatest'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]:
+        data['DealType'] = '最新成交'
     return Row(**data)
 
 def remarks (data):

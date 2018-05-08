@@ -114,7 +114,8 @@ def dealCaseClean(seaechtime='1970-01-01'):
             func = getattr(CaseCore,method)
             data = func(data)
         return data
-        # return ProjectCore.test(data)    
+        # return ProjectCore.test(data)
+    dropLT =['HouseStateLatest','ExtraJson']    
     optionFields = {'url':"jdbc:mysql://10.30.1.70:3307/spark_test?useUnicode=true&characterEncoding=utf-8",
            'driver':"com.mysql.jdbc.Driver",
            'dbtable':'''(SELECT * FROM 
@@ -122,7 +123,7 @@ def dealCaseClean(seaechtime='1970-01-01'):
                         RecordTime as CaseTime,
                         FloorName as ActualFloor,
                         HouseState as SellState,
-                        RealEstateProjectID,
+                        RealEstateProjectID,HouseStateLatest,
                         BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
                         ForecastPublicArea,MeasuredBuildingArea,
                         MeasuredInsideOfBuildingArea,MeasuredSharedPublicArea,
@@ -143,11 +144,10 @@ def dealCaseClean(seaechtime='1970-01-01'):
            "password":"gh001"}
     sc = SparkSession.builder.appName("master").getOrCreate()
     df = sc.read.format("jdbc").options(**optionFields).load()
-    print(df.rdd.take(1))
-    cleandf = df.rdd.map(lambda r:enterCore(r)).toDF()
+    cleandf = df.rdd.map(lambda r:enterCore(r)).toDF().drop(*dropLT)
     optionFields.update(
             {'url':"jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf-8",
-            'dbtable':"house_info_hefei"})
+            'dbtable':"deal_case_hefei"})
     cleandf.write.format("jdbc").mode('append').options(**optionFields).save()
     print ('dealcase script has finished')
 
@@ -155,72 +155,52 @@ def supplyCaseClean(seaechtime='1970-01-01'):
     # schema = StructType([StructField(i,StringType(),True) for i in df.columns])
     print ('supplyCase script is going run')
     def enterCore(data):
-        # print(data)
-        for index,method in enumerate(DealcaseCore.METHODS):
-            func = getattr(BuildingCore,method)
+        for index,method in enumerate(CaseCore.METHODS):
+            func = getattr(CaseCore,method)
             data = func(data)
         return data
         # return ProjectCore.test(data)
     # sc = SparkSession.builder.appName("master").getOrCreate()
-    df = pd.read_sql("""SELECT * FROM 
-                    (SELECT * FROM HouseInfoItem 
-                    WHERE City='合肥' 
-                    AND RecordTime>'{0}'AND HouseID !=''
-                    AND HouseState in ("可售","抵押可售","摇号销售","现房销售") 
-                    AND HouseStateLatest in ("已签约","已备案","已办产权","网签备案单")
-                    ORDER BY RecordTime DESC ) AS col 
-                    Group BY col.HouseID LIMIT 10000"""\
-                    .format(seaechtime).decode('utf-8'),con=ENGINE).fillna('')
-    print (datetime.datetime.now()-a)
-    sdf = sc.createDataFrame(df) 
-    sdd =sdf.rdd
-    iterList = sdd.map(lambda r:enterCore(r)).collect()
-    cleansdd = sc.sparkContext.parallelize(iterList)
-    cleansdf = cleansdd.toDF()
-    cleanpdf = cleansdf.toPandas()
-    cleanpdf.to_sql('supply_case_hefei2',con=MIRROR_ENGINE,if_exists='append',index=False)
-    renameDT ={'HouseState':'SellState',
-                'SourceUrl':'SourceLink',
-                'FloorName':'ActualFloor',
-                'RecordTime':'CaseTime'
-                } 
-    dropKeywordLT=['Decoration', 'Toward', 'Rooms',
-                 'SalePriceByInsideOfBuildingArea', 
-                 'HouseLabelLatest', 'DecorationPrice', 
-                 'UnitID', 'ExtraJson', 
-                 'NatureOfPropertyRight', 'SourceUrl', 'UnitName', 
-                'Kitchens', 'FloorType', 
-                 'RecordTime', 'MeasuredUndergroundArea', 
-                 'SalePriceByBuildingArea', 
-                 'HouseStateLatest', 'Halls', 
-                 'FloorHight', 'HouseNature',
-                  'HouseType', 'FloorCount', 'HouseLabel',
-                   'HouseSalePrice', 'HouseShape', 'City', 'Toilets']
+    dropLT =['HouseStateLatest','ExtraJson']    
     optionFields = {'url':"jdbc:mysql://10.30.1.70:3307/spark_test?useUnicode=true&characterEncoding=utf-8",
            'driver':"com.mysql.jdbc.Driver",
            'dbtable':'''(SELECT * FROM 
-                    (SELECT * FROM HouseInfoItem 
-                    WHERE City='合肥' 
-                    AND RecordTime>'{0}'AND HouseID !=''
-                    AND HouseState in ("可售","抵押可售","摇号销售","现房销售") 
-                    AND HouseStateLatest in ("已签约","已备案","已办产权","网签备案单")
-                    ORDER BY RecordTime DESC ) AS col 
-                    Group BY col.HouseID LIMIT 10000)tmp'''.format(seaechtime),
+                        (SELECT SourceUrl as SourceLink,
+                        RecordTime as CaseTime,
+                        FloorName as ActualFloor,
+                        HouseState as SellState,
+                        RealEstateProjectID,HouseStateLatest,
+                        BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
+                        ForecastPublicArea,MeasuredBuildingArea,
+                        MeasuredInsideOfBuildingArea,MeasuredSharedPublicArea,
+                        IsMortgage,IsAttachment,IsPrivateUse,IsMoveBack,
+                        IsSharedPublicMatching,BuildingStructure,SellSchedule,
+                        UnitShape,UnitStructure,Balconys,
+                        UnenclosedBalconys,DistrictName,ProjectName,BuildingName,
+                        HouseName,HouseNumber,TotalPrice,Price,PriceType,Address,
+                        FloorName,HouseUseType,Dwelling,Remarks,RecordTime,
+                        ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
+                        FROM HouseInfoItem WHERE City='合肥' 
+                        AND RecordTime>'{0}' AND HouseID !=''
+                        AND HouseState in ('可售','抵押可售','摇号销售','现房销售') 
+                        AND HouseStateLatest =''
+                        ORDER BY RecordTime DESC ) AS col 
+                        Group BY col.HouseID LIMIT 3)tmp'''.format('1970-01-01'),
            "user":"root",
            "password":"gh001"}
     sc = SparkSession.builder.appName("master").getOrCreate()
     df = sc.read.format("jdbc").options(**optionFields).load()
-    cleandf = df.rdd.map(lambda r:enterCore(r)).toDF()
+    cleandf = df.rdd.map(lambda r:enterCore(r)).toDF().drop(*dropLT)
     optionFields.update(
             {'url':"jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf-8",
-            'dbtable':"house_info_hefei"})
+            'dbtable':"supply_case_hefei"})
     cleandf.write.format("jdbc").mode('append').options(**optionFields).save()
-
+    print ('supplycase script has finished')
     # print ('supplyCase script has finished')
 
 if __name__ == '__main__':
     # projectClean()
     # buildingClean()
-    houseClean()
+    # houseClean()
     # dealCaseClean()
-    # supplyCaseClean()
+    supplyCaseClean()
