@@ -88,7 +88,7 @@ def unitID(data):
 
 def presalePermitNumber(data):
 	data = data.asDict()
-	arr = data['PresalePermitNumber'].split(',')
+	arr = data['PresalePermitNumber'].replace('，'.decode('utf-8'),',').split(',')
 	data['PresalePermitNumber'] = Meth.jsonDumps(filter(lambda x: x and x.strip(), arr))
 	return Row(**data)
 
@@ -115,7 +115,9 @@ def onTheGroundFloor(data):
 					 .format(data['BuildingUUID']))
 	if not df.empty:
 		df['col'] = df['col'].apply(getNumber)
-		data['BUildingType'] = str(df['col'][df['col']>=0].size)
+		data['OnTheGroundFloor'] = str(df['col'][df['col']>=0].size)
+	else:
+		data['OnTheGroundFloor']=''
 	return Row(**data)
 
 
@@ -150,33 +152,7 @@ def buildingStructure(data):
 
 
 def buildingType(data):
-	def check_floor_type(floorname):
-		if floorname <= 3:
-			return '低层(1-3)'
-		elif floorname <= 6:
-			return '多层(4-6)'
-		elif floorname <= 11:
-			return '小高层(7-11)'
-		elif floorname <= 18:
-			return '中高层(12-18)'
-		elif floorname <= 32:
-			return '高层(19-32)'
-		elif floorname >= 33:
-			return '超高层(33)'
-		else:
-			return ''
-
-	def getNumber(x):
-		c = re.search('-?\d+', x)
-		return int(c.group()) if c else 0
-
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select DISTINCT(FloorName) as col from HouseInfoItem where BuildingUUID='{0}'" \
-					 .format(data['BuildingUUID']))
-	if not df.empty:
-		data['BUildingType'] = check_floor_type(df['col'].apply(getNumber).max())
-	return Row(**data)
+	return data
 
 
 def buildingHeight(data):
@@ -215,7 +191,7 @@ def sourceUrl(data):
 	data = data.asDict()
 	if not data['SourceUrl']:
 		data['SourceUrl'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraBuildingURL', '')
-	return data
+	return Row(**data)
 
 
 def extrajson(data):
