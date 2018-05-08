@@ -13,10 +13,10 @@ def jsonDumps(x):
 
 
 def cleanName(x):
-    x = x.encode('utf-8').replace('（', '(').replace('）', ')')\
-        .replace('】', ']').replace('【', '[')\
-        .replace('，', ',').replace('－', '-').\
-        replace('〔', '[').replace('〕', ']').decode('utf-8')
+    # x = x.encode('utf-8').replace('（', '(').replace('）', ')')\
+    #     .replace('】', ']').replace('【', '[')\
+    #     .replace('，', ',').replace('－', '-').\
+    #     replace('〔', '[').replace('〕', ']').decode('utf-8')
     return x
 
 # def numberTable(x):
@@ -33,8 +33,8 @@ def isInt(val):
 
 def cleanUnit(x):
     x = x.encode('utf-8').replace('㎡','').replace('万','0000')\
-        .replace('待定','').replace('元/',''),replace('/','-')\
-        .replace('%','').replace(' ','').replace('\t','')\
-        .replace('\n','').replace('无','').decode('utf-8')
+            .replace('待定','').replace('元/','').replace('/','-')\
+            .replace('%','').replace(' ','').replace('\t','')\
+            .replace('\n','').replace('无','').decode('utf-8')
     return x
 

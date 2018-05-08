@@ -1,0 +1,51 @@
+Ready.
+
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+(mysql-workbench-bin:31592): Gtk-CRITICAL **: gtk_tree_view_unref_tree_helper: assertion 'node != NULL' failed
+
+** (mysql-workbench-bin:31592): CRITICAL **: gail_notebook_real_remove_gtk: assertion 'obj' failed
+mysql-workbench-bin: Fatal IO error 11 (资源暂时不可用) on X server :0.

@@ -8,7 +8,8 @@ import os
 sys.path.append(os.path.dirname(os.getcwd()))
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
-
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 METHODS =   ['address',
      'balconys',
@@ -53,21 +54,40 @@ METHODS =   ['address',
      'totalPrice',
      'unenclosedBalconys',
      'unitShape',
-     'unitStructure']
+     'unitStructure',
+     'projectUUID',
+     'buildingUUID',
+     'houseUUID']
 
-def realEstateProjectID (data):
+
+def projectUUID (data):
     data = data.asDict()
     data['ProjectUUID'] = data['ProjectUUID']
     return Row(**data)
 
-def buildingID (data):
+def buildingUUID (data):
     data = data.asDict()
     data['BuildingUUID'] = data['BuildingUUID']
     return Row(**data)
 
-def houseID (data):
+def houseUUID (data):
     data = data.asDict()
     data['HouseUUID'] = data['HouseUUID']
+    return Row(**data)
+
+def realEstateProjectID (data):
+    data = data.asDict()
+    data['ProjectUUID'] = data['ProjectID']
+    return Row(**data)
+
+def buildingID (data):
+    data = data.asDict()
+    data['BuildingUUID'] = data['BuildingID']
+    return Row(**data)
+
+def houseID (data):
+    data = data.asDict()
+    data['HouseUUID'] = data['HouseID']
     return Row(**data)
 
 def forecastBuildingArea (data):
@@ -175,7 +195,9 @@ def buildingName(data):
     return Row(**data)
 
 def presalePermitNumber (data):
-    return data
+    data = data.asDict()
+    data['PresalePermitNumber'] = Meth.cleanName(data['BuildingName'])
+    return Row(**data)
 
 def houseNumber(data):
     data = data.asDict()
@@ -220,10 +242,13 @@ def address(data):
     df = pd.read_sql(con=Var.ENGINE,
                      sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
                          projectUUID=data['ProjectUUID']))
-    data['Address'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
+    data['Address'] = Meth.cleanName(df.col.values[0])
+    return Row(**data)
 
 def buildingCompletedYear (data):
-    return data
+    data = data.asDict()
+    data['BuildingCompletedYear'] =  ''
+    return Row(**data)
 
 def floor (data):
     data = data.asDict()
@@ -234,6 +259,11 @@ def nominalFloor (data):
     return data
 
 def floors (data):
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                         projectUUID=data['ProjectUUID']))
+    data['Address'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
     return data
 
 def houseUseType (data):
@@ -260,8 +290,12 @@ def state (data):
     return Row(**data)
 
 def dealType (data):
-    return data
+    data = data.asDict() 
+    data['DealType'] = ''
+    return Row(**data)
 
 def remarks (data):
-    return data
+    data = data.asDict()
+    data['Remarks'] = ''
+    return Row(**data)
 

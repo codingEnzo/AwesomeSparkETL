@@ -1,14 +1,16 @@
 # coding=utf-8
 from __future__ import division
 import sys
+import re
+import os 
 import inspect
 import pandas as pd
 import numpy as np
-import os 
 sys.path.append(os.path.dirname(os.getcwd()))
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
-
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 METHODS = ['actualFloor',
      'address',
@@ -75,10 +77,8 @@ METHODS = ['actualFloor',
      'unitShape',
      'unitStructure']
 
-
 def caseTime(data):
     return data
-
 
 def projectName(data):
     data = data.asDict()
@@ -97,9 +97,7 @@ def buildingName(data):
 
 
 def buildingId(data):
-    data = data.asDict()
-    data['BuildingID'] = Meth.cleanName(data['BuildingUUID'])
-    return Row(**data)
+    return data
 
 
 def city(data):
@@ -111,13 +109,14 @@ def city(data):
 def districtname(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select districtname  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                     sql="select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and DistrictName !=''".format(
                          projectUUID=data['ProjectUUID']))
-    data['DistrictName'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
+    if not df.empty:
+        data['DistrictName'] = Meth.cleanName(df.col.values[0])
+    return Row(**data)
 
 def unitName(data):
     return data
-
 
 def unitId(data):
     return data
@@ -131,7 +130,6 @@ def houseNumber(data):
 def houseName(data):
     data = data.asDict()
     data['HouseName'] =  data['FloorName'].decode('utf-8')\
-                        +u'层'\
                         +Meth.cleanName(data['HouseNumber']).decode('utf-8')
     return Row(**data)
 
@@ -141,17 +139,17 @@ def houseId(data):
 
 
 def houseUUID(data):
-    data = data.asDict()
-    data['HouseUUID'] = data['HouseID']
-    return Row(**data)
+    return data
 
 
 def address(data):
     data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'".format(
+                     sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and ProjectAddress!=''".format(
                          projectUUID=data['ProjectUUID']))
-    data['Address'] = Meth.cleanName(df.col.values[0]).decode('utf-8')
+    if not df.empty:
+        data['Address'] = Meth.cleanName(df.col.values[0])
+    return Row(**data)
 
 def floorName(data):
     data = data.asDict()
@@ -168,31 +166,31 @@ def floorCount(data):
 
 
 def floorType(data):
-    rule = re.compile('\-?\d+')
-    def check_floor_type(floorname):
-        if floorname <= 3:
-            return '低层(1-3)'
-        elif floorname <= 6:
-            return '多层(4-6)'
-        elif floorname <= 11:
-            return '小高层(7-11)'
-        elif floorname <= 18:
-            return '中高层(12-18)'
-        elif floorname <= 32:
-            return '高层(19-32)'
-        elif floorname >= 33:
-            return '超高层(33)'
-        else:
-            return ''
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    if rule.search(data['FloorName']):
-        floor = int(rule.search(data['FloorName']).group())
-    else:
-        floor =1
-    data['FloorType'] = check_floor_type(floor).decode('utf-8')
-    return Row(**data)
-
+    # rule = re.compile('\-?\d+')
+    # def check_floor_type(floorname,):
+    #     if floorname <= 3:
+    #         return '低层(1-3)'
+    #     elif floorname <= 6:
+    #         return '多层(4-6)'
+    #     elif floorname <= 11:
+    #         return '小高层(7-11)'
+    #     elif floorname <= 18:
+    #         return '中高层(12-18)'
+    #     elif floorname <= 32:
+    #         return '高层(19-32)'
+    #     elif floorname >= 33:
+    #         return '超高层(33)'
+    #     else:
+    #         return ''
+    # # print(data, inspect.stack()[0][3])
+    # data = data.asDict()
+    # if rule.search(data['FloorName']):
+    #     floor = int(rule.search(data['FloorName']).group())
+    # else:
+    #     floor =1
+    # data['FloorType'] = check_floor_type(floor).decode('utf-8')
+    # return Row(**data)
+    return data
 
 def floorRight(data):
     return data
@@ -200,7 +198,8 @@ def floorRight(data):
 
 def unitShape(data):
     data = data.asDict()
-    data['UnitShape'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8')
+    data['UnitShape'] = Meth.cleanName(
+                    Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8'))
     return Row(**data)
 
 
@@ -372,16 +371,17 @@ def totalPrice(data):
     rule = re.compile('\d+\.?\d+')
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     area  = Meth.cleanUnit(data['MeasuredBuildingArea'])
+    print (price,area)
     if price and area:
-        data['TotalPrice'] = round(float(price) *float(area),2)
+        data['TotalPrice'] = round(float(price.group()) *float(area),2)
     else: 
         data['TotalPrice'] = ''
     return Row(**data)
 
 
 def price(data):
-    data = data.asDict()
     rule = re.compile('\d+\.?\d+')
+    data = data.asDict()
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     if price:
         data['Price'] = price.group()
@@ -391,8 +391,11 @@ def price(data):
 
 
 def priceType(data):
+    rule = re.compile('\d+\.?\d+')
     data = data.asDict()
-    data['PriceType'] = '备案价格'.decode('utf-8')
+    price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
+    if price:
+        data['PriceType'] = '备案价格'.decode('utf-8')
     return Row(**data)
 
 
