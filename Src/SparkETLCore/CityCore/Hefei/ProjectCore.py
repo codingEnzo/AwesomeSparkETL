@@ -178,7 +178,10 @@ def totalBuidlingArea(data):
     #                                     .apply(lambda x:float(x) if x else 0.0)\
     #                                     .sum().__str__()
     # return Row(**data)
-    return data
+    data = data.asDict()
+    if data['TotalBuidlingArea']:
+        data['TotalBuidlingArea'] = Meth.cleanUnit(data['TotalBuidlingArea'])
+    return Row(**data)
 
 def buildingType(data):
     return data

@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import demjson
+import re
 # import Var
 def jsonLoad(x):
     return demjson.decode(x)
@@ -13,10 +14,10 @@ def jsonDumps(x):
 
 
 def cleanName(x):
-    # x = x.encode('utf-8').replace('（', '(').replace('）', ')')\
-    #     .replace('】', ']').replace('【', '[')\
-    #     .replace('，', ',').replace('－', '-').\
-    #     replace('〔', '[').replace('〕', ']').decode('utf-8')
+    x = x.encode('utf-8').replace('（', '(').replace('）', ')')\
+        .replace('】', ']').replace('【', '[')\
+        .replace('，', ',').replace('－', '-').\
+        replace('〔', '[').replace('〕', ']').decode('utf-8')
     return x
 
 # def numberTable(x):
@@ -38,3 +39,12 @@ def cleanUnit(x):
             .replace('\n','').replace('无','').decode('utf-8')
     return x
 
+def cleanDate(x):
+    rule = re.compile(r'\d{4}\-\d{1,2}\-\d{1,2}|\d{4}\-\d{1,2}')
+    x = x.encode('utf-8').replace('年','-').replace('月','-')\
+                        .replace('.','-').replace('日','').decode('utf-8')
+    if rule.search(x):
+        x = rule.search(x).group()
+    else:
+        x =''
+    return x

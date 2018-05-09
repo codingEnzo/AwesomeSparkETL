@@ -11,7 +11,8 @@ import re
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
 nowtime = datetime.datetime.now() 
-
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 METHODS =  ['address',
              'buildingArea',
@@ -44,182 +45,129 @@ METHODS =  ['address',
              'units',
              'unsoldAmount']
 
-def recordTime():
-    data = data.asdict()
+def recordTime(data):
+    data = data.asDict()
     if not data['RecordTime']:
         data['RecordTime'] = nowtime
     return Row(**data)
 
-def projectName():
-    data = data.asdict()
-    data['RecordTime'] = Meth.cleanName(data['ProjectName'])
+def projectName(data):
+    data = data.asDict()
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select (ProjectName)  as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and ProjectAddress!='' "\
+                     .format(projectUUID=data['ProjectUUID']))
+    data['ProjectName'] = Meth.cleanName(df.col.values[0])
     return Row(**data)
 
-def realEstateProjectID():
-    data = data.asdict()
-    data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+def realEstateProjectID(data):
+    return data
 
-def buildingName():
-    data = data.asdict()
+def projectUUID(data):
+    return data
+
+def buildingName(data):
+    data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
     return Row(**data)
 
-def buildingID():
+def buildingID(data):
     return data
 
-def buildingUUID():
-    data = data.asdict()
-    data['BuildingUUID'] = data['BuildingID']
-    return Row(**data)
-
-def unitName():
+def buildingUUID(data):
     return data
 
-def unitID():
+def unitName(data):
     return data
 
-def presalePermitNumber():
+def unitID(data):
     return data
 
-def address():
-    data = data.asdict()
+def presalePermitNumber(data):
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjctAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['Address'] = df.col.values()[0]
-    return Row(**data)
-
-def onTheGroundFloor():
-    data = data.asdict()
-    if not data['OnTheGroundFloor']:
-        df = pd.read_sql(con=Var.ENGINE,
-                         sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName >'0' "\
-                         .format(projectUUID=data['ProjectUUID']))
-        data['OnTheGroundFloor'] = str(df.col.values()[0])
-    return Row(**data)
-
-def theGroundFloor():
-    data = data.asdict()
-    if not data['TheGroundFloor']:
-        df = pd.read_sql(con=Var.ENGINE,
-                         sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName <'0' "\
-                         .format(projectUUID=data['ProjectUUID']))
-        data['TheGroundFloor'] = str(df.col.values()[0])
-    return Row(**data)
-
-def estimatedCompletionDate():
+                     sql="select (ProjectName)  as col from ProjectInfoItem where PresalePermitTie='{PresellUUID}' and ProjectAddress!='' "\
+                     .format(projectUUID=data['PresellUUID'])).fillna('')
+    data['PresalePermitNumber'] = Meth.cleanName(df.col.values[0])
     return data
 
-def housingCount():
-    data = data.asdict()
+def address(data):
+    data = data.asDict()
     df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(disctinct(HouseID)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
+                     sql="select (ProjectAddress)  as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and ProjectAddress!='' "\
                      .format(projectUUID=data['ProjectUUID']))
-    data['HousingCount'] = str(df.col.values()[0])
+    data['Address'] =  Meth.cleanName(df.col.values[0])
     return Row(**data)
 
-def floors():
-    data = data.asdict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(disctinct(FloorName)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['Floors'] = str(df.col.values()[0])
-    return Row(**data)
-
-def elevatorHouse():
+def onTheGroundFloor(data):
+    # data = data.asDict()
+    # if not data['OnTheGroundFloor']:
+    #     df = pd.read_sql(con=Var.ENGINE,
+    #                      sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName >'0' "\
+    #                      .format(projectUUID=data['ProjectUUID']))
+    #     data['OnTheGroundFloor'] = str(df.col.values[0])
+    # return Row(**data)
     return data
 
-def isHasElevator():
+def theGroundFloor(data):
+    # data = data.asDict()
+    # if not data['TheGroundFloor']:
+    #     df = pd.read_sql(con=Var.ENGINE,
+    #                      sql="select count(FloorName)  as col from HouseInfoItem where ProjectUUID='{projectUUID}' and FloorName <'0' "\
+    #                      .format(projectUUID=data['ProjectUUID']))
+    #     data['TheGroundFloor'] = str(df.col.values[0])
+    # return Row(**data)
     return data
 
-def elevaltorInfo():
+def estimatedCompletionDate(data):
     return data
 
-def buildingStructure():
-    data = data.asdict()
-    data['BuildingStructure'] = Building.buildingstructure.encode('utf-8').replace('钢混','钢混结构')\
-                                                 .replace('框架','框架结构')\
-                                                 .replace('钢筋混凝土','钢混结构')\
-                                                 .replace('混合','混合结构')\
-                                                 .replace('结构结构','结构')\
-                                                 .replace('砖混','砖混结构')\
-                                                 .replace('框剪','框架剪力墙结构')\
-                                                 .replace('钢、','').decode('utf-8')
-    return Row(**data)
-
-def buildingType():
-    rule = re.compile('\-?\d+')
-    def check_floor_type(floorname):
-        if floorname <= 3:
-            return '低层(1-3)'
-        elif floorname <= 6:
-            return '多层(4-6)'
-        elif floorname <= 11:
-            return '小高层(7-11)'
-        elif floorname <= 18:
-            return '中高层(12-18)'
-        elif floorname <= 32:
-            return '高层(19-32)'
-        elif floorname >= 33:
-            return '超高层(33)'
-        else:
-            return ''
-    data = data.asdict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select FloorName as col from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['BuildingType'] = check_floor_type(
-                            df.col.apply(lambda x:int(x) if rule.search(x) else 1).max())
-    return Row(**data)
-
-def buildingHeight():
+def housingCount(data):
     return data
 
-def buildingCategory():
+def floors(data):
     return data
 
-def units():
+def elevatorHouse(data):
     return data
 
-def unsoldAmount():
-    data = data.asdict()
-    ["可售","抵押可售","摇号销售","现房销售"]
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select HouseID,HouseState,RecordTime from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    df = df.sort_values(by='RecordTime',ascending=False)\
-                            .groupby('HouseID')\
-                            .apply(lambda x:x[:1])['HouseState']  
-    data['UnsoldAmount'] = df[df.HouseState.isin(["可售","抵押可售","摇号销售","现房销售"])].size.__str__()
-    return Row(**data)
-
-def buildingAveragePrice():
+def isHasElevator(data):
     return data
 
-def buildingPriceRange():
+def elevaltorInfo(data):
     return data
 
-def buildingArea():
-    data = data.asdict()
-    ["可售","抵押可售","摇号销售","现房销售"]
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select HouseID,MeasuredBuildingArea,RecordTime from HouseInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    df = df.sort_values(by='RecordTime',ascending=False)\
-                            .groupby('HouseID')\
-                            .apply(lambda x:x[:1])['MeasuredBuildingArea']  
-    data['UnsoldAmount'] = df.apply(Meth.cleanUnit)\
-                             .apply(lambda x:float(x) if x else 0.0)\
-                            .sum().__str__()
-    return Row(**data)
-
-def remarks():
+def buildingStructure(data):
     return data
 
-def sourceUrl():
+def buildingType(data):
     return data
 
-def extraJson():
+def buildingHeight(data):
+    return data
+
+def buildingCategory(data):
+    return data
+
+def units(data):
+    return data
+
+def unsoldAmount(data):
+    return data
+
+def buildingAveragePrice(data):
+    return data
+
+def buildingPriceRange(data):
+    return data
+
+def buildingArea(data):
+    return data
+
+def remarks(data):
+    return data
+
+def sourceUrl(data):
+    return data
+
+def extraJson(data):
     return data
 

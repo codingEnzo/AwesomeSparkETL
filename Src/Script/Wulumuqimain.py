@@ -9,11 +9,11 @@ from pyspark.sql import SparkSession
 from sqlalchemy import *
 from pyspark.sql.types import *
 sys.path.append(os.path.dirname(os.getcwd()))
-from SparkETLCore.CityCore.Hefei import ProjectCore
-from SparkETLCore.CityCore.Hefei import BuildingCore
-from SparkETLCore.CityCore.Hefei import PresellCore
-from SparkETLCore.CityCore.Hefei import HouseCore
-from SparkETLCore.CityCore.Hefei import CaseCore
+from SparkETLCore.CityCore.Wulumuqi import ProjectCore
+from SparkETLCore.CityCore.Wulumuqi import BuildingCore
+from SparkETLCore.CityCore.Wulumuqi import PresellCore
+from SparkETLCore.CityCore.Wulumuqi import HouseCore
+from SparkETLCore.CityCore.Wulumuqi import CaseCore
 from SparkETLCore.Utils.Var import MIRROR_ENGINE
 from SparkETLCore.Utils.Var import ENGINE
 import datetime
@@ -26,10 +26,11 @@ def readPub (sc,options):
                     "user":"root",
                     "password":"gh001"})
     df = sc.read.format("jdbc").options(**options).load()
-    return df.filna('')
+    return df.fillna('')
 
 def savePub (df,options):
-    options.update({'url':'''jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf-8''',
+    options.update({'url':'''jdbc:mysql://10.30.1.70:3307/spark_caches?
+                            useUnicode=true&characterEncoding=utf-8''',
                     'driver':"com.mysql.jdbc.Driver",
                     "user":"root",
                     "password":"gh001"})
@@ -47,10 +48,10 @@ def projectClean(searchtime='1970-01-01'):
     sc = SparkSession.builder.appName("master").getOrCreate()
     optionRead = {'dbtable':'''(SELECT * FROM 
                 (SELECT * FROM ProjectInfoItem 
-                WHERE City='合肥' AND RecordTime>'{0}'AND ProjectID !=''
+                WHERE City='乌鲁木齐' AND RecordTime>'{0}'AND ProjectID !=''
                 ORDER BY RecordTime DESC ) AS col 
                 Group BY col.ProjectID LIMIT 1) tmp'''.format(searchtime)}
-    optionSave = {'dbtable':"project_info_hefei"}
+    optionSave = {'dbtable':"project_info_wulumuqi"}
     df = readPub(sc,optionRead)
     cleandf = df.rdd.map(lambda r:coreCleanPub(r,ProjectCore)).toDF()
     result = savePub(cleandf,optionSave)
@@ -61,10 +62,10 @@ def buildingClean(searchtime='1970-01-01'):
     sc = SparkSession.builder.appName("master").getOrCreate()
     optionRead = { 'dbtable':'''(SELECT * FROM 
                     (SELECT * FROM BuildingInfoItem 
-                    WHERE City='合肥' AND RecordTime>'{0}'AND BuildingID !=''
+                    WHERE City='乌鲁木齐' AND RecordTime>'{0}'AND BuildingID !=''
                     ORDER BY RecordTime DESC ) AS col 
                     Group BY col.BuildingID LIMIT 10)tmp'''.format(searchtime)}
-    optionSave = {'dbtable':"building_info_hefei"}
+    optionSave = {'dbtable':"building_info_wulumuqi"}
     df = readPub(sc,optionRead)
     cleandf = df.rdd.map(lambda r:coreCleanPub(r,BuildingCore)).toDF()
     result = savePub(cleandf,optionSave)
@@ -81,12 +82,12 @@ def houseClean(searchtime='1970-01-01'):
     optionRead = {
                   # 'dbtable':'''(SELECT * FROM 
                   #   (SELECT * FROM HouseInfoItem 
-                  #   WHERE City='合肥' AND RecordTime>'{0}'AND HouseID !=''
+                  #   WHERE City='乌鲁木齐' AND RecordTime>'{0}'AND HouseID !=''
                   #   ORDER BY RecordTime DESC ) AS col 
                   #   Group BY col.HouseID LIMIT 4)tmp'''.format(searchtime)
                   'dbtable':'''(SELECT * FROM HouseInfoItem 
                     WHERE HouseUUID ='0001de15-6b90-3d63-b3ab-88c25e40e678')tmp'''}
-    optionSave = {'dbtable':"house_info_hefei"}
+    optionSave = {'dbtable':"house_info_wulumuqi"}
     df = readPub(sc,optionRead)
     cleandf = df.rdd.map(lambda r:coreCleanPub(r,HouseCore)).toDF()
     result = savePub(cleandf,optionSave)
@@ -112,13 +113,13 @@ def dealCaseClean(searchtime='1970-01-01'):
                         ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
                         BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
                         RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
+                        FROM HouseInfoItem WHERE City='乌鲁木齐' 
                         AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ("可售","抵押可售","摇号销售","现房销售") 
-                        AND HouseStateLatest in ("现房销售","已签约","已备案","已办产权","网签备案单")
+                        AND HouseState ='可售' 
+                        AND HouseStateLatest ='不可售'
                         ORDER BY RecordTime DESC ) AS col 
                         Group BY col.HouseID LIMIT 3)tmp'''.format(searchtime)}
-    optionSave = {'dbtable':"deal_case_hefei"}
+    optionSave = {'dbtable':"deal_case_wulumuqi"}
     df = readPub(sc,optionRead)
     cleandf = df.rdd.map(lambda r:coreCleanPub(r,CaseCore)).toDF().drop(*dropLT)
     result = savePub(cleandf,optionSave)
@@ -144,14 +145,14 @@ def supplyCaseClean(searchtime='1970-01-01'):
                         ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
                         BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
                         RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
+                        FROM HouseInfoItem WHERE City='乌鲁木齐' 
                         AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ('可售','抵押可售','摇号销售','现房销售') 
+                        AND HouseState ='可售 
                         AND HouseStateLatest =''
                         ORDER BY RecordTime DESC ) AS col 
                         Group BY col.HouseID LIMIT 3)tmp'''.format('1970-01-01'),
                         }
-    optionSave = {'dbtable':"supply_case_hefei"}
+    optionSave = {'dbtable':"supply_case_wulumuqi"}
     df = readPub(sc,optionRead)
     cleandf = df.rdd.map(lambda r:coreCleanPub(r,CaseCore)).toDF().drop(*dropLT)
     result = savePub(cleandf,optionSave)
@@ -177,10 +178,10 @@ def quitCaseClean(searchtime='1970-01-01'):
                         ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
                         BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
                         RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
+                        FROM HouseInfoItem WHERE City='乌鲁木齐' 
                         AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ("现房销售","已签约","已备案","已办产权","网签备案单") 
-                        AND HouseStateLatest in  ("可售","抵押可售","摇号销售","现房销售")
+                        AND HouseState ='不可售'
+                        AND HouseStateLatest = '可售' 
                         ORDER BY RecordTime DESC ) AS col 
                         Group BY col.HouseID LIMIT 3)tmp'''.format('1970-01-01'),
                         }
