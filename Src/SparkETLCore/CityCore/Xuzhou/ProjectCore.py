@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime
 
 import demjson
+from pyspark.sql import SparkSession
 
 from SparkETLCore.Utils import Meth
 
@@ -24,36 +25,37 @@ METHODS = [
 ]
 
 
-def recordTime(spark, data):
+def recordTime(data):
     if not data.get("RecordTime"):
         nt = datetime.datetime.now()
         data['RecordTime'] = nt
     return data
 
 
-def projectName(spark, data):
+def projectName(data):
     return data
 
 
-def promotionName(spark, data):
+def promotionName(data):
     return data
 
 
-def realestateProjectId(spark, data):
+def realestateProjectId(data):
     return data
 
 
-def projectUUID(spark, data):
+def projectUUID(data):
     return data
 
 
-def districtName(spark, data):
+def districtName(data):
     return data
 
 
-def regionName(spark, data):
+def regionName(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.ExtraJson FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -67,21 +69,22 @@ def regionName(spark, data):
     return data
 
 
-def projectAddress(spark, data):
+def projectAddress(data):
     return data
 
 
-def projectType(spark, data):
+def projectType(data):
     return data
 
 
-def onSaleState(spark, data):
+def onSaleState(data):
     return data
 
 
-def landUse(spark, data):
+def landUse(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.LandUse FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.LandUse FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -103,17 +106,18 @@ def landUse(spark, data):
     return data
 
 
-def housingCount(spark, data):
+def housingCount(data):
     return data
 
 
-def developer(spark, data):
+def developer(data):
     return data
 
 
-def floorArea(spark, data):
+def floorArea(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.ExtraJson FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -135,17 +139,18 @@ def floorArea(spark, data):
     return data
 
 
-def totalBuidlingArea(spark, data):
+def totalBuidlingArea(data):
     return data
 
 
-def buildingType(spark, data):
+def buildingType(data):
     return data
 
 
-def houseUseType(spark, data):
+def houseUseType(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT HouseInfoItem.HouseUseType FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
+    sql = "SELECT HouseInfoItem.HouseUseType FROM global_temp.HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
         p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -155,21 +160,22 @@ def houseUseType(spark, data):
     return data
 
 
-def propertyRightsDescription(spark, data):
+def propertyRightsDescription(data):
     return data
 
 
-def projectApproveData(spark, data):
+def projectApproveData(data):
     return data
 
 
-def projectBookingData(spark, data):
+def projectBookingData(data):
     return data
 
 
-def lssueDate(spark, data):
+def lssueDate(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.LssueDate FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.LssueDate FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -182,9 +188,10 @@ def lssueDate(spark, data):
     return data
 
 
-def presalePermitNumber(spark, data):
+def presalePermitNumber(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.PresalePermitNumber FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.PresalePermitNumber FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -196,76 +203,70 @@ def presalePermitNumber(spark, data):
     return data
 
 
-def houseBuildingCount(spark, data):
-    # p_uuid = data['ProjectUUID']
-    # sql = "SELECT HouseInfoItem.BuildingName FROM HouseInfoItem WHERE HouseInfoItem.ProjectUUID = '{}'".format(
-    #     p_uuid)
-    # query = spark.sql(sql).toPandas()
-    # if not query.empty:
-    #     _ = query['BuildingName'][query['BuildingName'] != ""].unique()
-    #     data['HouseBuildingCount'] = str(len(_))
+def houseBuildingCount(data):
     return data
 
 
-def approvalPresaleAmount(spark, data):
+def approvalPresaleAmount(data):
     return data
 
 
-def approvalPresaleArea(spark, data):
+def approvalPresaleArea(data):
     return data
 
 
-def averagePrice(spark, data):
+def averagePrice(data):
     return data
 
 
-def earliestStartDate(spark, data):
+def earliestStartDate(data):
     return data
 
 
-def completionDate(spark, data):
+def completionDate(data):
     return data
 
 
-def earliestOpeningTime(spark, data):
+def earliestOpeningTime(data):
     return data
 
 
-def latestDeliversHouseDate(spark, data):
+def latestDeliversHouseDate(data):
     return data
 
 
-def presaleRegistrationManagementDepartment(spark, data):
+def presaleRegistrationManagementDepartment(data):
     return data
 
 
-def landLevel(spark, data):
+def landLevel(data):
     return data
 
 
-def greeningRate(spark, data):
+def greeningRate(data):
     return data
 
 
-def floorAreaRatio(spark, data):
+def floorAreaRatio(data):
     return data
 
 
-def managementFees(spark, data):
+def managementFees(data):
     return data
 
 
-def managementCompany(spark, data):
+def managementCompany(data):
     return data
 
 
-def otheRights(spark, data):
+def otheRights(data):
     return data
 
 
-def certificateOfUseOfStateOwnedLand(spark, data):
+def certificateOfUseOfStateOwnedLand(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.ExtraJson FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -280,9 +281,10 @@ def certificateOfUseOfStateOwnedLand(spark, data):
     return data
 
 
-def constructionPermitNumber(spark, data):
+def constructionPermitNumber(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.ExtraJson FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -297,13 +299,14 @@ def constructionPermitNumber(spark, data):
     return data
 
 
-def qualificationNumber(spark, data):
+def qualificationNumber(data):
     return data
 
 
-def landUsePermit(spark, data):
+def landUsePermit(data):
+    spark = SparkSession.builder.appName('xuzhou').getOrCreate()
     p_uuid = data['ProjectUUID']
-    sql = "SELECT PresellInfoItem.ExtraJson FROM PresellInfoItem " \
+    sql = "SELECT PresellInfoItem.ExtraJson FROM global_temp.PresellInfoItem " \
           "WHERE PresellInfoItem.ProjectUUID = '{}'".format(p_uuid)
     query = spark.sql(sql).toPandas()
     if not query.empty:
@@ -318,33 +321,33 @@ def landUsePermit(spark, data):
     return data
 
 
-def buildingPermit(spark, data):
+def buildingPermit(data):
     return data
 
 
-def legalPersonNumber(spark, data):
+def legalPersonNumber(data):
     return data
 
 
-def legalPerson(spark, data):
+def legalPerson(data):
     return data
 
 
-def sourceUrl(spark, data):
+def sourceUrl(data):
     return data
 
 
-def decoration(spark, data):
+def decoration(data):
     return data
 
 
-def parkingSpaceAmount(spark, data):
+def parkingSpaceAmount(data):
     return data
 
 
-def remarks(spark, data):
+def remarks(data):
     return data
 
 
-def extraJSON(spark, data):
+def extraJSON(data):
     return data

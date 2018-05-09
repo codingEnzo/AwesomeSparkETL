@@ -8,7 +8,7 @@ import json
 import demjson
 from sqlalchemy import create_engine
 
-import Var
+from SparkETLCore.Utils import Var
 
 
 def getEngine(dbName):

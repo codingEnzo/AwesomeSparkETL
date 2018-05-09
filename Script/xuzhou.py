@@ -3,6 +3,7 @@ from __future__ import print_function
 from random import randint
 
 from pyspark.sql import Row, SparkSession
+from pyspark.sql.functions import col
 
 from SparkETLCore.CityCore.Xuzhou import ProjectCore
 from SparkETLCore.Utils import Var
@@ -16,8 +17,8 @@ def kwarguments(tableName, city, db='spark_test'):
         "driver":
         "com.mysql.jdbc.Driver",
         "dbtable":
-        "(SELECT * FROM ProjectInfoItem WHERE City = '{}') {}".format(
-            city, tableName),
+        "(SELECT * FROM {tb} WHERE City = '{ct}') {tb}".format(
+            ct=city, tb=tableName),
         "user":
         "root",
         "password":
@@ -25,20 +26,21 @@ def kwarguments(tableName, city, db='spark_test'):
     }
 
 
-def cleanFields(spark, row, methods, target, fields):
+def cleanFields(row, methods, target, fields):
     row = row.asDict()
-    row = Var.NiceDict(dictionary=row, field_list=fields)
+    row = Var.NiceDict(dictionary=row, target=fields)
     for i, method in enumerate(methods):
-        row = getattr(target, method)(spark, row)
+        row = getattr(target, method)(row)
     row = Row(**row)
     return row
 
 
-def groupedWork(spark, grouped, methods, target, fields):
+def groupedWork(grouped, methods, target, fields):
     for i, (num, group) in enumerate(grouped):
+        spark = SparkSession.builder.appName("xuzhou").getOrCreate()
         df = spark.createDataFrame(group)
-        df = df.rdd.map(lambda r: cleanFields(spark, r, methods, target, fields))
-        df.select(fields).toDF().write().format("jdbc") \
+        df = df.rdd.map(lambda r: cleanFields(r, methods, target, fields))
+        df.toDF().select(fields).write().format("jdbc") \
                 .options(
                     url="jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf8",
                     driver="com.mysql.jdbc.Driver",
@@ -61,7 +63,7 @@ def main():
                      .options(**projectArgs) \
                      .load() \
                      .fillna("")
-    projectDF.createOrReplaceTempView("ProjectInfoItem")
+    projectDF.createOrReplaceGlobalTempView("ProjectInfoItem")
 
     buildingArgs = kwarguments('BuildingInfoItem', '徐州')
     buildingDF = spark.read \
@@ -69,7 +71,7 @@ def main():
                      .options(**buildingArgs) \
                      .load() \
                      .fillna("")
-    buildingDF.createOrReplaceTempView("BuildingInfoItem")
+    buildingDF.createOrReplaceGlobalTempView("BuildingInfoItem")
 
     houseArgs = kwarguments('HouseInfoItem', '徐州')
     houseDF = spark.read \
@@ -77,7 +79,7 @@ def main():
                      .options(**houseArgs) \
                      .load() \
                      .fillna("")
-    houseDF.createOrReplaceTempView("HouseInfoItem")
+    houseDF.createOrReplaceGlobalTempView("HouseInfoItem")
 
     presellArgs = kwarguments('PresellInfoItem', '徐州')
     presellDF = spark.read \
@@ -85,14 +87,17 @@ def main():
                      .options(**presellArgs) \
                      .load() \
                      .fillna("")
-    presellDF.createOrReplaceTempView("PresellInfoItem")
+    presellDF.createOrReplaceGlobalTempView("PresellInfoItem")
 
     # ProjectCore
-    # ---
+    # >>> JOIN PresellInfoItem
+    proj = projectDF.alias('a').join(
+        presellDF.alias('b'),
+        col("a.ProjectUUID") == col("b.ProjectUUID")).select(
+            [col("a." + xx) for xx in a.columns] + [col('b.LandUse')])
+
     projectDF.rdd \
-             .map(lambda r: (randint(1, 8), [r])) \
-             .reduceByKey(lambda x, y: x + y) \
-             .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS).count()
+             .foreach(lambda r: cleanFields(r, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS))
 
     return 0
 
