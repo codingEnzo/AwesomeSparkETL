@@ -1,14 +1,12 @@
 # coding=utf-8
 from __future__ import unicode_literals
-
 import bisect
 import datetime
 import json
-
 import demjson
+from . import Var
+from pyspark.sql import Row
 from sqlalchemy import create_engine
-
-import Var
 
 
 def getEngine(dbName):
@@ -89,3 +87,11 @@ def getFloor(houseName):
             return floor
     else:
         return '0'
+
+
+def dropColumn(data, columns=[]):
+    if not isinstance(data, dict):
+        data = data.asDict()
+    for column in columns:
+        del data[column]
+    return Row(**data)

@@ -4,7 +4,8 @@ from UserDict import UserDict
 
 ENGINE = create_engine(
     'mysql+pymysql://root:gh001@10.30.1.70:3307/spark_test?charset=utf8')
-NUMTAB = {ord(f): ord(t) for f, t in zip('1234567890', '一二三四五六七八九')}
+
+NUMTAB_TRANS = str.maketrans('1234567890', '一二三四五六七八九')
 FLOORTYPES = {
     -1: '低层(1-3)',
     0: '',
@@ -92,12 +93,14 @@ DEAL_FIELDS = []
 
 
 class NiceDict(UserDict):
+
     def __init__(self, dictionary=None, target=None):
         self.data = {}
         if target is not None:
             for i, key in enumerate(target):
                 self.data[key] = ""
-        if dictionary is not None: self.update(dictionary)
+        if dictionary is not None:
+            self.update(dictionary)
         for i, (key, value) in enumerate(self.data.items()):
             if (not value) and (value != 0):
                 self.data[key] = ""
