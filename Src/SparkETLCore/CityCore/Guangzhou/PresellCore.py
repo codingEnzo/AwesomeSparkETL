@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import division
+from __future__ import unicode_literals
 import sys
 import inspect
 import pandas as pd

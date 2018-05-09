@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import unicode_literals
 from sqlalchemy import *
 ENGINE = create_engine(
     'mysql+pymysql://root:gh001@10.30.1.70:3307/spark_test?charset=utf8')

@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import division
+from __future__ import unicode_literals
 import sys
 import datetime
 import inspect
@@ -9,6 +10,10 @@ sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Meth, Var, Config
+from BaseDF import spark
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName('guangzhou').getOrCreate()
 
 METHODS = ['actualFloor',
            'address',
@@ -125,13 +130,13 @@ def city(data):
 
 
 def districtName(data):
-    # print(data, inspect.stack()[0][3])
+    # # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select DistrictName as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime DESC limit 1".format(
-                         projectName=data['ProjectName']))
-    data['DistrictName'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
+    # df = spark.sql("select DistrictName as col from projectinfoitem where ProjectName='{projectName}' limit 1".format(
+    #     projectName=data['ProjectName'])).toPandas()
+    # print('Check ProjectName')
+    # data['DistrictName'] = df.col.values[-1] if not df.empty else ''
+    # # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
     return Row(**data)
 
 
@@ -170,13 +175,12 @@ def houseUUID(data):
 
 
 def address(data):
-    # print(data, inspect.stack()[0][3])
+    # # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
+    # df = spark.sql("select ProjectAddress as col from projectinfoitem where ProjectName='{projectName}' limit 1".format(
+    #     projectName=data['ProjectName'])).toPandas()
+    # data['Address'] = df.col.values[-1] if not df.empty else ''
+    # # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
     return Row(**data)
 
 
@@ -215,7 +219,7 @@ def floorHight(data):
 def unitShape(data):
     def translate(x):
         for key in Var.NUMTAB:
-            x = str(x).replace(key, Var.NUMTAB[key])
+            x = x.replace(key, Var.NUMTAB[key])
         return x
 
     # print(data, inspect.stack()[0][3])
@@ -374,40 +378,40 @@ def salePriceByInsideOfBuildingArea(data):
 def isMortgage(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['IsMortgage'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraIsMortgage', ''))
+    data['IsMortgage'] = Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraIsMortgage', '')
     return Row(**data)
 
 
 def isAttachment(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['IsAttachment'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraIsAttachment', ''))
+    data['IsAttachment'] = Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraIsAttachment', '')
     return Row(**data)
 
 
 def isPrivateUse(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['IsPrivateUse'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraIsPrivateUse', ''))
+    data['IsPrivateUse'] = Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraIsPrivateUse', '')
     return Row(**data)
 
 
 def isMoveBack(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['IsMoveBack'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraIsMoveBack', ''))
+    data['IsMoveBack'] = Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraIsMoveBack', '')
     return Row(**data)
 
 
 def isSharedPublicMatching(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    data['IsSharedPublicMatching'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraIsSharedPublicMatching', ''))
+    data['IsSharedPublicMatching'] = Meth.jsonLoad(
+        data['ExtraJson']).get('ExtraIsSharedPublicMatching', '')
     return Row(**data)
 
 

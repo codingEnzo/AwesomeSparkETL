@@ -1,7 +1,9 @@
 # coding=utf-8
+from __future__ import unicode_literals
 import json
 import demjson
 from . import Var
+from pyspark.sql import Row
 
 
 def jsonLoad(x):
@@ -31,3 +33,11 @@ def isInt(val):
         return False
     else:
         return True
+
+
+def dropColumn(data, columns=[]):
+    if not isinstance(data, dict):
+        data = data.asDict()
+    for column in columns:
+        del data[column]
+    return Row(**data)
