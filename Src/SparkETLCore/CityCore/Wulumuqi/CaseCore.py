@@ -115,9 +115,7 @@ def measuredInsideOfBuildingArea(data):
     return Row(**data)
 
 def measuredSharedPublicArea(data):
-    data = data.asDict()
-    data['MeasuredSharedPublicArea'] = Meth.cleanUnit(data['MeasuredSharedPublicArea'])
-    return Row(**data)
+    return data
 
 def isMortgage (data):
     return data
@@ -135,16 +133,7 @@ def isSharedPublicMatching (data):
     return data
 
 def buildingStructure (data):
-    data = data.asDict()
-    data['BuildingStructure'] = Meth.cleanName(data['BuildingStructure']).replace('钢混','钢混结构')\
-                                                     .replace('框架','框架结构')\
-                                                     .replace('钢筋混凝土','钢混结构')\
-                                                     .replace('混合','混合结构')\
-                                                     .replace('结构结构','结构')\
-                                                     .replace('砖混','砖混结构')\
-                                                     .replace('框剪','框架剪力墙结构')\
-                                                     .replace('钢、','')
-    return Row(**data)
+    return data
 
 def sellSchedule (data):
     return data
@@ -162,9 +151,7 @@ def caseFrom (data):
     return data
 
 def unitShape (data):
-    data = data.asDict()
-    data['UnitShape'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8')
-    return Row(**data)
+    return data
 
 def unitStructure (data):
     return data
@@ -188,7 +175,10 @@ def regionName (data):
 
 def projectName(data):
     data = data.asDict()
-    data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+    df = pd.read_sql(con=Var.ENGINE,
+                     sql="select (ProjectName)  as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and ProjectAddress!='' "\
+                     .format(projectUUID=data['ProjectUUID']))
+    data['ProjectName'] = Meth.cleanName(df.col.values[0])
     return Row(**data)
 
 def buildingName(data):
