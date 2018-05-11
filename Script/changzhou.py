@@ -4,7 +4,8 @@ from random import randint
 
 from pyspark.sql import Row, SparkSession
 
-from SparkETLCore.CityCore.Xuzhou import ProjectCore
+from SparkETLCore.CityCore.Changzhou import HouseCore, BuildingCore, ProjectCore, SupplyCaseCore, QuitCaseCore, DealCaseCore
+
 from SparkETLCore.Utils import Var
 
 
@@ -42,7 +43,7 @@ def groupedWork(spark, grouped, methods, target, fields):
             .options(
             url="jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
-            dbtable="project_info_xuzhou",
+            dbtable="project_info_changzhou",
             user="root",
             password="gh001") \
             .mode("append") \
@@ -76,12 +77,12 @@ def main():
         .load() \
         .fillna("")
 
-    presellArgs = kwarguments('PresellInfoItem', '常州')
-    presellDF = spark.read \
-        .format("jdbc") \
-        .options(**presellArgs) \
-        .load() \
-        .fillna("")
+    # presellArgs = kwarguments('PresellInfoItem', '常州')
+    # presellDF = spark.read \
+    #     .format("jdbc") \
+    #     .options(**presellArgs) \
+    #     .load() \
+    #     .fillna("")
 
     projectDF.rdd \
         .map(lambda r: (randint(1, 8), [r])) \
@@ -90,13 +91,24 @@ def main():
     buildingDF.rdd \
         .map(lambda r: (randint(1, 8), [r])) \
         .reduceByKey(lambda x, y: x + y) \
-        .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.BUILDING_FIELDS)).count()
+        .map(lambda g: groupedWork(spark, g, BuildingCore.METHODS, BuildingCore, Var.BUILDING_FIELDS)).count()
     houseDF.rdd \
         .map(lambda r: (randint(1, 8), [r])) \
         .reduceByKey(lambda x, y: x + y) \
-        .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.HOUSE_FIELDS)).count()
-
-
+        .map(lambda g: groupedWork(spark, g, HouseCore.METHODS, HouseCore, Var.HOUSE_FIELDS)).count()
+    #
+    # houseDF.rdd \
+    #     .map(lambda r: (randint(1, 8), [r])) \
+    #     .reduceByKey(lambda x, y: x + y) \
+    #     .map(lambda g: groupedWork(spark, g, SupplyCaseCore.METHODS, SupplyCaseCore, Var.HOUSE_FIELDS)).count()
+    # houseDF.rdd \
+    #     .map(lambda r: (randint(1, 8), [r])) \
+    #     .reduceByKey(lambda x, y: x + y) \
+    #     .map(lambda g: groupedWork(spark, g, QuitCaseCore.METHODS, QuitCaseCore, Var.HOUSE_FIELDS)).count()
+    # houseDF.rdd \
+    #     .map(lambda r: (randint(1, 8), [r])) \
+    #     .reduceByKey(lambda x, y: x + y) \
+    #     .map(lambda g: groupedWork(spark, g, DealCaseCore.METHODS, DealCaseCore, Var.HOUSE_FIELDS)).count()
     return 0
 
 
