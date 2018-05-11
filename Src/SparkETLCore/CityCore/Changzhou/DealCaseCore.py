@@ -1,22 +1,14 @@
 # coding=utf-8
-from __future__ import division
-import sys
 import datetime
-import inspect
 import re
-import pandas as pd
-import numpy as np
-
-
-from pyspark.sql import Row
-from SparkETLCore.Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = [
     'RecordTime',
     'projectUUID',
     'buildingUUID',
     'houseUUID',
-    'houseID',
+    'houseId',
     'forecastBuildingArea',
     'forecastInsideOfBuildingArea',
     'forecastPublicArea',
@@ -31,7 +23,7 @@ METHODS = [
     'buildingStructure',
     'sellSchedule',
     'sellState',
-    'SourceUrl',
+    'sourceUrl',
     'caseTime',
     'caseFrom',
     'unitShape',
@@ -61,196 +53,178 @@ METHODS = [
 ]
 
 
-def recordTime(data):
-    data = data.asDict()
+def recordTime(spark, data):
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
 
 
-def projectUUID(data):
-    data = data.asDict()
-    data['ProjectUUID'] = data['RealEstateProjectID']
+def projectUUID(spark, data):
     return data
 
 
-def buildingUUID(data):
-    data = data.asDict()
-    data['BuildingUUID'] = data['BuildingUUID']
+def buildingUUID(spark, data):
     return data
 
 
-def houseUUID(data):
-    data = data.asDict()
-    data['HouseUUID'] = data['HouseUUID']
+def houseUUID(spark, data):
     return data
 
 
-def houseID(data):
-    data = data.asDict()
-    data['HouseID'] = data['HouseID']
-    return data
-
-def forecastBuildingArea(data):
+def houseId(spark, data):
     return data
 
 
-def forecastInsideOfBuildingArea(data):
+def forecastBuildingArea(spark, data):
     return data
 
 
-def forecastPublicArea(data):
+def forecastInsideOfBuildingArea(spark, data):
     return data
 
 
-def measuredBuildingArea(data):
-    data = data.asDict()
-    data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
+def forecastPublicArea(spark, data):
     return data
 
 
-def measuredInsideOfBuildingArea(data):
+def measuredBuildingArea(spark, data):
     return data
 
 
-def measuredSharedPublicArea(data):
+def measuredInsideOfBuildingArea(spark, data):
     return data
 
 
-def isMortgage(data):
+def measuredSharedPublicArea(spark, data):
     return data
 
 
-def isAttachment(data):
+def isMortgage(spark, data):
     return data
 
 
-def isPrivateUse(data):
+def isAttachment(spark, data):
     return data
 
 
-def isMoveBack(data):
+def isPrivateUse(spark, data):
     return data
 
 
-def isSharedPublicMatching(data):
+def isMoveBack(spark, data):
     return data
 
 
-def buildingStructure(data):
+def isSharedPublicMatching(spark, data):
     return data
 
 
-def sellSchedule(data):
+def buildingStructure(spark, data):
     return data
 
 
-def sellState(data):
+def sellSchedule(spark, data):
     return data
 
 
-def SourceUrl(data):
+def sellState(spark, data):
     return data
 
 
-def caseTime(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+def sourceUrl(spark, data):
+    return data
+
+
+def caseTime(spark, data):
     data['CaseTime'] = str(datetime.datetime.now()
                            ) if data['CaseTime'] == '' else data['CaseTime']
     return data
 
 
-def caseFrom(data):
+def caseFrom(spark, data):
     return data
 
 
-def unitShape(data):
+def unitShape(spark, data):
     return data
 
 
-def unitStructure(data):
+def unitStructure(spark, data):
     return data
 
 
-def balconys(data):
+def balconys(spark, data):
     return data
 
 
-def unenclosedBalconys(data):
+def unenclosedBalconys(spark, data):
     return data
 
 
-def districtName(data):
+def districtName(spark, data):
     return data
 
 
-def regionName(data):
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select RegionName as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(projectName=data['ProjectName']))
+def regionName(spark, data):
+    sql = u"select RegionName as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
+        projectName=data['ProjectName'])
+    df = spark.sql(sql).toPandas()
     data['RegionName'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
-def projectName(data):
-    data = data.asDict()
+def projectName(spark, data):
     data['ProjectName'] = data['ProjectName']
     return data
 
 
-def buildingName(data):
-    data = data.asDict()
+def buildingName(spark, data):
     data['BuildingName'] = data['BuildingName']
     return data
 
 
-def presalePermitNumber(data):
-    data = data.asDict()
+def presalePermitNumber(spark, data):
     data['PresalePermitNumber'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
     return data
 
 
-def houseName(data):
-    data = data.asDict()
+def houseName(spark, data):
     data['HouseName'] = data['HouseName']
     return data
 
 
-def houseNumber(data):
+def houseNumber(spark, data):
     return data
 
 
-def totalPrice(data):
+def totalPrice(spark, data):
     return data
 
 
-def price(data):
+def price(spark, data):
     return data
 
 
-def priceType(data):
-    data = data.asDict()
+def priceType(spark, data):
     data['PriceType'] = u'成交均价'
     return data
 
 
-def address(data):
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select ProjectAddress as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
+def address(spark, data):
+    sql = u"select ProjectAddress as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
+        projectName=data['ProjectName'])
+    df = spark.sql(sql).toPandas()
     data['Address'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
-def buildingCompletedYear(data):
+def buildingCompletedYear(spark, data):
     return data
 
 
-def ActualFloor(data):
+def ActualFloor(spark, data):
     def getFloor(x):
         if x == '':
             return 0
@@ -265,8 +239,6 @@ def ActualFloor(data):
             res = -res
         return res
 
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     housefloor = getFloor(data['HouseName'])
     if housefloor == 0:
         data['Floor'] = None
@@ -275,11 +247,11 @@ def ActualFloor(data):
     return data
 
 
-def FloorName(data):
+def FloorName(spark, data):
     return data
 
 
-def floors(data):
+def floors(spark, data):
     def getFloor(x):
         if x == '':
             return 0
@@ -293,12 +265,10 @@ def floors(data):
         if x[0] == '-':
             res = -res
         return res
-        # print(data, inspect.stack()[0][3])
 
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
+    sql = u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+        buildingUUID=data['BuildingUUID'])
+    df = spark.sql(sql).toPandas()
     df['ActualFloor'] = df['HouseName'].apply(getFloor)
     acttualfloor = df.ActualFloor.agg('max')
     if acttualfloor == 0:
@@ -308,19 +278,17 @@ def floors(data):
     return data
 
 
-def houseUseType(data):
-    data = data.asDict()
+def houseUseType(spark, data):
     data['HouseUseType'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraHouseUseType', ''))
     return data
 
 
-def dwelling(data):
+def dwelling(spark, data):
     return data
 
 
-def state(data):
-    data = data.asDict()
+def state(spark, data):
     if data['HouseState'] == '未备案':
         data['State'] = u'明确成交'
     else:
@@ -328,9 +296,9 @@ def state(data):
     return data
 
 
-def dealType(data):
+def dealType(spark, data):
     return data
 
 
-def remarks(data):
+def remarks(spark, data):
     return data

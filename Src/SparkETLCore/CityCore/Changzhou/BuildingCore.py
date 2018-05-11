@@ -1,14 +1,9 @@
 # coding=utf-8
 from __future__ import division
 import re
-import sys
-import inspect
 import pandas as pd
-import numpy as np
 import datetime
-
-from pyspark.sql import Row
-from SparkETLCore.Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth
 
 METHODS = ['address',
            'buildingArea',
@@ -39,83 +34,74 @@ METHODS = ['address',
            'unitId',
            'unitName',
            'units',
-           'unsoldAmount']
+           'unsoldAmount',
+           'projectUUID',
+           'unitUUID'
+           ]
 
 
-def recordTime(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    nowtime = str(datetime.datetime.now())
+def recordTime(spark, data):
+    nowtime = datetime.datetime.now()
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
 
 
-def projectName(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+def projectName(spark, data):
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return data
 
 
-def realEstateProjectId(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['RealEstateProjectID'] = data['ProjectUUID']
+def unitUUID(spark, data):
     return data
 
 
-def buildingName(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+def projectUUID(spark, data):
+    data['ProjectUUID'] = data['ProjectUUID']
+    return data
+
+
+def realEstateProjectId(spark, data):
+    return data
+
+
+def buildingName(spark, data):
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
     return data
 
 
-def buildingId(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['BuildingID'] = data['BuildingID']
+def buildingId(spark, data):
     return data
 
 
-def buildingUUID(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['BuildingUUID'] = data['BuildingUUID']
+def buildingUUID(spark, data):
     return data
 
 
-def unitName(data):
-    # print(data, inspect.stack()[0][3])
+def unitName(spark, data):
     return data
 
 
-def unitId(data):
-    # print(data, inspect.stack()[0][3])
+def unitId(spark, data):
     return data
 
 
-def presalePermitNumber(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+def presalePermitNumber(spark, data):
     data['PresalePermitNumber'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
     return data
 
 
-def address(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['Address'] = df.col.values[-1] if not df.empty else ''
+def address(spark, data):
+    sql = u"select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
+        projectName=data['ProjectName'])
+    df = spark.sql(sql).toPandas()
+    if not df.empty:
+        data['Address'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
-def onTheGroundFloor(data):
-    # print(data, inspect.stack()[0][3])
+def onTheGroundFloor(spark, data):
     def getFloor(x):
         if x == '':
             return 1
@@ -130,22 +116,21 @@ def onTheGroundFloor(data):
         else:
             res = 1
         return res
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    ActualFloor = df.ActualFloor.agg('max')
-    if ActualFloor != 0:
-        data['OnTheGroundFloor'] = ActualFloor
-    else:
-        data['OnTheGroundFloor'] = None
+
+    sql = "select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+        buildingUUID=data['BuildingUUID'])
+    df = spark.sql(sql).toPandas()
+    if not df.empty:
+        df['ActualFloor'] = df['HouseName'].apply(getFloor)
+        ActualFloor = df.ActualFloor.agg('max')
+        if ActualFloor != 0:
+            data['OnTheGroundFloor'] = ActualFloor
+        else:
+            data['OnTheGroundFloor'] = None
     return data
 
 
-def theGroundFloor(data):
-    # print(data, inspect.stack()[0][3])
+def theGroundFloor(spark, data):
     def getFloor(x):
         if x == '':
             return 0
@@ -160,116 +145,97 @@ def theGroundFloor(data):
         else:
             res = 0
         return res
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['ActualFloor'] = df['HouseName'].apply(getFloor)
-    ActualFloor = df.ActualFloor.agg('max')
-    if ActualFloor != 0:
-        data['TheGroundFloor'] = ActualFloor
-    else:
-        data['TheGroundFloor'] = None
+
+    sql = u"select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+        buildingUUID=data['BuildingUUID'])
+    df = spark.sql(sql).toPandas()
+    if not df.empty:
+        df['ActualFloor'] = df['HouseName'].apply(getFloor)
+        ActualFloor = df.ActualFloor.agg('max')
+        if ActualFloor != 0:
+            data['TheGroundFloor'] = ActualFloor
+        else:
+            data['TheGroundFloor'] = None
     return data
 
 
-def estimatedCompletionDate(data):
-    # print(data, inspect.stack()[0][3])
+def estimatedCompletionDate(spark, data):
     return data
 
 
-def housingCount(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['TheGroundFloor'] = str(df.col.values[0])
+def housingCount(spark, data):
+    sql = u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+        buildingUUID=data['BuildingUUID'])
+    df = spark.sql(sql).toPandas()
+    if not df.empty:
+        data['TheGroundFloor'] = str(df.col.values[0])
     return data
 
 
-def floors(data):
-    # print(data, inspect.stack()[0][3])
+def floors(spark, data):
     return data
 
 
-def elevatorHouse(data):
-    # print(data, inspect.stack()[0][3])
+def elevatorHouse(spark, data):
     return data
 
 
-def isHasElevator(data):
-    # print(data, inspect.stack()[0][3])
+def isHasElevator(spark, data):
     return data
 
 
-def elevaltorInfo(data):
-    # print(data, inspect.stack()[0][3])
+def elevaltorInfo(spark, data):
     return data
 
 
-def buildingStructure(data):
-    # print(data, inspect.stack()[0][3])
+def buildingStructure(spark, data):
     return data
 
 
-def buildingType(data):
-    # print(data, inspect.stack()[0][3])
+def buildingType(spark, data):
     return data
 
 
-def buildingHeight(data):
-    # print(data, inspect.stack()[0][3])
+def buildingHeight(spark, data):
     return data
 
 
-def buildingCategory(data):
-    # print(data, inspect.stack()[0][3])
+def buildingCategory(spark, data):
     return data
 
 
-def units(data):
-    # print(data, inspect.stack()[0][3])
+def units(spark, data):
     return data
 
 
-def unsoldAmount(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and HouseState='未备案'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['UnsoldAmount'] = str(df.col.values[0])
+def unsoldAmount(spark, data):
+    sql = u"select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and HouseState='未备案'".format(
+        buildingUUID=data['BuildingUUID'])
+    df = spark.sql(sql).toPandas()
+    if not df.empty:
+        data['UnsoldAmount'] = str(df.col.values[0])
     return data
 
 
-def buildingAveragePrice(data):
-    # print(data, inspect.stack()[0][3])
+def buildingAveragePrice(spark, data):
     return data
 
 
-def buildingPriceRange(data):
-    # print(data, inspect.stack()[0][3])
+def buildingPriceRange(spark, data):
     return data
 
 
-def buildingArea(data):
+def buildingArea(spark, data):
     return data
 
 
-def remarks(data):
-    # print(data, inspect.stack()[0][3])
+def remarks(spark, data):
     return data
 
 
-def sourceUrl(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['SourceUrl'] = data['SourceUrl']
+def sourceUrl(spark, data):
     return data
 
 
-def extrajson(data):
-    # print(data, inspect.stack()[0][3])
+def extrajson(spark, data):
     return data
