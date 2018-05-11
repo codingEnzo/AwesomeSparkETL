@@ -3,7 +3,7 @@ from __future__ import print_function
 from random import randint
 
 from pyspark.sql import Row, SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, collect_list
 
 from SparkETLCore.CityCore.Xuzhou import ProjectCoreUDF
 from SparkETLCore.Utils import Var
@@ -28,7 +28,7 @@ def kwarguments(tableName, city, db='spark_test'):
 
 def pdf_apply(pdf, target_method=None, target_table=None):
     ix = {
-        'PresellInfoItem': target_method.get('PresellInfoItem')
+        'PresellInfoItem': target_method.get('PresellInfoItem'),
         'HouseInfoItem': target_method.get('HouseInfoItem')
     }
     methods = ix[target_table]
@@ -92,12 +92,20 @@ def main():
     # presellDF.createOrReplaceGlobalTempView("PresellInfoItem")
 
     # ProjectCore
+    # >>> 
     x = projectDF.alias('x')
-    y = presellDF.alias('y').groupby('ProjectUUID').agg()
+    y = presellDF.alias('y').groupby('ProjectUUID').agg(
+        collect_list('LandUse').alias('LandUse'),
+        collect_list('LssueDate').alias('LssueDate'),
+        collect_list('PresalePermitNumber').alias('PresalePermitNumber'),
+        collect_list('ExtraJson').alias('TmpExtraJson'),
+    )
     z = houseDF.alias('z').groupby('ProjectUUID').agg()
 
-    # df_xy = x.join(y, col('x.ProjectUUID') == col('y.ProjectUUID')) \
-    #       .select(['x.*', 'y.ExtraJson', 'y.LandUse', 'y.PresalePermitNumber'])
+    df_xy = x.join(y, col('x.ProjectUUID') == col('y.ProjectUUID')) \
+          .select(['x.*',  'y.LandUse', 'y.LssueDate',
+                   'y.PresalePermitNumber', 'y.TmpExtraJson'])
+    # <<<
 
     return 0
 
