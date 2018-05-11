@@ -13,7 +13,7 @@ from pyspark.sql import Row
 from SparkETLCore.Utils import Meth, Var, Config
 
 METHODS = [
-    'RecordTime',
+    'recordTime',
     'projectUUID',
     'buildingUUID',
     'houseUUID',
