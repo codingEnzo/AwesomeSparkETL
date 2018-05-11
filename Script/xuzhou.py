@@ -11,7 +11,7 @@ from SparkETLCore.Utils import Var
 def kwarguments(tableName, city, db='spark_test'):
     return {
         "url":
-        "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8" \
+        "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8"
         .format(db),
         "driver":
         "com.mysql.jdbc.Driver",
@@ -37,7 +37,8 @@ def cleanFields(spark, row, methods, target, fields):
 def groupedWork(spark, grouped, methods, target, fields):
     for i, (num, group) in enumerate(grouped):
         df = spark.createDataFrame(group)
-        df = df.rdd.map(lambda r: cleanFields(spark, r, methods, target, fields))
+        df = df.rdd.map(lambda r: cleanFields(
+            spark, r, methods, target, fields))
         df.select(fields).toDF().write().format("jdbc") \
                 .options(
                     url="jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf8",

@@ -140,13 +140,7 @@ def estimatedCompletionDate(data):
 
 def housingCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # data['HousingCount'] = str(df.col.values[0])
-    data['HousingCount'] = str(0)
-    return Row(**data)
+    return data
 
 
 def floors(data):

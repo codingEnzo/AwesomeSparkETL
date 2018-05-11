@@ -4,7 +4,7 @@ import bisect
 import datetime
 import json
 import demjson
-from . import Var
+from Var import *
 from pyspark.sql import Row
 from sqlalchemy import create_engine
 
@@ -68,7 +68,7 @@ def bisectCheckFloorType(floor):
     ix = bisect.bisect(floorstack, floor) - 1
     if ix < 0:
         ix = 0
-    floortype = Var.FLOORTYPES.get(floorstack[ix])
+    floortype = FLOORTYPES.get(floorstack[ix])
     return floortype
 
 
