@@ -5,12 +5,7 @@ from pyspark.sql import SparkSession,SQLContext
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR, Float, Integer
 from pyspark.sql import Row
-import ProjectCore
-import HouseCore
-import BuildingCore
-import QuitCaseCore
-import SupplyCaseCore
-import DealCaseCore
+from SparkETLCore.CityCore.Changzhou import ProjectCore, HouseCore, BuildingCore, QuitCaseCore, SupplyCaseCore, DealCaseCore
 from pyspark import SparkContext
 from pyspark import SparkConf
 
@@ -24,11 +19,16 @@ sconf.set('spark.cores.max', 4)
 sc = SparkContext(appName='changzhou', conf=sconf)
 ctx = SQLContext(sc)
 
-def getData(cls, data):
-    for method in cls.METHODS:
-        func = getattr(cls, method)
+
+def getData(core_func, data):
+    data = data.asDict()
+    for method in core_func.METHODS:
+        func = getattr(core_func, method)
         data = func(data)
+    data = Row(**data)
     return data
+
+
 def mapping_df_types(df):
     dtypedict = {}
     ignorecolumns = {'ExtraJson', 'Content'}
@@ -50,7 +50,7 @@ def write_data2sql(pdf,tablename,METHODS):
     usecols = [x for x in housecols if x.lower() in methods]
     pdf[usecols].to_sql(tablename, MIRROR_ENGINE, index=False,
                        if_exists='append', dtype=dtypedict, chunksize=100)
-    return len(pdf)
+    return pdf
 
 def runFunc(func, tosqlname):
     # data = pd.read_sql(sql, ENGINE)
@@ -61,10 +61,11 @@ def runFunc(func, tosqlname):
     # SparkSession.builder.appName(func.__name__)
     # spark = SparkSession.builder.appName(func.__name__).getOrCreate()
     # dataDF = spark.createDataFrame(data)
-    jdbcDF =jdbcDF.where((jdbcDF.City==u'常州') & (jdbcDF.HouseStateLatest==u'已备案'))
-    res = jdbcDF.rdd.map(lambda r: getData(func, r))
-    result = res.map(lambda x:lambda x: write_data2sql(x,tosqlname,func.METHODS))
-    result.pprint()
+    jdbcDF =jdbcDF.where((jdbcDF.City==u'常州'))
+    res = jdbcDF.rdd.map(lambda r: getData(func, r)).collect()
+    data = res.map(lambda x: write_data2sql(x,tosqlname,func.METHODS))
+    data.pprint()
+
     # res = jdbcDF.rdd.map(lambda r: getData(func, r)).collect()
     # rdd = spark.sparkContext.parallelize(res)
     # pdf = rdd.toDF().toPandas()
@@ -75,8 +76,8 @@ def runFunc(func, tosqlname):
     #                     if_exists='append', index=False)
 
 #
-# quit_sql = u"select * from HouseInfoItem where City='常州' and HouseStateLatest='已备案' "
-# runFunc(QuitCaseCore, 'quit_case_changzhou')
+quit_sql = u"select * from HouseInfoItem where City='常州' and HouseStateLatest='已备案' "
+runFunc(QuitCaseCore, 'quit_case_changzhou')
 # supply_sql = u"select * from HouseInfoItem where City='常州' and (HouseStateLatest='未备案' or HouseStateLatest='') and HouseState='未备案'"
 # runFunc(SupplyCaseCore, supply_sql, 'supply_case_changzhou')
 # deal_sql = u"select * from HouseInfoItem where City='常州' and HouseStateLatest='未备案' and HouseState='已备案'"
