@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import division
+from __future__ import unicode_literals
 import sys
 import inspect
 import pandas as pd
@@ -120,10 +121,9 @@ def onSaleState(data):
         'ExtraTotalUnsoldAmount', '0'))
     presaleNum = int(data.get('ApprovalPresaleAmount', '0'))
     if not presaleNum:
-        data['OnSaleState'] = '售馨'.decode('utf-8')
+        data['OnSaleState'] = '售馨'
     else:
-        data['OnSaleState'] = '售馨'.decode(
-            'utf-8') if (unsoldNum / presaleNum) < 0.1 else '在售'.decode('utf-8')
+        data['OnSaleState'] = '售馨' if (unsoldNum / presaleNum) < 0.1 else '在售'
     return Row(**data)
 
 
@@ -135,10 +135,11 @@ def landUse(data):
 def housingCount(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(MeasuredBuildingArea) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HousingCount'] = str(df.col.values[0])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select count(MeasuredBuildingArea) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['HousingCount'] = str(df.col.values[0])
+    data['HousingCount'] = str(0)
     return Row(**data)
 
 
@@ -179,20 +180,22 @@ def buildingType(data):
             return ''
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select max(ActualFloor) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['BuildingType'] = check_floor_type(df.col.values[0]).decode('utf-8')
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select max(ActualFloor) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['BuildingType'] = check_floor_type(df.col.values[0])
+    data['BuildingType'] = ''
     return Row(**data)
 
 
 def houseUseType(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(HouseUseType) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(HouseUseType) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
+    data['HouseUseType'] = Meth.jsonDumps(list())
     return Row(**data)
 
 
@@ -214,31 +217,34 @@ def projectBookingdData(data):
 def lssueDate(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(LssueDate) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['LssueDate'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(LssueDate) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['LssueDate'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
+    data['LssueDate'] = Meth.jsonDumps(list())
     return Row(**data)
 
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(PresalePermitNumber) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['PresalePermitNumber'] = Meth.jsonDumps(
-        list(set(df.col.values) - set([''])))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(PresalePermitNumber) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['PresalePermitNumber'] = Meth.jsonDumps(
+    #     list(set(df.col.values) - set([''])))
+    data['PresalePermitNumber'] = Meth.jsonDumps(list())
     return Row(**data)
 
 
 def houseBuildingCount(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
+    data['HouseBuildingCount'] = str(len(list()))
     return Row(**data)
 
 
@@ -270,10 +276,11 @@ def completionDate(data):
 def earliestOpeningTime(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select min(LssueDate) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['EarliestOpeningTime'] = str(df.col.values[0])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select min(LssueDate) as col from PresellInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['EarliestOpeningTime'] = str(df.col.values[0])
+    data['EarliestOpeningTime'] = str(0)
     return Row(**data)
 
 

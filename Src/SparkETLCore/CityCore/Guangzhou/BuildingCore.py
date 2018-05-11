@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import division
+from __future__ import unicode_literals
 import re
 import sys
 import inspect
@@ -115,20 +116,20 @@ def address(data):
 def onTheGroundFloor(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor >= '1'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['OnTheGroundFloor'] = str(df.col.values[-1])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor >= '1'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    data['OnTheGroundFloor'] = str(0)
     return Row(**data)
 
 
 def theGroundFloor(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor < '1'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['TheGroundFloor'] = str(df.col.values[-1])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor < '1'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    data['TheGroundFloor'] = str(0)
     return Row(**data)
 
 
@@ -140,20 +141,22 @@ def estimatedCompletionDate(data):
 def housingCount(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['TheGroundFloor'] = str(df.col.values[0])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select count(distinct HouseUUID) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # data['HousingCount'] = str(df.col.values[0])
+    data['HousingCount'] = str(0)
     return Row(**data)
 
 
 def floors(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['Floors'] = str(df.col.values[0])
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # data['Floors'] = str(df.col.values[0])
+    data['Floors'] = str(0)
     return Row(**data)
 
 
@@ -175,11 +178,12 @@ def elevaltorInfo(data):
 def buildingStructure(data):
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct BuildingStructure as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    data['BuildingStructure'] = Meth.jsonDumps(
-        list(set(df.col.values) - set([''])))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct BuildingStructure as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # data['BuildingStructure'] = Meth.jsonDumps(
+    #     list(set(df.col.values) - set([''])))
+    data['BuildingStructure'] = Meth.jsonDumps(list())
     return Row(**data)
 
 
@@ -212,11 +216,12 @@ def buildingType(data):
         return res
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct ActualFloor from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['ActualFloor'] = df['ActualFloor'].apply(getFloor)
-    data['BuildingType'] = check_floor_type(df.ActualFloor.agg('max')).decode('utf-8')
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct ActualFloor from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # df['ActualFloor'] = df['ActualFloor'].apply(getFloor)
+    # data['BuildingType'] = check_floor_type(df.ActualFloor.agg('max')).decode('utf-8')
+    data['BuildingType'] = ''
     return Row(**data)
 
 
@@ -234,12 +239,13 @@ def buildingHeight(data):
 
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct FloorHight from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['FloorHight'] = df['FloorHight'].apply(getFloorHeight)
-    # print(df.FloorHight.values)
-    data['BuildingHeight'] = str(df.FloorHight.agg('sum'))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct FloorHight from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # df['FloorHight'] = df['FloorHight'].apply(getFloorHeight)
+    # # print(df.FloorHight.values)
+    # data['BuildingHeight'] = str(df.FloorHight.agg('sum'))
+    data['BuildingHeight'] = str(0)
     return Row(**data)
 
 
@@ -284,11 +290,12 @@ def buildingArea(data):
 
     # print(data, inspect.stack()[0][3])
     data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct MeasuredBuildingArea from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-                         buildingUUID=data['BuildingUUID']))
-    df['MeasuredBuildingArea'] = df['MeasuredBuildingArea'].apply(getMeasuredBuildingArea)
-    data['BuildingArea'] = str(df.MeasuredBuildingArea.agg('sum'))
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct MeasuredBuildingArea from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
+    #                      buildingUUID=data['BuildingUUID']))
+    # df['MeasuredBuildingArea'] = df['MeasuredBuildingArea'].apply(getMeasuredBuildingArea)
+    # data['BuildingArea'] = str(df.MeasuredBuildingArea.agg('sum'))
+    data['BuildingArea'] = str(0)
     return Row(**data)
 
 
