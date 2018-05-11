@@ -5,7 +5,7 @@ from random import randint
 from pyspark.sql import Row, SparkSession
 from pyspark.sql.functions import col
 
-from SparkETLCore.CityCore.Xuzhou import ProjectCore
+from SparkETLCore.CityCore.Xuzhou import ProjectCoreUDF
 from SparkETLCore.Utils import Var
 
 
@@ -26,13 +26,15 @@ def kwarguments(tableName, city, db='spark_test'):
     }
 
 
-def cleanFields(row, methods, target, fields):
-    row = row.asDict()
-    row = Var.NiceDict(dictionary=row, target=fields)
-    for i, method in enumerate(methods):
-        row = getattr(target, method)(row)
-    row = Row(**row)
-    return row
+def pdf_apply(pdf, target_method=None, target_table=None):
+    ix = {
+        'PresellInfoItem': target_method.get('PresellInfoItem')
+        'HouseInfoItem': target_method.get('HouseInfoItem')
+    }
+    methods = ix[target_table]
+    for i, m in enumerate(methods):
+        pdf = m(pdf)
+    return pdf
 
 
 def groupedWork(grouped, methods, target, fields):
@@ -63,7 +65,7 @@ def main():
                      .options(**projectArgs) \
                      .load() \
                      .fillna("")
-    projectDF.createOrReplaceGlobalTempView("ProjectInfoItem")
+    # projectDF.createOrReplaceGlobalTempView("ProjectInfoItem")
 
     buildingArgs = kwarguments('BuildingInfoItem', '徐州')
     buildingDF = spark.read \
@@ -71,7 +73,7 @@ def main():
                      .options(**buildingArgs) \
                      .load() \
                      .fillna("")
-    buildingDF.createOrReplaceGlobalTempView("BuildingInfoItem")
+    # buildingDF.createOrReplaceGlobalTempView("BuildingInfoItem")
 
     houseArgs = kwarguments('HouseInfoItem', '徐州')
     houseDF = spark.read \
@@ -79,7 +81,7 @@ def main():
                      .options(**houseArgs) \
                      .load() \
                      .fillna("")
-    houseDF.createOrReplaceGlobalTempView("HouseInfoItem")
+    # houseDF.createOrReplaceGlobalTempView("HouseInfoItem")
 
     presellArgs = kwarguments('PresellInfoItem', '徐州')
     presellDF = spark.read \
@@ -87,17 +89,15 @@ def main():
                      .options(**presellArgs) \
                      .load() \
                      .fillna("")
-    presellDF.createOrReplaceGlobalTempView("PresellInfoItem")
+    # presellDF.createOrReplaceGlobalTempView("PresellInfoItem")
 
     # ProjectCore
-    # >>> JOIN PresellInfoItem
-    proj = projectDF.alias('a').join(
-        presellDF.alias('b'),
-        col("a.ProjectUUID") == col("b.ProjectUUID")).select(
-            [col("a." + xx) for xx in a.columns] + [col('b.LandUse')])
+    x = projectDF.alias('x')
+    y = presellDF.alias('y').groupby('ProjectUUID').agg()
+    z = houseDF.alias('z').groupby('ProjectUUID').agg()
 
-    projectDF.rdd \
-             .foreach(lambda r: cleanFields(r, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS))
+    # df_xy = x.join(y, col('x.ProjectUUID') == col('y.ProjectUUID')) \
+    #       .select(['x.*', 'y.ExtraJson', 'y.LandUse', 'y.PresalePermitNumber'])
 
     return 0
 

@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from UserDict import UserDict
+import sys
+
+if sys.version_info.major is 3:
+    from collections import UserDict
+else:
+    from UserDict import UserDict
 
 NUMTAB = {ord(f): ord(t) for f, t in zip('1234567890', '一二三四五六七八九')}
 FLOORTYPES = {
