@@ -92,7 +92,7 @@ def main():
     projectDF.rdd \
              .map(lambda r: (randint(1, 8), [r])) \
              .reduceByKey(lambda x, y: x + y) \
-             .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS).count()
+             .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS)).count()
 
     return 0
 
