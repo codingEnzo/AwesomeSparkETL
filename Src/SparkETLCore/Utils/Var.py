@@ -1,7 +1,7 @@
 # coding=utf-8
 import string
 from sqlalchemy import create_engine
-from UserDict import UserDict
+from collections import UserDict
 
 ENGINE = create_engine(
     'mysql+pymysql://root:gh001@10.30.1.70:3307/spark_test?charset=utf8')
