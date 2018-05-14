@@ -1,108 +1,157 @@
 # -*- coding: utf-8 -*-
 import demjson
-import sys
+
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 
 from SparkETLCore.Utils.Meth import cleanName
 
-METHODS = {
-    'PresellInfoItem': [
-        'constructionPermitNumber',
-        'floorArea',
-        'landUse',
-        'landUsePermit',
-        'lssueDate',
-        'presalePermitNumber',
-        'recordTime',
-        'regionName',
-    ],
-    'HouseInfoItem': [
-        'houseUseType',
-    ]
-}
 
-
-def recordTime(pdf):
-    record_time = pdf.RecordTime
+@pandas_udf(StringType())
+def record_time_clean(s):
     import datetime
     nt = datetime.datetime.now()
-    record_time = record_time.apply(lambda t: nt if not t else t)
-    return pdf.assign(RecordTime=record_time)
+    s = s.apply(lambda t: nt.strftime("%Y-%m-%d %H:%M:%S") if not t else t)
+    return s
 
 
-def regionName(pdf):
-    extra_json = pdf.ExtraJson
-    extra_region_name = extra_json.apply(
-        lambda j: demjson.decode(j).get('ExtraRegionName', '')).unique()
-    return pdf.assign(ResionName=demjson.encode(extra_region_name))
+@pandas_udf(StringType())
+def region_name_extract(s):
+    s = s.apply(lambda j: demjson.decode(j).get('ExtraRegionName', ''))
+    return s
 
 
-def landUse(pdf):
-    land_use = pdf.LandUse[pdf.LandUse != '']
-    land_use = land_use.apply(
+@pandas_udf(StringType())
+def region_name_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
+
+
+@pandas_udf(StringType())
+def land_use_clean(s):
+    s = s.apply(
         lambda x: x.replace('宅', '住宅') \
         .replace('宅宅', '宅') \
         .replace('住住', '住') \
         .replace('、', '/') \
         .replace('，', ',').strip('/,')
     )
-    _tmp = list(set(','.join(land_use).split(',')))
-    return pdf.assign(LandUse=demjson.encode(_tmp))
+    return s
 
 
-def floorArea(pdf):
-    extra_json = pdf.ExtraJson
-    extra_floor_area = extra_json.apply(
-        lambda j: demjson.decode(j).get('ExtraFloorArea', ''))
-    extra_land_cert = extra_json.apply(
-        lambda j: demjson.decode(j).get('ExtraLandCertificate', ''))
-    pdf.assign(ExtraFloorArea=extra_floor_area)
-    pdf.assign(ExtraLandCertificate=extra_land_cert)
+@pandas_udf(StringType())
+def land_use_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
 
-    # >>> 待定
-
-
-def houseUseType(pdf):
-    house_use_type = pdf.HouseUseType
-    return pdf.assign(HouseUseType=demjson.encode(house_use_type.unique()))
+    s = s.apply(lambda x: func(x))
+    return s
 
 
-def lssueDate(pdf):
-    lssue_date = pdf.LssueDate
-    lssue_date = lssue_date.apply(lambda x: cleanName(x))
-    lssue_date = lssue_date[lssue_date != '']
-    return pdf.assign(LssueDate=demjson.encode(lssue_date.unique()))
+@pandas_udf(StringType())
+def house_use_type_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
 
 
-def presalePermitNumber(pdf):
-    pre_permit_num = pdf.PresalePermitNumber
-    pre_permit_num = pre_permit_num.apply(lambda x: cleanName(x))
-    pre_permit_num = pre_permit_num[pre_permit_num != '']
-    return pdf.assign(
-        PresalePermitNumber=demjson.encode(pre_permit_num.unique()))
+@pandas_udf(StringType())
+def lssue_date_clean(s):
+    s = s.apply(lambda x: cleanName(x))
+    return s
 
 
-def certificateOfUseOfStateOwnedLand(pdf):
-    extra_json = pdf.ExtraJson
-    extra_cert_state = extra_json.apply(
+@pandas_udf(StringType())
+def lssue_date_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
+
+
+@pandas_udf(StringType())
+def presale_permit_number_clean(s):
+    s = s.apply(lambda x: cleanName(x))
+    return s
+
+
+@pandas_udf(StringType())
+def presale_permit_number_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
+
+
+@pandas_udf(StringType())
+def cert_state_land_extract(s):
+    s = s.apply(
         lambda j: demjson.decode(j).get('ExtraCertificateOfUseOfStateOwnedLand', '')
     )
-    return pdf.assign(
-        CertificateOfUseOfStateOwnedLand=demjson.encode(
-            extra_cert_state.unique()))
+    return s
 
 
-def constructionPermitNumber(pdf):
-    extra_json = pdf.ExtraJson
-    extra_const_permit = extra_json.apply(
-        lambda j: demjson.decode(j).get('ExtraConstructionPermitNumber', ''))
-    return pdf.assign(
-        ConstructionPermitNumber=demjson.encode(extra_const_permit.unique()))
+@pandas_udf(StringType())
+def cert_state_land_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
 
 
-def landUsePermit(pdf):
-    extra_json = pdf.ExtraJson
-    extra_land_cert = extra_json.apply(
-        lambda j: demjson.decode(j).get('ExtraLandCertificate', '').replace('、', ''))
-    return pdf.assign(
-        LandUsePermit=demjson.encode(extra_land_cert[extra_land_cert != '']
-                                     .unique()))
+@pandas_udf(StringType())
+def construction_permit_number_extract(s):
+    s = s.apply(
+        lambda j: demjson.decode(j).get('ExtraConstructionPermitNumber', '')
+    )
+    return s
+
+
+@pandas_udf(StringType())
+def construction_permit_number_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s
+
+
+@pandas_udf(StringType())
+def land_use_permit_extract(s):
+    s = s.apply(
+        lambda j: demjson.decode(j).get("ExtraLandCertificate", "").replace("、", "")
+    )
+    return s
+
+
+@pandas_udf(StringType()):
+def land_use_permit_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return demjson.encode(r)
+
+    s = s.apply(lambda x: func(x))
+    return s

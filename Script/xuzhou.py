@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from random import randint
 
 from pyspark.sql import Row, SparkSession
-from pyspark.sql.functions import col, collect_list
+from pyspark.sql import functions as F
 
 from SparkETLCore.CityCore.Xuzhou import ProjectCoreUDF
 from SparkETLCore.Utils import Var
@@ -12,7 +11,7 @@ from SparkETLCore.Utils import Var
 def kwarguments(tableName, city, db='spark_test'):
     return {
         "url":
-        "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8" \
+        "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8" \
         .format(db),
         "driver":
         "com.mysql.jdbc.Driver",
@@ -22,36 +21,8 @@ def kwarguments(tableName, city, db='spark_test'):
         "user":
         "root",
         "password":
-        "gh001"
+        "yunfangdata"
     }
-
-
-def pdf_apply(pdf, target_method=None, target_table=None):
-    ix = {
-        'PresellInfoItem': target_method.get('PresellInfoItem'),
-        'HouseInfoItem': target_method.get('HouseInfoItem')
-    }
-    methods = ix[target_table]
-    for i, m in enumerate(methods):
-        pdf = m(pdf)
-    return pdf
-
-
-def groupedWork(grouped, methods, target, fields):
-    for i, (num, group) in enumerate(grouped):
-        spark = SparkSession.builder.appName("xuzhou").getOrCreate()
-        df = spark.createDataFrame(group)
-        df = df.rdd.map(lambda r: cleanFields(r, methods, target, fields))
-        df.toDF().select(fields).write().format("jdbc") \
-                .options(
-                    url="jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf8",
-                    driver="com.mysql.jdbc.Driver",
-                    dbtable="project_info_xuzhou",
-                    user="root",
-                    password="gh001") \
-                .mode("append") \
-                .save()
-    return grouped
 
 
 def main():
@@ -65,15 +36,6 @@ def main():
                      .options(**projectArgs) \
                      .load() \
                      .fillna("")
-    # projectDF.createOrReplaceGlobalTempView("ProjectInfoItem")
-
-    buildingArgs = kwarguments('BuildingInfoItem', '徐州')
-    buildingDF = spark.read \
-                     .format("jdbc") \
-                     .options(**buildingArgs) \
-                     .load() \
-                     .fillna("")
-    # buildingDF.createOrReplaceGlobalTempView("BuildingInfoItem")
 
     houseArgs = kwarguments('HouseInfoItem', '徐州')
     houseDF = spark.read \
@@ -81,7 +43,6 @@ def main():
                      .options(**houseArgs) \
                      .load() \
                      .fillna("")
-    # houseDF.createOrReplaceGlobalTempView("HouseInfoItem")
 
     presellArgs = kwarguments('PresellInfoItem', '徐州')
     presellDF = spark.read \
@@ -89,23 +50,72 @@ def main():
                      .options(**presellArgs) \
                      .load() \
                      .fillna("")
-    # presellDF.createOrReplaceGlobalTempView("PresellInfoItem")
 
-    # ProjectCore
-    # >>> 
+    # ProjectCore Block --->
     x = projectDF.alias('x')
-    y = presellDF.alias('y').groupby('ProjectUUID').agg(
-        collect_list('LandUse').alias('LandUse'),
-        collect_list('LssueDate').alias('LssueDate'),
-        collect_list('PresalePermitNumber').alias('PresalePermitNumber'),
-        collect_list('ExtraJson').alias('TmpExtraJson'),
-    )
-    z = houseDF.alias('z').groupby('ProjectUUID').agg()
+    y = presellDF.alias('y')
+    z = houseDF.alias('z')
 
-    df_xy = x.join(y, col('x.ProjectUUID') == col('y.ProjectUUID')) \
-          .select(['x.*',  'y.LandUse', 'y.LssueDate',
-                   'y.PresalePermitNumber', 'y.TmpExtraJson'])
-    # <<<
+    # 1. 字段清洗 + 提取
+    x = x.withColumn('RecordTime',
+                     ProjectCoreUDF.record_time_clean(x.RecordTime))
+
+    y = y.withColumn('LandUse', ProjectCoreUDF.land_use_clean(y.LandUse))
+    y = y.withColumn('LssueDate', ProjectCoreUDF.lssue_date_clean(y.LssueDate))
+    y = y.withColumn('PresalePermitNumber',
+                     ProjectCoreUDF.presale_permit_number_clean(
+                         y.PresalePermitNumber))
+    y = y.withColumn('RegionName',
+                     ProjectCoreUDF.region_name_extract(y.ExtraJson))
+    y = y.withColumn('LandUsePermit',
+                     ProjectCoreUDF.land_use_permit_extract(y.ExtraJson))
+    y = y.withColumn('ConstructionPermitNumber',
+                     ProjectCoreUDF.construction_permit_number_extract(
+                         y.ExtraJson))
+    y = y.withColumn('CertificateOfUseOfStateOwnedLand',
+                     ProjectCoreUDF.cert_state_land_extract(y.ExtraJson))
+
+    # 2. 分组 + 聚合
+    y = y.groupBy("ProjectUUID").agg(
+        F.collect_list("LandUse").alias('LandUse'),
+        F.collect_list("LssueDate").alias('LssueDate'),
+        F.collect_list("PresalePermitNumber").alias('PresalePermitNumber'),
+        F.collect_list("RegionName").alias("RegionName"),
+        F.collect_list("LandUsePermit").alias("LandUsePermit"),
+        F.collect_list("ConstructionPermitNumber").alias(
+            "ConstructionPermitNumber"),
+        F.collect_list("CertificateOfUseOfStateOwnedLand").alias(
+            "CertificateOfUseOfStateOwnedLand"))
+
+    z = z.groupBy("ProjectUUID").agg(
+        F.collect_list("HouseUseType").alias("HouseUseType"))
+
+    # 3. 细节运算
+    y = y.withColumn("LandUse", ProjectCoreUDF.land_use_apply(y.LandUse))
+    y = y.withColumn("LssueDate", ProjectCoreUDF.lssue_date_apply(y.LssueDate))
+    y = y.withColumn("PresalePermitNumber",
+                     ProjectCoreUDF.presale_permit_number_apply(
+                         y.PresalePermitNumber))
+    y = y.withColumn("RegionName",
+                     ProjectCoreUDF.region_name_apply(y.RegionName))
+    y = y.withColumn("LandUsePermit",
+                     ProjectCoreUDF.land_use_permit_apply(y.LandUsePermit))
+    y = y.withColumn("ConstructionPermitNumber",
+                     ProjectCoreUDF.construction_permit_number_apply(
+                         y.ConstructionPermitNumber))
+    y = y.withColumn("CertificateOfUseOfStateOwnedLand",
+                     ProjectCoreUDF.cert_state_land_apply(
+                         y.CertificateOfUseOfStateOwnedLand))
+
+    z = z.withCoulumn("HouseUseType",
+                      ProjectCoreUDF.house_use_type_apply(z.HouseUseType))
+
+    # 4. 联合入库
+    x = x.drop([c for c in x.columns if c in y.columns + z.columns])
+    df = x.join(y, x.ProjectUUID == y.ProjectUUID, 'left') \
+          .join(z, x.ProjectUUID == z.ProjectUUID, 'left')
+
+    # <--- ProjectCore End Block
 
     return 0
 
