@@ -59,28 +59,25 @@ METHODS = ['approvalPresaleAmount',
            'regionName',
            'remarks',
            'sourceUrl',
-           'totalBuidlingArea']
+           'totalBuidlingArea',
+           'projectID']
 
-def test(data):
-    data = data.asDict()
-    # print (data['ProjectName'].encode('utf-8'))
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select count(distinct(HouseID)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    print (df.col.values[0].__str__())
-    # data['HousingCount'] = df.col.values[0].__str__()
-    return Row(**data)
+
 
 def recordTime(data):
     # print(data, inspect.stack()[0][3])
     return data
 
 
+def ProjectID(data):
+    # print(data, inspect.stack()[0][3])
+    return data
+
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def promotionName(data):
@@ -90,16 +87,15 @@ def promotionName(data):
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['RealEstateProjectID'] = data['ProjectID']
-    return Row(**data)
+    return data
 
 
 def projectUUID(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['ProjectUUID'] = data['ProjectUUID']
-    return Row(**data)
+    # data = data.asDict()
+    return data
 
 
 def districtName(data):
@@ -114,9 +110,9 @@ def regionName(data):
 
 def projectAddress(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['ProjectAddress'] = Meth.cleanName(data['ProjectAddress'])
-    return Row(**data)
+    return data
 
 
 def projectType(data):
@@ -126,15 +122,15 @@ def projectType(data):
 
 def onSaleState(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select HouseUUID,HouseState,HouseID from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    presaleNum = df['HouseID'].size
-    unsoldNum = df['HouseID'][~df.HouseState.isin(["可售","抵押可售","摇号销售","现房销售"])].size
-    if presaleNum and unsoldNum:
-        data['OnSaleState'] = '售馨'.decode('utf-8') if (unsoldNum/presaleNum) < 0.1 else '在售'.decode('utf-8')
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select HouseUUID,HouseState,HouseID from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # presaleNum = df['HouseID'].size
+    # unsoldNum = df['HouseID'][~df.HouseState.isin(["可售","抵押可售","摇号销售","现房销售"])].size
+    # if presaleNum and unsoldNum:
+    #     data['OnSaleState'] = '售馨'.decode('utf-8') if (unsoldNum/presaleNum) < 0.1 else '在售'.decode('utf-8')
+    return data
 
 
 def landUse(data):
@@ -149,15 +145,15 @@ def housingCount(data):
     #                  sql="select count(distinct(HouseID)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
     #                      projectUUID=data['ProjectUUID']))
     # data['HousingCount'] = df.col.values[0].__str__()
-    # return Row(**data)
+    # return data
     return data
 
 
 def developer(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['Developer'] = Meth.cleanName(data['Developer']).decode('utf-8')
-    return Row(**data)
+    return data
 
 
 def floorArea(data):
@@ -177,24 +173,24 @@ def totalBuidlingArea(data):
     #                                     .apply(Meth.cleanUnit)\
     #                                     .apply(lambda x:float(x) if x else 0.0)\
     #                                     .sum().__str__()
-    # return Row(**data)
-    data = data.asDict()
+    # return data
+    # data = data.asDict()
     if data['TotalBuidlingArea']:
         data['TotalBuidlingArea'] = Meth.cleanUnit(data['TotalBuidlingArea'])
-    return Row(**data)
+    return data
 
 def buildingType(data):
     return data
 
 def houseUseType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    usageSet = df['ExtraJson'].apply(Meth.jsonLoad).apply(lambda x:x.get('BuildingUsage',''))
-    data['HouseUseType'] = ';'.join((set(usageSet) - set([''])))
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # usageSet = df['ExtraJson'].apply(Meth.jsonLoad).apply(lambda x:x.get('BuildingUsage',''))
+    # data['HouseUseType'] = ';'.join((set(usageSet) - set([''])))
+    return data
 
 def propertyRightsDescription(data):
     # print(data, inspect.stack()[0][3])
@@ -218,32 +214,33 @@ def lssueDate(data):
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(PresalePermitNumber) as col from BuildingInfoItem where ProjectUUID='{projectUUID}'"\
-                     .format(projectUUID=data['ProjectUUID']))
-    data['PresalePermitNumber'] =';'.join(set(df.col.values) - set(['']))
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(PresalePermitNumber) as col from BuildingInfoItem where ProjectUUID='{projectUUID}'"\
+    #                  .format(projectUUID=data['ProjectUUID']))
+    # data['PresalePermitNumber'] =';'.join(set(df.col.values) - set(['']))
+    if data['PresalePermitNumber']:
+        data['PresalePermitNumber'] = Meth.jsonDumps(data['PresalePermitNumber'].split('@#$'))
+    return data
 
 
 def houseBuildingCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HouseBuildingCount'] = len(list(set(df.col.values) - set(['']))).__str__()
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # data['HouseBuildingCount'] = len(list(set(df.col.values) - set(['']))).__str__()
+    return data
 
 
 def approvalPresaleAmount(data):
     # print(data, inspect.stack()[0][3])
-    # data = data.asDict()
     # df = pd.read_sql(con=Var.ENGINE,
     #                  sql="select count(distinct(HouseID)) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
     #                      projectUUID=data['ProjectUUID']))
     # data['ApprovalPresaleAmount'] = str(df.col.values[0])
-    # return Row(**data)
+    # return data
     return data
 
 def approvalPresaleArea(data):
@@ -259,7 +256,7 @@ def approvalPresaleArea(data):
     #     data['ApprovalPresaleArea'] = df.apply(Meth.cleanUnit)\
     #                                             .apply(lambda x:float(x) if x else 0.0)\
     #                                             .sum().__str__()
-    # return Row(**data) 
+    # return data 
     return data
 
 def averagePrice(data):
@@ -279,27 +276,27 @@ def completionDate(data):
 
 def earliestOpeningTime(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        data['EarliestOpeningTime'] = df.ExtraJson.apply(Meth.jsonLoad)\
-                                        .apply(lambda x:x.get('ExtraBuildingOpenDate'))\
-                                        .apply(Meth.cleanUnit).replace('',method='bfill').min().__str__()
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # if not df.empty:
+    #     data['EarliestOpeningTime'] = df.ExtraJson.apply(Meth.jsonLoad)\
+    #                                     .apply(lambda x:x.get('ExtraBuildingOpenDate'))\
+    #                                     .apply(Meth.cleanUnit).replace('',method='bfill').min().__str__()
+    return data
 
 
 def latestDeliversHouseDate(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        data['LatestDeliversHouseDate'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingDeliverDate'))\
-                                            .apply(Meth.cleanUnit).max().__str__()
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # if not df.empty:
+    #     data['LatestDeliversHouseDate'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingDeliverDate'))\
+    #                                         .apply(Meth.cleanUnit).max().__str__()
+    return data
 
 
 def presaleRegistrationManagementDepartment(data):
@@ -313,18 +310,18 @@ def landLevel(data):
 
 
 def greeningRate(data):
-    data = data.asDict()
+    # data = data.asDict()
     data['GreeningRate'] = Meth.cleanUnit(data['GreeningRate'])
     # print(data, inspect.stack()[0][3])
-    return Row(**data)
+    return data
 
 
 def floorAreaRatio(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['FloorAreaRatio'] = Meth.cleanUnit(data['FloorAreaRatio'])
     # print(data, inspect.stack()[0][3])
-    return Row(**data)
+    return data
 
 
 
@@ -335,10 +332,10 @@ def managementFees(data):
 
 def managementCompany(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    # data = data.asDict()
     data['ManagementCompany'] = Meth.cleanName(data['ManagementCompany'])
     # print(data, inspect.stack()[0][3])
-    return Row(**data)
+    return data
 
 
 def otheRights(data):
@@ -348,15 +345,15 @@ def otheRights(data):
 
 def certificateOfUseOfStateOwnedLand(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        df['ExtraBuildingAreaCode'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingAreaCode'))\
-                                         .apply(Meth.cleanName)
-        data['CertificateOfUseOfStateOwnedLand'] =';'.join(df['ExtraBuildingAreaCode'][df.ExtraBuildingAreaCode!=''].unique())
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # if not df.empty:
+    #     df['ExtraBuildingAreaCode'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingAreaCode'))\
+    #                                      .apply(Meth.cleanName)
+    #     data['CertificateOfUseOfStateOwnedLand'] =';'.join(df['ExtraBuildingAreaCode'][df.ExtraBuildingAreaCode!=''].unique())
+    return data
 
 
 def constructionPermitNumber(data):
@@ -376,15 +373,15 @@ def landUsePermit(data):
 
 def buildingPermit(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        df['ExtraBuildingPlanCode'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingPlanCode'))\
-                                         .apply(Meth.cleanName)
-        data['BuildingPermit'] =';'.join(df['ExtraBuildingPlanCode'][df.ExtraBuildingPlanCode!=''].unique())
-    return Row(**data)
+    # data = data.asDict()
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql="select ExtraJson from BuildingInfoItem where ProjectUUID='{projectUUID}'".format(
+    #                      projectUUID=data['ProjectUUID']))
+    # if not df.empty:
+    #     df['ExtraBuildingPlanCode'] = df.ExtraJson.apply(Meth.jsonLoad).apply(lambda x:x.get('ExtraBuildingPlanCode'))\
+    #                                      .apply(Meth.cleanName)
+    #     data['BuildingPermit'] =';'.join(df['ExtraBuildingPlanCode'][df.ExtraBuildingPlanCode!=''].unique())
+    return data
 
 
 def legalPersonNumber(data):
@@ -415,7 +412,7 @@ def parkingSpaceAmount(data):
     #                      projectUUID=data['ProjectUUID']))
     # if not df.empty:
     #     data['ParkingSpaceAmount'] = df['HouseID'][df.HouseUseType.str.contains(u'车')].unique().size.__str__() 
-    # return Row(**data)
+    # return data
     return data
 
 def remarks(data):

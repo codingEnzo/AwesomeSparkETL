@@ -3,11 +3,12 @@ import os
 import sys
 import pandas as pd
 import pyspark
+from pyspark.sql import Row
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 # from pyspark import SparkContext
 from sqlalchemy import *
-from pyspark.sql.types import *
 sys.path.append(os.path.dirname(os.getcwd()))
 from SparkETLCore.CityCore.Hefei import ProjectCore
 from SparkETLCore.CityCore.Hefei import BuildingCore
@@ -19,17 +20,25 @@ from SparkETLCore.Utils.Var import ENGINE
 import datetime
 
 
-def readPub (sc,options):
+def readPub (sc,table,groupid):
     options.update({'url':'''jdbc:mysql://10.30.1.70:3307/spark_test?
-                            useUnicode=true&characterEncoding=utf-8''',
+                             useUnicode=true&characterEncoding=utf-8''',
                     'driver':"com.mysql.jdbc.Driver",
-                    "user":"root",
-                    "password":"gh001"})
-    df = sc.read.format("jdbc").options(**options).load()
-    return df.filna('')
+                    "user":"root","password":"gh001"
+                    "dbtable":'''(SELECT * FROM 
+                                 (SELECT * FROM {table} 
+                                 WHERE City='合肥' AND {groupid} !=''
+                                 ORDER BY RecordTime DESC ) AS col 
+                                 Group BY col.{groupid} LIMIT 10) {table}'''\
+                                 .format(table=options['table'], 
+                                         groupid=options['groupid'])})
+    df = sc.read.format("jdbc").options(**options).load().fillna('')
+    df.createOrReplaceTempView(table)
+    return df
 
 def savePub (df,options):
-    options.update({'url':'''jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf-8''',
+    options.update({'url':'''jdbc:mysql://10.30.1.70:3307/spark_caches?
+                            useUnicode=true&characterEncoding=utf-8''',
                     'driver':"com.mysql.jdbc.Driver",
                     "user":"root",
                     "password":"gh001"})
@@ -37,164 +46,58 @@ def savePub (df,options):
     return 'finish'
 
 def coreCleanPub (data,cls):
+    data = data.asDict()
     for index,method in enumerate(cls.METHODS):
         func = getattr(cls,method)
         data = func(data)
+    data = Row(**data)
     return data
 
-def projectClean(searchtime='1970-01-01'):
-    print ('project clean is going run')
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = {'dbtable':'''(SELECT * FROM 
-                (SELECT * FROM ProjectInfoItem 
-                WHERE City='合肥' AND RecordTime>'{0}'AND ProjectID !=''
-                ORDER BY RecordTime DESC ) AS col 
-                Group BY col.ProjectID LIMIT 1) tmp'''.format(searchtime)}
+
+def projectETL(sc,df):
     optionSave = {'dbtable':"project_info_hefei"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,ProjectCore)).toDF()
-    result = savePub(cleandf,optionSave)
-    print (result)
+    dropLT= ['HouseBuildingCount','PresalePermitNumber']
+    p = proDF.alias('p').drop(*dropLT)
+    b = sc.sql(
+            '''SELECT ProjectUUID,
+            count(distinct(BuildingName)) AS HouseBuildingCount
+            concat_ws('@#$', collect_list(distinct PresalePermitNumber)) AS PresalePermitNumber
+            concat_ws('@#$', collect_list(distinct BuildingArea)) AS BTotalBuidlingArea
+            concat_ws('@#$', collect_list(distinct ExtraJson)) AS BuiExtraJson
+            FROM BuildingInfoItem GROUP BY ProjectUUID''').alias(b)
+    p = p.join(b2,'ProjectUUID','left')\
+           .select(proDF.columns+\
+                    [col('b.HouseBuildingCount'),
+                    col('b.PresalePermitNumber')])
+    cleandf = p.rdd.map(lambda r :coreCleanPub(r,ProjectCore)).toDF().select()
+    result = savePub(cleandf,{'dbtable':"project_info_hefei"})
 
-def buildingClean(searchtime='1970-01-01'):
-    print ('building script is going run')
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = { 'dbtable':'''(SELECT * FROM 
-                    (SELECT * FROM BuildingInfoItem 
-                    WHERE City='合肥' AND RecordTime>'{0}'AND BuildingID !=''
-                    ORDER BY RecordTime DESC ) AS col 
-                    Group BY col.BuildingID LIMIT 10)tmp'''.format(searchtime)}
-    optionSave = {'dbtable':"building_info_hefei"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,BuildingCore)).toDF()
-    result = savePub(cleandf,optionSave)
-    print ('building'+result)
-
-def permitClean(searchtime='1970-01-01'):
-    #没有预售证表格不分离数据
+def buildingETL(sc,df):
     pass
 
-def houseClean(searchtime='1970-01-01'):
-    # schema = StructType([StructField(i,StringType(),True) for i in df.columns])
-    print ('house script is going run')
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = {
-                  # 'dbtable':'''(SELECT * FROM 
-                  #   (SELECT * FROM HouseInfoItem 
-                  #   WHERE City='合肥' AND RecordTime>'{0}'AND HouseID !=''
-                  #   ORDER BY RecordTime DESC ) AS col 
-                  #   Group BY col.HouseID LIMIT 4)tmp'''.format(searchtime)
-                  'dbtable':'''(SELECT * FROM HouseInfoItem 
-                    WHERE HouseUUID ='0001de15-6b90-3d63-b3ab-88c25e40e678')tmp'''}
-    optionSave = {'dbtable':"house_info_hefei"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,HouseCore)).toDF()
-    result = savePub(cleandf,optionSave)
-    print ('house'+result)
+def houseETL(sc,df):
+    pass
 
-def dealCaseClean(searchtime='1970-01-01'):
-    # schema = StructType([StructField(i,StringType(),True) for i in df.columns])
-    print ('dealcase script is going run')
-    dropLT =['HouseStateLatest','ExtraJson']
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = {'dbtable':'''(SELECT * FROM 
-                        (SELECT SourceUrl as SourceLink,
-                        RecordTime as CaseTime,
-                        FloorName as ActualFloor,
-                        HouseState as SellState,
-                        DistrictName,ProjectName,BuildingName,
-                        IsMortgage,IsAttachment,IsPrivateUse,IsMoveBack,
-                        MeasuredInsideOfBuildingArea,MeasuredSharedPublicArea,
-                        IsSharedPublicMatching,BuildingStructure,SellSchedule,
-                        UnitShape,UnitStructure,Balconys,UnenclosedBalconys,
-                        HouseName,HouseNumber,TotalPrice,Price,PriceType,Address,
-                        FloorName,HouseUseType,Dwelling,Remarks,RecordTime,
-                        ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
-                        BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
-                        RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
-                        AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ("可售","抵押可售","摇号销售","现房销售") 
-                        AND HouseStateLatest in ("现房销售","已签约","已备案","已办产权","网签备案单")
-                        ORDER BY RecordTime DESC ) AS col 
-                        Group BY col.HouseID LIMIT 3)tmp'''.format(searchtime)}
-    optionSave = {'dbtable':"deal_case_hefei"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,CaseCore)).toDF().drop(*dropLT)
-    result = savePub(cleandf,optionSave)
-    print ('dealcase'+result)
+def caseETL(sc,df):
+    pass
 
-def supplyCaseClean(searchtime='1970-01-01'):
-    # schema = StructType([StructField(i,StringType(),True) for i in df.columns])
-    print ('supplyCase script is going run')
-    dropLT =['HouseStateLatest','ExtraJson']
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = {'dbtable':'''(SELECT * FROM 
-                        (SELECT SourceUrl as SourceLink,
-                        RecordTime as CaseTime,
-                        FloorName as ActualFloor,
-                        HouseState as SellState,
-                        DistrictName,ProjectName,BuildingName,
-                        IsMortgage,IsAttachment,IsPrivateUse,IsMoveBack,
-                        MeasuredInsideOfBuildingArea,MeasuredSharedPublicArea,
-                        IsSharedPublicMatching,BuildingStructure,SellSchedule,
-                        UnitShape,UnitStructure,Balconys,UnenclosedBalconys,
-                        HouseName,HouseNumber,TotalPrice,Price,PriceType,Address,
-                        FloorName,HouseUseType,Dwelling,Remarks,RecordTime,
-                        ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
-                        BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
-                        RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
-                        AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ('可售','抵押可售','摇号销售','现房销售') 
-                        AND HouseStateLatest =''
-                        ORDER BY RecordTime DESC ) AS col 
-                        Group BY col.HouseID LIMIT 3)tmp'''.format('1970-01-01'),
-                        }
-    optionSave = {'dbtable':"supply_case_hefei"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,CaseCore)).toDF().drop(*dropLT)
-    result = savePub(cleandf,optionSave)
-    print ('supplyCase'+result)
 
-def quitCaseClean(searchtime='1970-01-01'):
-    # schema = StructType([StructField(i,StringType(),True) for i in df.columns])
-    print ('supplyCase script is going run')
-    dropLT =['HouseStateLatest','ExtraJson']
-    sc = SparkSession.builder.appName("master").getOrCreate()
-    optionRead = {'dbtable':'''(SELECT * FROM 
-                        (SELECT SourceUrl as SourceLink,
-                        RecordTime as CaseTime,
-                        FloorName as ActualFloor,
-                        HouseState as SellState,
-                        DistrictName,ProjectName,BuildingName,
-                        IsMortgage,IsAttachment,IsPrivateUse,IsMoveBack,
-                        MeasuredInsideOfBuildingArea,MeasuredSharedPublicArea,
-                        IsSharedPublicMatching,BuildingStructure,SellSchedule,
-                        UnitShape,UnitStructure,Balconys,UnenclosedBalconys,
-                        HouseName,HouseNumber,TotalPrice,Price,PriceType,Address,
-                        FloorName,HouseUseType,Dwelling,Remarks,RecordTime,
-                        ProjectUUID,BuildingUUID,HouseUUID,UnitUUID,ExtraJson
-                        BuildingID,HouseID,ForecastBuildingArea,ForecastInsideOfBuildingArea,
-                        RealEstateProjectID,HouseStateLatest,ForecastPublicArea,MeasuredBuildingArea,
-                        FROM HouseInfoItem WHERE City='合肥' 
-                        AND RecordTime>'{0}' AND HouseID !=''
-                        AND HouseState in ("现房销售","已签约","已备案","已办产权","网签备案单") 
-                        AND HouseStateLatest in  ("可售","抵押可售","摇号销售","现房销售")
-                        ORDER BY RecordTime DESC ) AS col 
-                        Group BY col.HouseID LIMIT 3)tmp'''.format('1970-01-01'),
-                        }
-    optionSave = {'dbtable':"supply_case_wulumuqi"}
-    df = readPub(sc,optionRead)
-    cleandf = df.rdd.map(lambda r:coreCleanPub(r,CaseCore)).toDF().drop(*dropLT)
-    result = savePub(cleandf,optionSave)
-    print ('supplyCase'+result)
+def main():
+    sc =SparkSession.builder.appName("Hefei")\
+            .config('spark.cores.max',8)\
+            .config('spark.sql.execution.arrow.enabled','true')\
+            .config('spark.sql.codegen','true')\
+            .config("spark.local.dir", "~/.tmp").getOrCreate()
+
+    proDF = readPub(sc,table='ProjectInfoItem',groupid='ProjectID')
+    buiDF = readPub(sc,table='BuildingInfoItem',groupid='BuildingID')
+    # houDF = readPub(sc,table='HouseInfoItem',groupid='HouseID')
+
+    ProjectETL(sc,proDF)
+    # buildingETL(sc,buiDF)
+    # houseETL(sc,houDF)
+    # caseETL(sc,houDF)
 
 if __name__ == '__main__':
-    searchTime = (datetime.datetime.now()\
-                    -datetime.timedelete(days=1)).stftime('%Y-%m-%d')
-    # projectClean()
-    # buildingClean()
-    # houseClean()
-    # dealCaseClean()
-    # supplyCaseClean()
+    main()
+    
