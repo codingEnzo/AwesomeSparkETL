@@ -61,8 +61,6 @@ METHODS = ['approvalPresaleAmount',
 
 
 def recordTime(data):
-    # print(data, inspect.stack()[0][3])
-    
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
@@ -70,50 +68,39 @@ def recordTime(data):
 
 
 def projectName(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return data
 
 
 def promotionName(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def realEstateProjectId(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def projectUUID(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def districtName(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def regionName(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def projectAddress(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def projectType(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def onSaleState(data):
-    # print(data, inspect.stack()[0][3])
-    
     unsoldNum = int(Meth.jsonLoad(data['ExtraJson']).get(
         'ExtraProjectSaleNum', '0'))
     if unsoldNum == 0:
@@ -124,28 +111,23 @@ def onSaleState(data):
 
 
 def landUse(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def housingCount(data):
     return data
 
+
 def developer(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['Developer'] = Meth.cleanName(data['Developer'])
     return data
 
 
 def floorArea(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def totalBuidlingArea(data):
-    # print(data, inspect.stack()[0][3])
-    
     ProjectSaleArea = float(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectSaleArea', 0.00))
     ProjectSaledArea = float(Meth.jsonLoad(
@@ -159,42 +141,36 @@ def buildingType(data):
 
 
 def houseUseType(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['HouseUseType'] = Meth.jsonDumps(data['HouseUseType'].split('@#$'))
     return data
 
 
 def propertyRightsDescription(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def projectApproveData(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def projectBookingdData(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def lssueDate(data):
     # 发证日期
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def presalePermitNumber(data):
     # 预售正编号
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def houseBuildingCount(data):
-    # print(data, inspect.stack()[0][3])
-    # 
+    #
     # df = pd.read_sql(con=Var.ENGINE,
     #                  sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
     # data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
@@ -203,84 +179,74 @@ def houseBuildingCount(data):
 
 def approvalPresaleAmount(data):
     # 批准预售套数
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def approvalPresaleArea(data):
     # 批准预售面积
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def averagePrice(data):
     # 均价
-    # print(data, inspect.stack()[0][3])
+
     data['AveragePrice'] = data['AveragePrice']
     return data
 
 
 def earliestStartDate(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def completionDate(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def earliestOpeningTime(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def latestDeliversHouseDate(data):
     # 最晚交房时间
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def presaleRegistrationManagementDepartment(data):
     # 预售登记管理备案部门
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def landLevel(data):
     # 土地登记
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def greeningRate(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def floorAreaRatio(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def managementFees(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def managementCompany(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def otheRights(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def certificateOfUseOfStateOwnedLand(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['CertificateOfUseOfStateOwnedLand'] = Meth.cleanName(
         data['CertificateOfUseOfStateOwnedLand'])
     return data
@@ -288,8 +254,7 @@ def certificateOfUseOfStateOwnedLand(data):
 
 def constructionPermitNumber(data):
     # 施工许可证号
-    # print(data, inspect.stack()[0][3])
-    
+
     data['ConstructionPermitNumber'] = Meth.cleanName(
         data['ConstructionPermitNumber'])
     return data
@@ -297,34 +262,28 @@ def constructionPermitNumber(data):
 
 def qualificationNumber(data):
     # 资质证编号
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def landUsePermit(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def buildingPermit(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['BuildingPermit'] = Meth.cleanName(data['BuildingPermit'])
     return data
 
 
 def legalPersonNumber(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def legalPerson(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def sourceUrl(data):
-    # print(data, inspect.stack()[0][3])
     data['SourceUrl'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraSourceURL', ''))
     return data
@@ -332,23 +291,19 @@ def sourceUrl(data):
 
 def decoration(data):
     # 装修
-    # print(data, inspect.stack()[0][3])
+
     return data
 
 
 def parkingSpaceAmount(data):
-    # print(data, inspect.stack()[0][3])
-    
     data['ParkingSpaceAmount'] = Meth.cleanName(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraParkingTotalSoldAmount', ''))
     return data
 
 
 def remarks(data):
-    # print(data, inspect.stack()[0][3])
     return data
 
 
 def extraJson(data):
-    # print(data, inspect.stack()[0][3])
     return data

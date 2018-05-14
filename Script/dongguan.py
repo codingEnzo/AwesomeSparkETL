@@ -39,7 +39,7 @@ def groupedWork(data, methods, target, fields, tableName):
         r, methods, target, fields))
     df.toDF().select(fields).write.format("jdbc") \
         .options(
-        url="jdbc:mysql://10.30.1.7:3306/spark_mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
         driver="com.mysql.jdbc.Driver",
         dbtable=tableName,
         user="root",
@@ -94,7 +94,7 @@ def projectETL(pjDF=projectDF):
         select ProjectUUID, count(distinct HouseID) as HousingCount from HouseInfoItem group by ProjectUUID
         ''')
     projectHouseUseTypeDF = spark.sql('''
-        select ProjectUUID, concat_ws('@#￥', collect_list(distinct HouseUseType)) as HouseUseType from HouseInfoItem group by ProjectUUID
+        select ProjectUUID, concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType from HouseInfoItem group by ProjectUUID
         ''')
 
     dropColumn = ['HousingCount', 'HouseUseType']
@@ -116,35 +116,24 @@ def buildingETL(bdDF=buildingDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    buildingPresalePermitNumberDF = spark.sql('''
-        select ProjectUUID, concat_ws('@#￥', collect_list(distinct PresalePermitNumber)) as PresalePermitNumber from PresellInfoItem group by ProjectUUID
-        ''')
-    buildingAddressDF = spark.sql('''
-        select ProjectUUID, ProjectAddress as Address from (select ProjectUUID, ProjectAddress from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID
-        ''')
+
+    buildingAddressPresalePermitNumberDF = spark.sql('''
+        select ProjectUUID,first(PresalePermitNumber) as PresalePermitNumber,first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress,PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        ''')
     buildingHousingCountDF = spark.sql('''
         select BuildingUUID, count(distinct HouseID) as HousingCount from HouseInfoItem group by BuildingUUID
         ''')
-    buildingFloorsDF = spark.sql('''
-        select BuildingUUID, count(distinct ActualFloor) as Floors from HouseInfoItem group by BuildingUUID
-        ''')
-    buildingBuildingStructureDF = spark.sql('''
-        select BuildingUUID, concat_ws('@#￥', collect_list(distinct BuildingStructure)) as BuildingStructure from HouseInfoItem group by BuildingUUID
-        ''')
-    dropColumn = ['PresalePermitNumber', 'Address',
-                  'HousingCount', 'Floors', 'BuildingStructure']
+
+
+    dropColumn = ['Address','PresalePermitNumber',
+                  'HousingCount']
     bdDF = bdDF.drop(*dropColumn)
-    preBuildingDF = bdDF.join(buildingPresalePermitNumberDF, 'ProjectUUID', 'left')\
-        .join(buildingAddressDF, 'ProjectUUID', 'left')\
+    preBuildingDF = bdDF.join(buildingAddressPresalePermitNumberDF, 'ProjectUUID', 'left')\
+        .join(buildingAddressPresalePermitNumberDF, 'ProjectUUID', 'left')\
         .join(buildingHousingCountDF, 'BuildingUUID', 'left')\
-        .join(buildingFloorsDF, 'BuildingUUID', 'left')\
-        .join(buildingBuildingStructureDF, 'BuildingUUID', 'left')\
-        .select(filter(lambda x: x not in dropColumn, bdDF.columns)
-                + [buildingPresalePermitNumberDF.PresalePermitNumber,
-                   buildingAddressDF.Address,
-                   buildingHousingCountDF.HousingCount,
-                   buildingFloorsDF.Floors,
-                   buildingBuildingStructureDF.BuildingStructure])\
+        .select(list(filter(lambda x: x not in dropColumn, bdDF.columns))
+                + [buildingAddressPresalePermitNumberDF.PresalePermitNumber,
+                   buildingAddressPresalePermitNumberDF.Address,
+                   buildingHousingCountDF.HousingCount])\
         .dropDuplicates()
     groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
                 BUILDING_FIELDS, 'building_info_dongguan')
