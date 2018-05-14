@@ -26,7 +26,7 @@ METHODS = [
 
 
 def recordTime(data):
-    if not data.get("RecordTime"):
+    if unot data.get("RecordTime"):
         nt = datetime.datetime.now()
         data['RecordTime'] = nt
     return data

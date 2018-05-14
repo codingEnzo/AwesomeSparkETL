@@ -89,7 +89,40 @@ PROJECT_FIELDS = [
     'HouseUUID',
     'UnitUUID',
 ]
-BUILDING_FIELDS = []
+BUILDING_FIELDS = [
+    'RecordTime',
+    'ProjectName',
+    'RealEstateProjectID',
+    'BuildingName',
+    'BuildingID',
+    'BuildingUUID',
+    'UnitName',
+    'UnitID',
+    'PresalePermitNumber',
+    'Address',
+    'OnTheGroundFloor',
+    'TheGroundFloor',
+    'EstimatedCompletionDate',
+    'HousingCount',
+    'Floors',
+    'ElevatorHouse',
+    'IsHasElevator',
+    'ElevaltorInfo',
+    'BuildingStructure',
+    'BuildingType',
+    'BuildingHeight',
+    'BuildingCategory',
+    'Units',
+    'UnsoldAmount',
+    'BuildingAveragePrice',
+    'BuildingPriceRange',
+    'BuildingArea',
+    'Remarks',
+    'SourceUrl',
+    'ExtraJson',
+    'ProjectUUID',
+    'UnitUUID',
+]
 HOUSE_FIELDS = []
 DEAL_FIELDS = []
 

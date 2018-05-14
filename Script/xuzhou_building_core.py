@@ -51,12 +51,9 @@ def main():
 
     # 1. 字段清洗 + 提取
     x = x.withColumn('RecordTime',
-                     .record_time_clean(x.RecordTime))
+                     BuildingCoreUDF.record_time_clean(x.RecordTime))
 
     # 2. 分组 + 聚合
-    x = x.groupBy("BuildingUUID").agg(
-        F.collect_list("LandUse").alias('LandUse'))
-
     y = y.groupBy("BuildingUUID").agg(
         F.collect_list("UnitName").alias("UnitName"))
 
@@ -64,10 +61,8 @@ def main():
     y = y.withColumn("UnitName", BuildingCoreUDF.unit_name_apply(y.UnitName))
 
     # 4. 联合入库
-    x = x.drop(*[
-        c for c in x.columns
-        if (c in y.columns) and (c != 'BuildingUUID')
-    ])
+    x = x.drop(
+        *[c for c in x.columns if (c in y.columns) and (c != 'BuildingUUID')])
     df = x.join(y, x.BuildingUUID == y.BuildingUUID, 'left')
     columns = df.columns
     for i, c in enumerate(Var.PROJECT_FIELDS):
@@ -78,7 +73,7 @@ def main():
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
-            dbtable='project_info_xuzhou',
+            dbtable='building_info_xuzhou',
             user="root",
             password="yunfangdata") \
         .mode("append") \
