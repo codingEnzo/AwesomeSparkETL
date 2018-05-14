@@ -3,6 +3,6 @@ from setuptools import setup
 setup(
     name='test demo',
     version='1.0',
-    package=['manage.py']
+    package=['SparkETLCore']
 
 )
