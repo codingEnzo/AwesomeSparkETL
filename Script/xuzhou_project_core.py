@@ -3,6 +3,7 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql.functions import lit
 
 from SparkETLCore.CityCore.Xuzhou import ProjectCoreUDF
 from SparkETLCore.Utils import Var
@@ -108,24 +109,28 @@ def main():
                          y.CertificateOfUseOfStateOwnedLand))
 
     z = z.withColumn("HouseUseType",
-                      ProjectCoreUDF.house_use_type_apply(z.HouseUseType))
+                     ProjectCoreUDF.house_use_type_apply(z.HouseUseType))
 
     # 4. 联合入库
-    x = x.drop([c for c in x.columns if (c in y.columns + z.columns) and (c != 'ProjectUUID')]
+    x = x.drop(*[
+        c for c in x.columns
+        if (c in y.columns + z.columns) and (c != 'ProjectUUID')
+    ])
     df = x.join(y, x.ProjectUUID == y.ProjectUUID, 'left') \
           .join(z, x.ProjectUUID == z.ProjectUUID, 'left')
     columns = df.columns
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
-               df = df.withColumn(c, "")
-    df.drop(col("y.ProjectUUID"), col("z.ProjectUUID"))
+            df = df.withColumn(c, lit(""))
+    df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID")
+           .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
     df.select(*Var.PROJECT_FIELDS).write.format("jdbc") \
         .options(
-        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
-        driver="com.mysql.jdbc.Driver",
-        dbtable=tableName,
-        user="root",
-        password="yunfangdata") \
+            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
+            driver="com.mysql.jdbc.Driver",
+            dbtable='project_info_xuzhou',
+            user="root",
+            password="yunfangdata") \
         .mode("append") \
         .save()
     # <--- ProjectCore End Block
