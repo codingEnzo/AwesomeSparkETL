@@ -122,8 +122,7 @@ def cert_state_land_apply(s):
 @pandas_udf(StringType())
 def construction_permit_number_extract(s):
     s = s.apply(
-        lambda j: demjson.decode(j).get('ExtraConstructionPermitNumber', '')
-    )
+        lambda j: demjson.decode(j).get('ExtraConstructionPermitNumber', ''))
     return s
 
 
@@ -146,7 +145,7 @@ def land_use_permit_extract(s):
     return s
 
 
-@pandas_udf(StringType()):
+@pandas_udf(StringType())
 def land_use_permit_apply(s):
     def func(v):
         r = [i for i in v if i != '']
