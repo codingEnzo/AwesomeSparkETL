@@ -26,29 +26,27 @@ def kwarguments(tableName, city, db='spark_test'):
     }
 
 
-def cleanFields(spark, row, methods, target, fields):
+def cleanFields(row, methods, target, fields):
     row = row.asDict()
-    row = Var.NiceDict(dictionary=row, field_list=fields)
+    row = Var.NiceDict(dictionary=row, target=fields)
     for i, method in enumerate(methods):
-        row = getattr(target, method)(spark, row)
+        row = getattr(target, method)(row)
     row = Row(**row)
     return row
 
 
-def groupedWork(spark, grouped, methods, target, fields):
-    for i, (num, group) in enumerate(grouped):
-        df = spark.createDataFrame(group)
-        df = df.rdd.map(lambda r: cleanFields(spark, r, methods, target, fields))
-        df.select(fields).toDF().write().format("jdbc") \
-            .options(
-            url="jdbc:mysql://10.30.1.70:3307/spark_caches?useUnicode=true&characterEncoding=utf8",
-            driver="com.mysql.jdbc.Driver",
-            dbtable="project_info_changzhou",
-            user="root",
-            password="gh001") \
-            .mode("append") \
-            .save()
-    return grouped
+def groupedWork(data,fields, tableName):
+    df = data
+    df.toDF().select(fields).write.format("jdbc") \
+        .options(
+        url="jdbc:mysql://10.30.1.7:3306/spark_mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+        driver="com.mysql.jdbc.Driver",
+        dbtable=tableName,
+        user="root",
+        password="yunfangdata") \
+        .mode("append") \
+        .save()
+    return df
 
 
 def main():
@@ -62,6 +60,7 @@ def main():
         .options(**projectArgs) \
         .load() \
         .fillna("")
+    projectDF.createOrReplaceTempView("ProjectInfoItem")
 
     buildingArgs = kwarguments('BuildingInfoItem', '常州')
     buildingDF = spark.read \
@@ -69,6 +68,7 @@ def main():
         .options(**buildingArgs) \
         .load() \
         .fillna("")
+    projectDF.createOrReplaceTempView("BuildingInfoItem")
 
     houseArgs = kwarguments('HouseInfoItem', '常州')
     houseDF = spark.read \
@@ -76,6 +76,7 @@ def main():
         .options(**houseArgs) \
         .load() \
         .fillna("")
+    projectDF.createOrReplaceTempView("HouseInfoItem")
 
     # presellArgs = kwarguments('PresellInfoItem', '常州')
     # presellDF = spark.read \
@@ -84,10 +85,8 @@ def main():
     #     .load() \
     #     .fillna("")
 
-    projectDF.rdd \
-        .map(lambda r: (randint(1, 8), [r])) \
-        .reduceByKey(lambda x, y: x + y) \
-        .map(lambda g: groupedWork(spark, g, ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS)).count()
+    projectDF.rdd.map(lambda r: cleanFields(r,ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS)) \
+        .map(lambda g: groupedWork(g,Var.PROJECT_FIELDS,'project_info_changzhou')).count()
     buildingDF.rdd \
         .map(lambda r: (randint(1, 8), [r])) \
         .reduceByKey(lambda x, y: x + y) \
@@ -96,7 +95,7 @@ def main():
         .map(lambda r: (randint(1, 8), [r])) \
         .reduceByKey(lambda x, y: x + y) \
         .map(lambda g: groupedWork(spark, g, HouseCore.METHODS, HouseCore, Var.HOUSE_FIELDS)).count()
-    #
+
     # houseDF.rdd \
     #     .map(lambda r: (randint(1, 8), [r])) \
     #     .reduceByKey(lambda x, y: x + y) \

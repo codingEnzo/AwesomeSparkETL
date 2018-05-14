@@ -6,9 +6,8 @@ import pandas as pd
 import numpy as np
 import datetime
 from pyspark.sql import Row
-sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount',
            'approvalPresaleArea',
@@ -63,7 +62,7 @@ METHODS = ['approvalPresaleAmount',
 
 def recordTime(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
@@ -72,7 +71,7 @@ def recordTime(data):
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return data
 
@@ -114,13 +113,13 @@ def projectType(data):
 
 def onSaleState(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     unsoldNum = int(Meth.jsonLoad(data['ExtraJson']).get(
         'ExtraProjectSaleNum', '0'))
     if unsoldNum == 0:
-        data['OnSaleState'] = '售馨'.decode('utf-8')
+        data['OnSaleState'] = '售馨'
     else:
-        data['OnSaleState'] = '在售'.decode('utf-8')
+        data['OnSaleState'] = '在售'
     return data
 
 
@@ -130,18 +129,11 @@ def landUse(data):
 
 
 def housingCount(data):
-    # print(data, inspect.stack()[0][3])
-    # data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(MeasuredBuildingArea) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-    #                      projectUUID=data['ProjectUUID']))
-    # data['HousingCount'] = str(df.col.values[0])
-    # return data
     return data
 
 def developer(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['Developer'] = Meth.cleanName(data['Developer'])
     return data
 
@@ -153,7 +145,7 @@ def floorArea(data):
 
 def totalBuidlingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     ProjectSaleArea = float(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectSaleArea', 0.00))
     ProjectSaledArea = float(Meth.jsonLoad(
@@ -168,11 +160,8 @@ def buildingType(data):
 
 def houseUseType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.MIRROR_ENGINE,
-                     sql=u"select distinct(HouseUseType) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-                         projectUUID=data['ProjectUUID']))
-    data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
+    
+    data['HouseUseType'] = Meth.jsonDumps(data['HouseUseType'].split('@#$'))
     return data
 
 
@@ -205,10 +194,10 @@ def presalePermitNumber(data):
 
 def houseBuildingCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
-    data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
+    # 
+    # df = pd.read_sql(con=Var.ENGINE,
+    #                  sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
+    # data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
     return data
 
 
@@ -227,7 +216,7 @@ def approvalPresaleArea(data):
 def averagePrice(data):
     # 均价
     # print(data, inspect.stack()[0][3])
-    data['averageprice'] = data['averageprice']
+    data['AveragePrice'] = data['AveragePrice']
     return data
 
 
@@ -291,7 +280,7 @@ def otheRights(data):
 
 def certificateOfUseOfStateOwnedLand(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['CertificateOfUseOfStateOwnedLand'] = Meth.cleanName(
         data['CertificateOfUseOfStateOwnedLand'])
     return data
@@ -300,7 +289,7 @@ def certificateOfUseOfStateOwnedLand(data):
 def constructionPermitNumber(data):
     # 施工许可证号
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['ConstructionPermitNumber'] = Meth.cleanName(
         data['ConstructionPermitNumber'])
     return data
@@ -319,7 +308,7 @@ def landUsePermit(data):
 
 def buildingPermit(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['BuildingPermit'] = Meth.cleanName(data['BuildingPermit'])
     return data
 
@@ -336,7 +325,7 @@ def legalPerson(data):
 
 def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
-    data['sourceUrl'] = str(Meth.jsonLoad(
+    data['SourceUrl'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraSourceURL', ''))
     return data
 
@@ -349,7 +338,7 @@ def decoration(data):
 
 def parkingSpaceAmount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['ParkingSpaceAmount'] = Meth.cleanName(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraParkingTotalSoldAmount', ''))
     return data

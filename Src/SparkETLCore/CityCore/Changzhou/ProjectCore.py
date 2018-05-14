@@ -60,54 +60,54 @@ METHODS = ['approvalPresaleAmount',
            'totalBuidlingArea']
 
 
-def recordTime(spark, data):
+def recordTime(data):
     nowtime = datetime.datetime.now()
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
 
 
-def projectName(spark, data):
+def projectName(data):
     return data
 
 
-def promotionName(spark, data):
+def promotionName(data):
     return data
 
 
-def realEstateProjectId(spark, data):
+def realEstateProjectId(data):
     return data
 
 
-def projectUUID(spark, data):
+def projectUUID(data):
     return data
 
 
-def districtName(spark, data):
+def districtName(data):
     return data
 
 
-def regionName(spark, data):
+def regionName(data):
     return data
 
 
-def projectAddress(spark, data):
+def projectAddress(data):
     return data
 
 
-def projectType(spark, data):
+def projectType(data):
     return data
 
 
-def onSaleState(spark, data):
+def onSaleState(data):
     return data
 
 
-def landUse(spark, data):
+def landUse(data):
     return data
 
 
-def housingCount(spark, data):
+def housingCount(data):
     extraInfo = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
     housenum = [int(x.get('HouseTotalNum', 0)) for x in eval(extraInfo)]
@@ -115,15 +115,15 @@ def housingCount(spark, data):
     return data
 
 
-def developer(spark, data):
+def developer(data):
     return data
 
 
-def floorArea(spark, data):
+def floorArea(data):
     return data
 
 
-def totalBuidlingArea(spark, data):
+def totalBuidlingArea(data):
     extraInfo = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
     housearea = [float(x.get('HouseTotalArea', 0.00)) for x in eval(extraInfo)]
@@ -131,11 +131,11 @@ def totalBuidlingArea(spark, data):
     return data
 
 
-def buildingType(spark, data):
+def buildingType(data):
     return data
 
 
-def houseUseType(spark, data):
+def houseUseType(data):
     extraInfo = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraProjectRecordsInfo', ''))
     HouseUseType = [x.get('HouseUsage', '') for x in eval(extraInfo)]
@@ -143,25 +143,25 @@ def houseUseType(spark, data):
     return data
 
 
-def propertyRightsDescription(spark, data):
+def propertyRightsDescription(data):
     return data
 
 
-def projectApproveData(spark, data):
+def projectApproveData(data):
     return data
 
 
-def projectBookingdData(spark, data):
+def projectBookingdData(data):
     return data
 
 
-def lssueDate(spark, data):
+def lssueDate(data):
     # 发证日期
 
     return data
 
 
-def presalePermitNumber(spark, data):
+def presalePermitNumber(data):
     # 预售正编号
     sql = u"select ExtraJson from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
         projectUUID=data['ProjectUUID'])
@@ -173,7 +173,7 @@ def presalePermitNumber(spark, data):
     return data
 
 
-def houseBuildingCount(spark, data):
+def houseBuildingCount(data):
     sql = "select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
         projectUUID=data['ProjectUUID'])
     query = spark.sql(sql).toPandas()
@@ -182,115 +182,115 @@ def houseBuildingCount(spark, data):
     return data
 
 
-def approvalPresaleAmount(spark, data):
+def approvalPresaleAmount(data):
     # 批准预售套数
     return data
 
 
-def approvalPresaleArea(spark, data):
+def approvalPresaleArea(data):
     # 批准预售面积
     return data
 
 
-def averagePrice(spark, data):
+def averagePrice(data):
     # 均价
     return data
 
 
-def earliestStartDate(spark, data):
+def earliestStartDate(data):
     return data
 
 
-def completionDate(spark, data):
+def completionDate(data):
     return data
 
 
-def earliestOpeningTime(spark, data):
+def earliestOpeningTime(data):
     return data
 
 
-def latestDeliversHouseDate(spark, data):
+def latestDeliversHouseDate(data):
     # 最晚交房时间
 
     return data
 
 
-def presaleRegistrationManagementDepartment(spark, data):
+def presaleRegistrationManagementDepartment(data):
     # 预售登记管理备案部门
     return data
 
 
-def landLevel(spark, data):
+def landLevel(data):
     # 土地登记
     return data
 
 
-def greeningRate(spark, data):
+def greeningRate(data):
     return data
 
 
-def floorAreaRatio(spark, data):
+def floorAreaRatio(data):
     return data
 
 
-def managementFees(spark, data):
+def managementFees(data):
     return data
 
 
-def managementCompany(spark, data):
+def managementCompany(data):
     return data
 
 
-def otheRights(spark, data):
+def otheRights(data):
     return data
 
 
-def certificateOfUseOfStateOwnedLand(spark, data):
+def certificateOfUseOfStateOwnedLand(data):
     return data
 
 
-def constructionPermitNumber(spark, data):
+def constructionPermitNumber(data):
     # 施工许可证号
     return data
 
 
-def qualificationNumber(spark, data):
+def qualificationNumber(data):
     # 资质证编号
     return data
 
 
-def landUsePermit(spark, data):
+def landUsePermit(data):
     return data
 
 
-def buildingPermit(spark, data):
+def buildingPermit(data):
     return data
 
 
-def legalPersonNumber(spark, data):
+def legalPersonNumber(data):
     return data
 
 
-def legalPerson(spark, data):
+def legalPerson(data):
     return data
 
 
-def sourceUrl(spark, data):
+def sourceUrl(data):
     return data
 
 
-def decoration(spark, data):
+def decoration(data):
     # 装修
     return data
 
 
-def parkingSpaceAmount(spark, data):
+def parkingSpaceAmount(data):
     return data
 
 
-def remarks(spark, data):
+def remarks(data):
     return data
 
 
-def extraJson(spark, data):
+def extraJson(data):
     return data
