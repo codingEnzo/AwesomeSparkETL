@@ -1,396 +1,283 @@
 # coding=utf-8
 from __future__ import division
-import sys
+from __future__ import unicode_literals
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-import inspect
-import pandas as pd
-from pyspark.sql import Row
-
-sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-
-sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
-
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = ['approvalPresaleAmount',
-		   'approvalPresaleArea',
-		   'averagePrice',
-		   'buildingPermit',
-		   'buildingType',
-		   'certificateOfUseOfStateOwnedLand',
-		   'completionDate',
-		   'constructionPermitNumber',
-		   'decoration',
-		   'developer',
-		   'districtName',
-		   'earliestOpeningTime',
-		   'earliestStartDate',
-		   'extraJson',
-		   'floorArea',
-		   'floorAreaRatio',
-		   'greeningRate',
-		   'houseBuildingCount',
-		   'houseUseType',
-		   'housingCount',
-		   'landLevel',
-		   'landUse',
-		   'landUsePermit',
-		   'latestDeliversHouseDate',
-		   'legalPerson',
-		   'legalPersonNumber',
-		   'lssueDate',
-		   'managementCompany',
-		   'managementFees',
-		   'onSaleState',
-		   'otheRights',
-		   'parkingSpaceAmount',
-		   'presalePermitNumber',
-		   'presaleRegistrationManagementDepartment',
-		   'projectAddress',
-		   'projectApproveData',
-		   'projectBookingdData',
-		   'projectID',
-		   'projectName',
-		   'projectType',
-		   'projectUUID',
-		   'promotionName',
-		   'propertyRightsDescription',
-		   'qualificationNumber',
-		   'realEstateProjectId',
-		   'recordTime',
-		   'regionName',
-		   'remarks',
-		   'sourceUrl',
-		   'totalBuidlingArea']
+           'approvalPresaleArea',
+           'averagePrice',
+           'buildingPermit',
+           'buildingType',
+           'certificateOfUseOfStateOwnedLand',
+           'completionDate',
+           'constructionPermitNumber',
+           'decoration',
+           'developer',
+           'districtName',
+           'earliestOpeningTime',
+           'earliestStartDate',
+           'extraJson',
+           'floorArea',
+           'floorAreaRatio',
+           'greeningRate',
+           'houseBuildingCount',
+           'houseUseType',
+           'housingCount',
+           'landLevel',
+           'landUse',
+           'landUsePermit',
+           'latestDeliversHouseDate',
+           'legalPerson',
+           'legalPersonNumber',
+           'lssueDate',
+           'managementCompany',
+           'managementFees',
+           'onSaleState',
+           'otheRights',
+           'parkingSpaceAmount',
+           'presalePermitNumber',
+           'presaleRegistrationManagementDepartment',
+           'projectAddress',
+           'projectApproveData',
+           'projectBookingdData',
+           'projectID',
+           'projectName',
+           'projectType',
+           'projectUUID',
+           'promotionName',
+           'propertyRightsDescription',
+           'qualificationNumber',
+           'realEstateProjectId',
+           'recordTime',
+           'regionName',
+           'remarks',
+           'sourceUrl',
+           'totalBuidlingArea']
 
 
 def recordTime(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectName(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-
-	return Row(**data)
+    data['ProjectName'] = Meth.cleanName(data['ProjectName'])
+    return data
 
 
 def promotionName(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
+
 
 def projectID(data):
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql = " SELECT ProjectID as col FROM ProjectInfoItem WHERE ProjectUUID = '{projectUUID}'  AND ProjectID !='' LIMIT 1 ".format(projectUUID = data['ProjectUUID']))
+    return data
 
-	data['ProjectID'] = df.col.values[0] if not df.empty else ''
-	return Row(**data)
 
 def realEstateProjectId(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectUUID(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def districtName(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	data['DistrictName'] = Meth.cleanName(str(data['DistrictName']))
-	return Row(**data)
+    data['DistrictName'] = Meth.cleanName(data['DistrictName'])
+    return data
 
 
 def regionName(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectAddress(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectType(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def onSaleState(data):
-	# print(data, inspect.stack()[0][3])
+    def getOnSaleState(state):
+        status_dict = {
+            '即将开盘': '待售',
+            '即将开盘,在售': '',
+            '即将开盘,在售,售完': '',
+            '售完': '售罄',
+            '在售': '在售',
+        }
+        return status_dict.get(state, '')
 
-	def getOnSaleState(state):
-		status_dict = {
-			u'即将开盘': '待售'.decode('utf-8'),
-			u'即将开盘,在售': '',
-			u'即将开盘,在售,售完': '',
-			u'售完': '售罄'.decode('utf-8'),
-			u'在售': '在售'.decode('utf-8'),
-		}
-		return status_dict.get(state, '')
-
-	data = data.asDict()
-	data['OnSaleState'] = getOnSaleState(data['OnSaleState'])
-	return Row(**data)
+    data['OnSaleState'] = getOnSaleState(data['OnSaleState'])
+    return data
 
 
 def landUse(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def housingCount(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def developer(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	data['Developer'] = Meth.cleanName(data['Developer'])
-	return Row(**data)
+    data['Developer'] = Meth.cleanName(data['Developer'])
+    return data
 
 
 def floorArea(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def totalBuidlingArea(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	data['TotalBuidlingArea'] = data['TotalBuidlingArea'].replace('㎡', '')
-	return Row(**data)
+    data['TotalBuidlingArea'] = data['TotalBuidlingArea'].replace('㎡', '')
+    return data
 
 
 def buildingType(data):
-	def check_floor_type(floorname):
-		if floorname <= 3:
-			return '低层(1-3)'.decode()
-		elif floorname <= 6:
-			return '多层(4-6)'.decode()
-		elif floorname <= 11:
-			return '小高层(7-11)'.decode()
-		elif floorname <= 18:
-			return '中高层(12-18)'.decode()
-		elif floorname <= 32:
-			return '高层(19-32)'.decode()
-		elif floorname >= 33:
-			return '超高层(33)'.decode()
-		else:
-			return ''
-
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select max(ActualFloor) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
-	data['BuildingType'] = check_floor_type(df.col.values[0]).decode('utf-8')
-	# print(data['BuildingType'])
-	return Row(**data)
+    return data
 
 
 def houseUseType(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select distinct(HouseUseType) as col from HouseInfoItem where ProjectUUID='{"
-						 "projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
-	data['HouseUseType'] = Meth.jsonDumps(list(set(df.col.values) - set([''])))
-	return Row(**data)
+    arr = data['HouseUseType'].split('@#$')
+    if 'null' in arr:
+        arr.remove('null')
+    if '' in arr:
+        arr.remove('')
+    data['HouseUseType'] = Meth.jsonDumps(arr)
+    return data
 
 
 def propertyRightsDescription(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectApproveData(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def projectBookingdData(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def lssueDate(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select distinct(LssueDate) as col from PresellInfoItem where ProjectUUID='{"
-						 "projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
-	data['LssueDate'] = ';'.join(set(df.col.values) - set(['']))
-	return Row(**data)
+    data['LssueDate'] = Meth.jsonDumps(data['LssueDate'].split('@#$'))
+    return data
 
 
 def presalePermitNumber(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select distinct(PresalePermitNumber) as col from PresellInfoItem where ProjectUUID='{"
-						 "projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
-	data['PresalePermitNumber'] = Meth.jsonDumps(
-		list(set(df.col.values) - set([''])))
-	return Row(**data)
+    arr = data['PresalePermitNumber'].split('@#$')
+    if '' in arr:
+        arr.remove('')
+    data['PresalePermitNumber'] = Meth.jsonDumps(arr)
+    return data
 
 
 def houseBuildingCount(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{"
-						 "projectUUID}'".format(
-						 projectUUID=data['ProjectUUID']))
-	data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
-	return Row(**data)
+    data['HouseBuildingCount'] = str(data['HouseBuildingCount'])
+    return data
 
 
 def approvalPresaleAmount(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def approvalPresaleArea(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def averagePrice(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def earliestStartDate(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def completionDate(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def earliestOpeningTime(data):
-	# print(data, inspect.stack()[0][3])
-	data = data.asDict()
-
-	df = pd.read_sql(con=Var.ENGINE,
-					 sql="select min(EarliestOpeningDate) as col from PresellInfoItem where ProjectUUID='{"
-						 "projectUUID}' and EarliestOpeningDate != '' ".format(
-						 projectUUID=data['ProjectUUID'])).fillna('')
-
-	data['EarliestOpeningTime'] = str(df.col.values[0]) if not df.empty else ''
-
-	return Row(**data)
+    return data
 
 
 def latestDeliversHouseDate(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def presaleRegistrationManagementDepartment(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def landLevel(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def greeningRate(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def floorAreaRatio(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def managementFees(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def managementCompany(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def otheRights(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def certificateOfUseOfStateOwnedLand(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def constructionPermitNumber(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def qualificationNumber(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def landUsePermit(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def buildingPermit(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def legalPersonNumber(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def legalPerson(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def sourceUrl(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def decoration(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def parkingSpaceAmount(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def remarks(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data
 
 
 def extraJson(data):
-	# print(data, inspect.stack()[0][3])
-	return data
+    return data

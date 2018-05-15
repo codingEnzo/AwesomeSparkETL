@@ -1,7 +1,7 @@
 # coding=utf-8
 import json
 import demjson
-import Var
+from SparkETLCore.Utils.Var import *
 
 
 def jsonLoad(x):
@@ -13,15 +13,15 @@ def jsonDumps(x):
 
 
 def cleanName(x):
-    x = x.encode('utf-8').replace('（', '(').replace('）', ')')\
+    x = x.replace('（', '(').replace('）', ')')\
         .replace('】', ']').replace('【', '[')\
         .replace('，', ',').replace('－', '-').\
-        replace('〔', '[').replace('〕', ']').decode('utf-8')
+        replace('〔', '[').replace('〕', ']')
     return x
 
 
 def numberTable(x):
-    return Var.NUMTAB.get(x, '')
+    return NUMTAB_TRANS.get(x, '')
 
 
 def isInt(val):

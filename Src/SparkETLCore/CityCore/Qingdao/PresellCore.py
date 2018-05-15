@@ -1,17 +1,9 @@
 # coding=utf-8
 from __future__ import division
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
-import inspect
+from __future__ import unicode_literals
 import pandas as pd
 import numpy as np
-
-sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-sys.path.append('/home/junhui/workspace/AwesomeSparkETL/Src/SparkETLCore')
-
-from pyspark.sql import Row
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount',
            'approvalPresaleArea',
@@ -57,47 +49,41 @@ def recordTime(data):
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectID(data):
-    # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql = " select RealEstateProjectID as col from ProjectInfoItem where ProjectUUID = '{projectUUID}' and RealEstateProjectID !='' limit 0,1 ".format(
-                             projectUUID = data['ProjectUUID']))
-    data['RealEstateProjectID'] = str(df.col.values[0]) if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['PresalePermitNumber'] = Meth.cleanName(data['PresalePermitNumber'])
-    return Row(**data)
+    return data
 
 
 def totalBuidlingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['TotalBuidlingArea'] = data['TotalBuidlingArea'].replace('㎡', '')
-    return Row(**data)
+    return data
 
 
 def approvalPresaleAmount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    data['ApprovalPresaleAmount'] = data['ApprovalPresaleAmount'].replace('套'.decode(), '')
-    return Row(**data)
+    
+    data['ApprovalPresaleAmount'] = data['ApprovalPresaleAmount'].replace('套', '')
+    return data
 
 
 def approvalPresaleArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['ApprovalPresaleArea'] = data['ApprovalPresaleArea'].replace('㎡', '')
-    return Row(**data)
+    return data
 
 
 def approvalPresaleHouseAmount(data):
@@ -143,9 +129,9 @@ def underGroundArea(data):
 
 def presaleTotalBuidlingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+    
     data['PresaleTotalBuidlingArea'] = data['PresaleTotalBuidlingArea'].replace('㎡', '')
-    return Row(**data)
+    return data
 
 
 def contacts(data):
@@ -215,7 +201,7 @@ def houseSpread(data):
     return data
 
 
-def presalePermittie(data):
+def presalePermitTie(data):
     return data
 
 
