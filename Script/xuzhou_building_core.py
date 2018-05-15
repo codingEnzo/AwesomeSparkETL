@@ -54,7 +54,7 @@ def main():
                      BuildingCoreUDF.record_time_clean(x.RecordTime))
 
     # 2. 分组 + 聚合
-    y = y.groupBy("BuildingUUID").agg(
+    y = y.groupBy("ProjectUUID").agg(
         F.collect_list("UnitName").alias("UnitName"))
 
     # 3. 细节运算
@@ -62,13 +62,14 @@ def main():
 
     # 4. 联合入库
     x = x.drop(
-        *[c for c in x.columns if (c in y.columns) and (c != 'BuildingUUID')])
-    df = x.join(y, x.BuildingUUID == y.BuildingUUID, 'left')
+        *[c for c in x.columns if (c in y.columns) and (c != 'ProjectUUID')])
+    df = x.join(y, x.ProjectUUID == y.ProjectUUID, 'left')
     columns = df.columns
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
             df = df.withColumn(c, lit(""))
-    name_list = set(Var.BUILDING_FIELDS) - set(['BuildingUUID'])
+    name_list = set(Var.BUILDING_FIELDS) - set(['ProjectUUID'])
+    df = df.dropDuplicates()
     df.select('x.ProjectUUID', *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
