@@ -3,15 +3,14 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 
-from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore,HouseCore
+from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore,HouseCore,SupplyCaseCore
 from SparkETLCore.Utils.Var import *
-from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS
 
 
-def kwarguments(tableName, city, groupKey=None, db='spark_test'):
+def kwarguments(tableName, city, groupKey=None, case='1=1', db='spark_test'):
     if groupKey:
-        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
-            city=city, tableName=tableName, groupKey=groupKey)
+        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" AND {case} ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
+            city=city, tableName=tableName, groupKey=groupKey, case=case)
     else:
         dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
             city=city, tableName=tableName)
@@ -59,9 +58,8 @@ spark = SparkSession\
     .config("spark.local.dir", "~/.tmp")\
     .getOrCreate()
 
-# Load The Initial DF of Project, Building, Presell, House
-# ---
-projectArgs = kwarguments('ProjectInfoItem', '东莞', 'ProjectUUID')
+
+projectArgs = kwarguments(tableName='ProjectInfoItem', city='东莞', groupKey='ProjectUUID')
 projectDF = spark.read \
                  .format("jdbc") \
                  .options(**projectArgs) \
@@ -69,7 +67,7 @@ projectDF = spark.read \
                  .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-buildingArgs = kwarguments('BuildingInfoItem', '东莞', 'BuildingUUID')
+buildingArgs = kwarguments(tableName='BuildingInfoItem', city='东莞', groupKey='BuildingUUID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -77,7 +75,7 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-houseArgs = kwarguments('HouseInfoItem', '东莞', 'HouseUUID')
+houseArgs = kwarguments(tableName='HouseInfoItem', city='东莞', groupKey='HouseUUID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -85,6 +83,13 @@ houseDF = spark.read \
     .fillna("")
 houseDF.createOrReplaceTempView("HouseInfoItem")
 
+supplyArgs = kwarguments(tableName='HouseInfoItem', city='东莞', groupKey='HouseUUID',case='')
+houseDF = spark.read \
+    .format("jdbc") \
+    .options(**houseArgs) \
+    .load() \
+    .fillna("")
+houseDF.createOrReplaceTempView("HouseInfoItem")
 
 def projectETL(pjDF=projectDF):
     # Load the DF of Table join with Project
@@ -112,10 +117,6 @@ def projectETL(pjDF=projectDF):
 
 
 def buildingETL(bdDF=buildingDF):
-    # Load the DF of Table join with Building
-    # Initialize The pre BuildingDF
-    # ---
-
     buildingAddressPresalePermitNumberDF = spark.sql('''
         select ProjectUUID,first(PresalePermitNumber) as PresalePermitNumber,first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress,PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        ''')
     buildingHousingCountDF = spark.sql('''
@@ -136,10 +137,6 @@ def buildingETL(bdDF=buildingDF):
 
 
 def houseETL(hsDF=houseDF):
-    # Load the DF of Table join with Building
-    # Initialize The pre BuildingDF
-    # ---
-
     districtNameDF = spark.sql('''
         select ProjectUUID,first(DistrictName) as DistrictName,first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress,DistrictName from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        ''')
 
@@ -155,6 +152,20 @@ def houseETL(hsDF=houseDF):
                 HOUSE_FIELDS, 'house_info_dongguan')
 
 
+def supplyETL(supplyDF=houseDF):
+    districtNameDF = spark.sql('''
+        select ProjectUUID,first(DistrictName) as DistrictName,first(ProjectAddress) as Address ，first(PresalePermitNumber) as PresalePermitNumber from (select ProjectUUID, ProjectAddress,DistrictName，PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
+        ''')
+
+    dropColumn = ['Address', 'DistrictName']
+    supplyDF = supplyDF.drop(*dropColumn)
+    preHouseDF = supplyDF.join(districtNameDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, supplyDF.columns))
+                + [districtNameDF.DistrictName,
+                   districtNameDF.Address])\
+        .dropDuplicates()
+    groupedWork(preHouseDF, SupplyCaseCore.METHODS, HouseCore,
+                CASE_FIELDS, 'supply_case_dongguan')
 def main():
     return 0
 
