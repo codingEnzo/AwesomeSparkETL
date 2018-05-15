@@ -11,36 +11,9 @@ sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 from pyspark.sql import Row
 from Utils import Var, Meth, Config
 
-METHODS = ['address',
-           'buildingArea',
-           'buildingAveragePrice',
-           'buildingCategory',
-           'buildingHeight',
-           'buildingId',
-           'buildingName',
-           'buildingPriceRange',
-           'buildingStructure',
-           'buildingType',
-           'buildingUUID',
-           'elevaltorInfo',
-           'elevatorHouse',
-           'estimatedCompletionDate',
-           'extrajson',
-           'floors',
-           'housingCount',
-           'isHasElevator',
-           'onTheGroundFloor',
-           'presalePermitNumber',
-           'projectName',
-           'realEstateProjectId',
-           'recordTime',
-           'remarks',
-           'sourceUrl',
-           'theGroundFloor',
-           'unitId',
-           'unitName',
-           'units',
-           'unsoldAmount']
+METHODS = ['address', 'buildingArea', 'buildingAveragePrice', 'buildingCategory', 'buildingHeight', 'buildingId', 'buildingName', 'buildingPriceRange', 'buildingStructure', 'buildingType', 'buildingUUID', 'elevaltorInfo', 'elevatorHouse', 'estimatedCompletionDate', 'extrajson', 'floors',
+           'housingCount', 'isHasElevator', 'onTheGroundFloor', 'presalePermitNumber', 'projectName', 'realEstateProjectId', 'recordTime', 'remarks', 'sourceUrl', 'theGroundFloor',
+           'unitId', 'unitName', 'units', 'unsoldAmount']
 
 
 def recordTime(data):
@@ -50,31 +23,27 @@ def recordTime(data):
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+    return data
 
 
 def buildingName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-    return Row(**data)
+    return data
 
 
 def buildingId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingID'] = str(Meth.jsonLoad(
         data['ExtraJson']).get('ExtraBuildingID', ''))
-    return Row(**data)
+    return data
 
 
 def buildingUUID(data):
@@ -94,43 +63,26 @@ def unitId(data):
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select PresalePermitNumber as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['PresalePermitNumber'] = str(df.col.values[-1]) if not df.empty else ''
-    return Row(**data)
+    data['PresalePermitNumber'] = Meth.jsonDumps(
+        data['PresalePermitNumber'].split('@#$'))
+    return data
 
 
 def address(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress as col from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def onTheGroundFloor(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor >= '1'".format(
-    #                      buildingUUID=data['BuildingUUID']))
     data['OnTheGroundFloor'] = str(0)
-    return Row(**data)
+    return data
 
 
 def theGroundFloor(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}' and ActualFloor < '1'".format(
-    #                      buildingUUID=data['BuildingUUID']))
     data['TheGroundFloor'] = str(0)
-    return Row(**data)
+    return data
 
 
 def estimatedCompletionDate(data):
@@ -145,13 +97,7 @@ def housingCount(data):
 
 def floors(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select count(distinct ActualFloor) as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # data['Floors'] = str(df.col.values[0])
-    data['Floors'] = str(0)
-    return Row(**data)
+    return data
 
 
 def elevatorHouse(data):
@@ -171,14 +117,9 @@ def elevaltorInfo(data):
 
 def buildingStructure(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select distinct BuildingStructure as col from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # data['BuildingStructure'] = Meth.jsonDumps(
-    #     list(set(df.col.values) - set([''])))
-    data['BuildingStructure'] = Meth.jsonDumps(list())
-    return Row(**data)
+    data['BuildingStructure'] = Meth.jsonDumps(
+        data['BuildingStructure'].split('@#$'))
+    return data
 
 
 def buildingType(data):
@@ -209,14 +150,8 @@ def buildingType(data):
             res = 1
         return res
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select distinct ActualFloor from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # df['ActualFloor'] = df['ActualFloor'].apply(getFloor)
-    # data['BuildingType'] = check_floor_type(df.ActualFloor.agg('max')).decode('utf-8')
     data['BuildingType'] = ''
-    return Row(**data)
+    return data
 
 
 def buildingHeight(data):
@@ -232,15 +167,8 @@ def buildingHeight(data):
         return res
 
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select distinct FloorHight from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # df['FloorHight'] = df['FloorHight'].apply(getFloorHeight)
-    # # print(df.FloorHight.values)
-    # data['BuildingHeight'] = str(df.FloorHight.agg('sum'))
     data['BuildingHeight'] = str(0)
-    return Row(**data)
+    return data
 
 
 def buildingCategory(data):
@@ -255,9 +183,8 @@ def units(data):
 
 def unsoldAmount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['UnsoldAmount'] = str(data['UnsoldAmount'])
-    return Row(**data)
+    return data
 
 
 def buildingAveragePrice(data):
@@ -283,14 +210,8 @@ def buildingArea(data):
         return res
 
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql="select distinct MeasuredBuildingArea from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-    #                      buildingUUID=data['BuildingUUID']))
-    # df['MeasuredBuildingArea'] = df['MeasuredBuildingArea'].apply(getMeasuredBuildingArea)
-    # data['BuildingArea'] = str(df.MeasuredBuildingArea.agg('sum'))
     data['BuildingArea'] = str(0)
-    return Row(**data)
+    return data
 
 
 def remarks(data):
@@ -300,11 +221,10 @@ def remarks(data):
 
 def sourceUrl(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['SourceUrl'] = 'http://www.gzcc.gov.cn/housing/search/project/sellForm.jsp?pjID={0}'.\
         format(str(Meth.jsonLoad(data['ExtraJson']).get(
             'ExtraBuildingID', '')))
-    return Row(**data)
+    return data
 
 
 def extrajson(data):

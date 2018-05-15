@@ -54,44 +54,44 @@ def recordTime(data):
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+    return data
 
 
 def presalePermitNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PresalePermitNumber'] = Meth.cleanName(data['PresalePermitNumber'])
-    return Row(**data)
+    return data
 
 
 def totalBuidlingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['TotalBuidlingArea'] = data['TotalBuidlingArea']
-    return Row(**data)
+    return data
 
 
 def approvalPresaleAmount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ApprovalPresaleAmount'] = data['ApprovalPresaleAmount']
-    return Row(**data)
+    return data
 
 
 def approvalPresaleArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ApprovalPresaleArea'] = data['ApprovalPresaleArea']
-    return Row(**data)
+    return data
 
 
 def approvalPresaleHouseAmount(data):
@@ -104,30 +104,30 @@ def approvalPresaleHouseArea(data):
 
 def presaleBuildingAmount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PresaleBuildingAmount'] = data['PresaleBuildingAmount']
-    return Row(**data)
+    return data
 
 
 def constructionFloorCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ConstructionFloorCount'] = data['ConstructionFloorCount']
-    return Row(**data)
+    return data
 
 
 def builtFloorCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['BuiltFloorCount'] = data['BuiltFloorCount']
-    return Row(**data)
+    return data
 
 
 def periodsCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PeriodsCount'] = data['PeriodsCount']
-    return Row(**data)
+    return data
 
 
 def constructionTotalArea(data):
@@ -136,76 +136,76 @@ def constructionTotalArea(data):
 
 def groundArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['GroundArea'] = data['GroundArea']
-    return Row(**data)
+    return data
 
 
 def underGroundArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['UnderGroundArea'] = data['UnderGroundArea']
-    return Row(**data)
+    return data
 
 
 def presaleTotalBuidlingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PresaleTotalBuidlingArea'] = data['PresaleTotalBuidlingArea']
-    return Row(**data)
+    return data
 
 
 def contacts(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['Contacts'] = data['Contacts']
-    return Row(**data)
+    return data
 
 
 def presaleBuildingSupportingAreaInfo(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PresaleBuildingSupportingAreaInfo'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresaleBuildingSupportingAreaInfo', '')
-    return Row(**data)
+    return data
 
 
 def presaleHousingLandIsMortgage(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['PresaleHousingLandIsMortgage'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraPresaleHousingLandIsMortgage', '')
-    return Row(**data)
+    return data
 
 
 def validityDateStartDate(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ValidityDateStartDate'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraValidityDateStartDate', '')
-    return Row(**data)
+    return data
 
 
 def validityDateClosingDate(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['ValidityDateClosingDate'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraValidityDateClosingDate', '')
-    return Row(**data)
+    return data
 
 
 def lssueDate(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['LssueDate'] = data['LssueDate']
-    return Row(**data)
+    return data
 
 
 def lssuingAuthority(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
+
     data['LssuingAuthority'] = data['LssuingAuthority']
-    return Row(**data)
+    return data
 
 
 def presaleRegistrationManagementDepartment(data):

@@ -3,9 +3,8 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 
-from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore
 from SparkETLCore.Utils.Var import *
-from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS
+from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore, PresellCore, HouseCore
 
 
 def kwarguments(tableName, city, groupKey=None, db='spark_test'):
@@ -16,11 +15,11 @@ def kwarguments(tableName, city, groupKey=None, db='spark_test'):
         dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
             city=city, tableName=tableName)
     return {
-        "url": "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8".format(db),
+        "url": "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8".format(db),
         "driver": "com.mysql.jdbc.Driver",
         "dbtable": dbtable,
         "user": "root",
-        "password": "gh001"
+        "password": "yunfangdata"
     }
 
 
@@ -39,7 +38,7 @@ def groupedWork(data, methods, target, fields, tableName):
         r, methods, target, fields))
     df = df.toDF().select(fields).write.format("jdbc") \
         .options(
-        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
+        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
         driver="com.mysql.jdbc.Driver",
         dbtable=tableName,
         user="root",
@@ -53,7 +52,7 @@ appName = 'guangzhou'
 spark = SparkSession\
     .builder\
     .appName(appName)\
-    .config('spark.cores.max', 8)\
+    .config('spark.cores.max', 4)\
     .config('spark.sql.execution.arrow.enabled', "true")\
     .config("spark.sql.codegen", "true")\
     .config("spark.local.dir", "~/.tmp")\
@@ -61,7 +60,7 @@ spark = SparkSession\
 
 # Load The Initial DF of Project, Building, Presell, House
 # ---
-projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectID')
+projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectUUID')
 projectDF = spark.read \
                  .format("jdbc") \
                  .options(**projectArgs) \
@@ -69,7 +68,7 @@ projectDF = spark.read \
                  .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingID')
+buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingUUID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -77,7 +76,7 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-houseArgs = kwarguments('HouseInfoItem', '广州', 'HouseID')
+houseArgs = kwarguments('HouseInfoItem', '广州', 'HouseUUID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -94,19 +93,12 @@ presellDF = spark.read \
 presellDF.createOrReplaceTempView("PresellInfoItem")
 
 
-def main():
-    return 0
-
-
 def projectETL(pjDF=projectDF):
     # Load the DF of Table join with Project
     # Initialize The pre ProjectDF
     # ---
-    projectHousingCountDF = spark.sql('''
-        select ProjectUUID, count(distinct HouseID) as HousingCount from HouseInfoItem group by ProjectUUID
-        ''')
-    projectHouseUseTypeDF = spark.sql('''
-        select ProjectUUID, concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType from HouseInfoItem group by ProjectUUID
+    projectHousingInfoDF = spark.sql('''
+        select ProjectUUID, count(distinct HouseID) as HousingCount, concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType from HouseInfoItem group by ProjectUUID
         ''')
     projectLssueDateDF = spark.sql('''
         select ProjectUUID, concat_ws('@#$', collect_list(distinct LssueDate)) as LssueDate from PresellInfoItem group by ProjectUUID
@@ -121,14 +113,13 @@ def projectETL(pjDF=projectDF):
                   'PresalePermitNumber', 'HouseBuildingCount']
     pjDF = pjDF.drop(*dropColumn).dropDuplicates()
     # print(pjDF.count())
-    preProjectDF = pjDF.join(projectHousingCountDF, 'ProjectUUID')\
+    preProjectDF = pjDF.join(projectHousingInfoDF, 'ProjectUUID')\
         .join(projectHouseBuildingCountDF, 'ProjectUUID', 'left')\
-        .join(projectHouseUseTypeDF, 'ProjectUUID', 'left')\
         .join(projectLssueDateDF, 'ProjectUUID', 'left')\
         .join(projectPresalePermitNumberDF, 'ProjectUUID', 'left')\
         .select(list(filter(lambda x: x not in dropColumn, pjDF.columns))
-                + [projectHousingCountDF.HousingCount,
-                   projectHouseUseTypeDF.HouseUseType,
+                + [projectHousingInfoDF.HousingCount,
+                   projectHousingInfoDF.HouseUseType,
                    projectLssueDateDF.LssueDate,
                    projectPresalePermitNumberDF.PresalePermitNumber,
                    projectHouseBuildingCountDF.HouseBuildingCount])\
@@ -146,34 +137,66 @@ def buildingETL(bdDF=buildingDF):
         select ProjectUUID, concat_ws('@#$', collect_list(distinct PresalePermitNumber)) as PresalePermitNumber from PresellInfoItem group by ProjectUUID
         ''')
     buildingAddressDF = spark.sql('''
-        select ProjectUUID, ProjectAddress as Address from (select ProjectUUID, ProjectAddress from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID
+        select ProjectUUID, first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress from ProjectInfoItem order by RecordTime DESC) as col group by col.ProjectUUID
         ''')
-    buildingHousingCountDF = spark.sql('''
-        select BuildingUUID, count(distinct HouseID) as HousingCount from HouseInfoItem group by BuildingUUID
-        ''')
-    buildingFloorsDF = spark.sql('''
-        select BuildingUUID, count(distinct ActualFloor) as Floors from HouseInfoItem group by BuildingUUID
-        ''')
-    buildingBuildingStructureDF = spark.sql('''
-        select BuildingUUID, concat_ws('@#$', collect_list(distinct BuildingStructure)) as BuildingStructure from HouseInfoItem group by BuildingUUID
+    buildingInfoDF = spark.sql('''
+        select
+            BuildingUUID, concat_ws('@#$', collect_list(distinct BuildingStructure)) as BuildingStructure,
+            count(distinct HouseID) as HousingCount, count(distinct ActualFloor) as Floors
+            from HouseInfoItem group by BuildingUUID
         ''')
     dropColumn = ['PresalePermitNumber', 'Address',
                   'HousingCount', 'Floors', 'BuildingStructure']
     bdDF = bdDF.drop(*dropColumn)
-    preBuildingDF = bd.join(buildingPresalePermitNumberDF, 'ProjectUUID', 'left')\
+    preBuildingDF = bdDF.join(buildingPresalePermitNumberDF, 'ProjectUUID', 'left')\
         .join(buildingAddressDF, 'ProjectUUID', 'left')\
-        .join(buildingHousingCountDF, 'BuildingUUID', 'left')\
-        .join(buildingFloorsDF, 'BuildingUUID', 'left')\
-        .join(buildingBuildingStructureDF, 'BuildingUUID', 'left')\
+        .join(buildingInfoDF, 'BuildingUUID', 'left')\
         .select(list(filter(lambda x: x not in dropColumn, bdDF.columns))
                 + [buildingPresalePermitNumberDF.PresalePermitNumber,
                    buildingAddressDF.Address,
-                   buildingHousingCountDF.HousingCount,
-                   buildingFloorsDF.Floors,
-                   buildingBuildingStructureDF.BuildingStructure])\
+                   buildingInfoDF.HousingCount,
+                   buildingInfoDF.Floors,
+                   buildingInfoDF.BuildingStructure])\
         .dropDuplicates()
     return groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
                        BUILDING_FIELDS, 'building_info_guangzhou')
+
+
+def presellETL(psDF=presellDF):
+    # Load the DF of Table join with Presell
+    # Initialize The pre PresellDF
+    # ---
+    dropColumn = []
+    psDF = psDF.drop(*dropColumn)
+    prePresellDF = psDF.dropDuplicates()
+    return groupedWork(prePresellDF, PresellCore.METHODS, PresellCore,
+                       PRESELL_FIELDS, 'presell_info_guangzhou')
+
+
+def houseETL(hsDF=houseDF):
+    # Load the DF of Table join with Building
+    # Initialize The pre BuildingDF
+    # ---
+    projectInfoDF = spark.sql('''
+        select ProjectUUID, first(ProjectAddress) as Address, first(DistrictName) as DistrictName from (select ProjectUUID, ProjectAddress, DistrictName from ProjectInfoItem order by RecordTime DESC) as col group by col.ProjectUUID
+        ''')
+    dropColumn = ['Address', 'DistrictName']
+    hsDF = hsDF.drop(*dropColumn)
+    preHouseDF = hsDF.join(projectInfoDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, hsDF.columns))
+                + [projectInfoDF.DistrictName,
+                   projectInfoDF.Address])\
+        .dropDuplicates()
+    return groupedWork(preHouseDF, HouseCore.METHODS, HouseCore,
+                       HOUSE_FIELDS, 'house_info_guangzhou')
+
+
+def main():
+    projectETL()
+    buildingETL()
+    presellETL()
+    houseETL()
+    return 0
 
 
 if __name__ == "__main__":

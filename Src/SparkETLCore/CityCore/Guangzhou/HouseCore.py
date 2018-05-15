@@ -10,10 +10,7 @@ sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
 from Utils import Meth, Var, Config
-from BaseDF import spark
 from pyspark.sql import SparkSession
-
-spark = SparkSession.builder.appName('guangzhou').getOrCreate()
 
 METHODS = ['actualFloor',
            'address',
@@ -88,56 +85,44 @@ def recordTime(data):
 
 def caseTime(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['CaseTime'] = str(datetime.datetime.now()) if data[
         'CaseTime'] == '' else data['CaseTime']
-    return Row(**data)
+    return data
 
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+    return data
 
 
 def buildingName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-    return Row(**data)
+    return data
 
 
 def buildingId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingID'] = data['BuildingUUID']
-    return Row(**data)
+    return data
 
 
 def city(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['City'] = '广州'
-    return Row(**data)
+    return data
 
 
 def districtName(data):
     # # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = spark.sql("select DistrictName as col from projectinfoitem where ProjectName='{projectName}' limit 1".format(
-    #     projectName=data['ProjectName'])).toPandas()
-    # print('Check ProjectName')
-    # data['DistrictName'] = df.col.values[-1] if not df.empty else ''
-    # # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def unitName(data):
@@ -150,59 +135,47 @@ def unitId(data):
 
 def houseNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['HouseNumber'] = data['HouseNumber']
-    return Row(**data)
+    return data
 
 
 def houseName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['HouseName'] = data['FloorName'] + data['HouseNumber']
-    return Row(**data)
+    return data
 
 
 def houseId(data):
-    data = data.asDict()
     data['HouseID'] = data['HouseID']
-    return Row(**data)
+    return data
 
 
 def houseUUID(data):
-    data = data.asDict()
     data['HouseUUID'] = data['HouseUUID']
-    return Row(**data)
+    return data
 
 
 def address(data):
     # # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    # df = spark.sql("select ProjectAddress as col from projectinfoitem where ProjectName='{projectName}' limit 1".format(
-    #     projectName=data['ProjectName'])).toPandas()
-    # data['Address'] = df.col.values[-1] if not df.empty else ''
-    # # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def floorName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['FloorName'] = data['FloorName']
-    return Row(**data)
+    return data
 
 
 def actualFloor(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ActualFloor'] = data['ActualFloor']
-    return Row(**data)
+    return data
 
 
 def floorCount(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['FloorCount'] = data['FloorCount']
-    return Row(**data)
+    return data
 
 
 def floorType(data):
@@ -211,9 +184,8 @@ def floorType(data):
 
 def floorHight(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['FloorHight'] = data['FloorHight']
-    return Row(**data)
+    return data
 
 
 def unitShape(data):
@@ -223,9 +195,8 @@ def unitShape(data):
         return x
 
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['UnitShape'] = translate(data['UnitShape'])
-    return Row(**data)
+    return data
 
 
 def unitStructure(data):
@@ -242,30 +213,26 @@ def halls(data):
 
 def kitchens(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Kitchens'] = data['Kitchens']
-    return Row(**data)
+    return data
 
 
 def toilets(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Toilets'] = data['Toilets']
-    return Row(**data)
+    return data
 
 
 def balconys(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Balconys'] = data['Balconys']
-    return Row(**data)
+    return data
 
 
 def unenclosedBalconys(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['UnenclosedBalconys'] = data['UnenclosedBalconys']
-    return Row(**data)
+    return data
 
 
 def houseShape(data):
@@ -278,44 +245,38 @@ def dwelling(data):
 
 def forecastBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastBuildingArea'] = data['ForecastBuildingArea']
-    return Row(**data)
+    return data
 
 
 def forecastInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
-    return Row(**data)
+    return data
 
 
 def forecastPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastPublicArea'] = data['ForecastPublicArea']
-    return Row(**data)
+    return data
 
 
 def measuredBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
-    return Row(**data)
+    return data
 
 
 def measuredInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
-    return Row(**data)
+    return data
 
 
 def measuredSharedPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
-    return Row(**data)
+    return data
 
 
 def measuredUndergroundArea(data):
@@ -344,14 +305,12 @@ def natureOfPropertyRight(data):
 
 def houseUseType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['HouseUseType'] = data['HouseUseType']
-    return Row(**data)
+    return data
 
 
 def buildingStructure(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingStructure'] = data['BuildingStructure'].replace('钢混', '钢混结构')\
         .replace('框架', '框架结构')\
         .replace('钢筋混凝土', '钢混结构')\
@@ -360,7 +319,7 @@ def buildingStructure(data):
         .replace('砖混', '砖混结构')\
         .replace('框剪', '框架剪力墙结构')\
         .replace('钢，', '')
-    return Row(**data)
+    return data
 
 
 def houseSalePrice(data):
@@ -377,42 +336,37 @@ def salePriceByInsideOfBuildingArea(data):
 
 def isMortgage(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsMortgage'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsMortgage', '')
-    return Row(**data)
+    return data
 
 
 def isAttachment(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsAttachment'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsAttachment', '')
-    return Row(**data)
+    return data
 
 
 def isPrivateUse(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsPrivateUse'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsPrivateUse', '')
-    return Row(**data)
+    return data
 
 
 def isMoveBack(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsMoveBack'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsMoveBack', '')
-    return Row(**data)
+    return data
 
 
 def isSharedPublicMatching(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsSharedPublicMatching'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsSharedPublicMatching', '')
-    return Row(**data)
+    return data
 
 
 def sellState(data):
