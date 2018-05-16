@@ -16,7 +16,7 @@ def kwarguments(tableName, city, groupKey=None, db='spark_test'):
         dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
             city=city, tableName=tableName)
     return {
-        "url": "jdbc:mysql://10.30.1.7:3307/{}?useUnicode=true&characterEncoding=utf8".format(db),
+        "url": "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8".format(db),
         "driver": "com.mysql.jdbc.Driver",
         "dbtable": dbtable,
         "user": "root",
