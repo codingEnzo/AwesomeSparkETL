@@ -1,45 +1,44 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from random import randint
 
 from pyspark.sql import Row, SparkSession
 
-from SparkETLCore.CityCore.Changzhou import HouseCore, BuildingCore, ProjectCore, SupplyCaseCore, QuitCaseCore, DealCaseCore
+from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore,HouseCore,SupplyCaseCore
+from SparkETLCore.Utils.Var import *
 
-from SparkETLCore.Utils import Var
 
-
-def kwarguments(tableName, city, db='spark_test'):
+def kwarguments(tableName, city, groupKey=None, case='1=1', db='spark_test'):
+    if groupKey:
+        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" AND {case} ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
+            city=city, tableName=tableName, groupKey=groupKey, case=case)
+    else:
+        dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
+            city=city, tableName=tableName)
     return {
-        "url":
-            "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8" \
-                .format(db),
-        "driver":
-            "com.mysql.jdbc.Driver",
-        "dbtable":
-            "(SELECT * FROM ProjectInfoItem WHERE City = '{}') {}".format(
-                city, tableName),
-        "user":
-            "root",
-        "password":
-            "gh001"
+        "url": "jdbc:mysql://10.30.1.70:3307/{}?useUnicode=true&characterEncoding=utf8".format(db),
+        "driver": "com.mysql.jdbc.Driver",
+        "dbtable": dbtable,
+        "user": "root",
+        "password": "gh001"
     }
 
 
 def cleanFields(row, methods, target, fields):
     row = row.asDict()
-    row = Var.NiceDict(dictionary=row, target=fields)
+    row = NiceDict(dictionary=row, target=fields)
     for i, method in enumerate(methods):
         row = getattr(target, method)(row)
     row = Row(**row)
     return row
 
 
-def groupedWork(data,fields, tableName):
+def groupedWork(data, methods, target, fields, tableName):
     df = data
+    df = df.rdd.map(lambda r: cleanFields(
+        r, methods, target, fields))
     df.toDF().select(fields).write.format("jdbc") \
         .options(
-        url="jdbc:mysql://10.30.1.7:3306/spark_mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
         driver="com.mysql.jdbc.Driver",
         dbtable=tableName,
         user="root",
@@ -49,67 +48,141 @@ def groupedWork(data,fields, tableName):
     return df
 
 
-def main():
-    appName = 'changzhou'
-    spark = SparkSession.builder.appName(appName).getOrCreate()
-    spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+appName = 'changzhou'
+spark = SparkSession\
+    .builder\
+    .appName(appName)\
+    .config('spark.cores.max', 8)\
+    .config('spark.sql.execution.arrow.enabled', "true")\
+    .config("spark.sql.codegen", "true")\
+    .config("spark.local.dir", "~/.tmp")\
+    .getOrCreate()
 
-    projectArgs = kwarguments('ProjectInfoItem', '常州')
-    projectDF = spark.read \
-        .format("jdbc") \
-        .options(**projectArgs) \
-        .load() \
-        .fillna("")
-    projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-    buildingArgs = kwarguments('BuildingInfoItem', '常州')
-    buildingDF = spark.read \
-        .format("jdbc") \
-        .options(**buildingArgs) \
-        .load() \
-        .fillna("")
-    projectDF.createOrReplaceTempView("BuildingInfoItem")
+projectArgs = kwarguments(tableName='ProjectInfoItem', city='常州', groupKey='ProjectUUID')
+projectDF = spark.read \
+                 .format("jdbc") \
+                 .options(**projectArgs) \
+                 .load() \
+                 .fillna("")
+projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-    houseArgs = kwarguments('HouseInfoItem', '常州')
-    houseDF = spark.read \
-        .format("jdbc") \
-        .options(**houseArgs) \
-        .load() \
-        .fillna("")
-    projectDF.createOrReplaceTempView("HouseInfoItem")
+buildingArgs = kwarguments(tableName='BuildingInfoItem', city='常州', groupKey='BuildingUUID')
+buildingDF = spark.read \
+    .format("jdbc") \
+    .options(**buildingArgs) \
+    .load() \
+    .fillna("")
+buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-    # presellArgs = kwarguments('PresellInfoItem', '常州')
-    # presellDF = spark.read \
-    #     .format("jdbc") \
-    #     .options(**presellArgs) \
-    #     .load() \
-    #     .fillna("")
+houseArgs = kwarguments(tableName='HouseInfoItem', city='常州', groupKey='HouseUUID')
+houseDF = spark.read \
+    .format("jdbc") \
+    .options(**houseArgs) \
+    .load() \
+    .fillna("")
+houseDF.createOrReplaceTempView("HouseInfoItem")
 
-    projectDF.rdd.map(lambda r: cleanFields(r,ProjectCore.METHODS, ProjectCore, Var.PROJECT_FIELDS)) \
-        .map(lambda g: groupedWork(g,Var.PROJECT_FIELDS,'project_info_changzhou')).count()
-    buildingDF.rdd \
-        .map(lambda r: (randint(1, 8), [r])) \
-        .reduceByKey(lambda x, y: x + y) \
-        .map(lambda g: groupedWork(spark, g, BuildingCore.METHODS, BuildingCore, Var.BUILDING_FIELDS)).count()
-    houseDF.rdd \
-        .map(lambda r: (randint(1, 8), [r])) \
-        .reduceByKey(lambda x, y: x + y) \
-        .map(lambda g: groupedWork(spark, g, HouseCore.METHODS, HouseCore, Var.HOUSE_FIELDS)).count()
+supplyArgs = kwarguments(tableName='HouseInfoItem', city='常州', groupKey='HouseUUID',case='')
+houseDF = spark.read \
+    .format("jdbc") \
+    .options(**houseArgs) \
+    .load() \
+    .fillna("")
+houseDF.createOrReplaceTempView("HouseInfoItem")
 
-    # houseDF.rdd \
-    #     .map(lambda r: (randint(1, 8), [r])) \
-    #     .reduceByKey(lambda x, y: x + y) \
-    #     .map(lambda g: groupedWork(spark, g, SupplyCaseCore.METHODS, SupplyCaseCore, Var.HOUSE_FIELDS)).count()
-    # houseDF.rdd \
-    #     .map(lambda r: (randint(1, 8), [r])) \
-    #     .reduceByKey(lambda x, y: x + y) \
-    #     .map(lambda g: groupedWork(spark, g, QuitCaseCore.METHODS, QuitCaseCore, Var.HOUSE_FIELDS)).count()
-    # houseDF.rdd \
-    #     .map(lambda r: (randint(1, 8), [r])) \
-    #     .reduceByKey(lambda x, y: x + y) \
-    #     .map(lambda g: groupedWork(spark, g, DealCaseCore.METHODS, DealCaseCore, Var.HOUSE_FIELDS)).count()
+def projectETL(pjDF=projectDF):
+    # Load the DF of Table join with Project
+    # Initialize The pre ProjectDF
+    # ---
+    HouseDF = spark.sql('''
+        select ProjectUUID, concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType,
+         count(distinct BuildingName) as HouseBuildingCount,
+         count(distinct HouseID) as HousingCount 
+         from HouseInfoItem group by ProjectUUID
+        ''')
+
+
+    dropColumn = ['HousingCount', 'HouseUseType','HouseBuildingCount']
+    pjDF = pjDF.drop(*dropColumn).dropDuplicates()
+    preProjectDF = pjDF.join(HouseDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, pjDF.columns))
+                + [HouseDF.HouseBuildingCount,
+                   HouseDF.HousingCount,
+                   HouseDF.HouseUseType])\
+        .dropDuplicates()
+    print(preProjectDF.count())
+    groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
+                PROJECT_FIELDS, 'project_info_dongguan')
+
     return 0
 
 
+def buildingETL(bdDF=buildingDF):
+    buildingAddressPresalePermitNumberDF = spark.sql('''
+        select ProjectUUID,first(PresalePermitNumber) as PresalePermitNumber,first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress,PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        ''')
+    buildingHousingCountDF = spark.sql('''
+        select BuildingUUID, count(distinct HouseID) as HousingCount from HouseInfoItem group by BuildingUUID
+        ''')
+
+    dropColumn = ['Address','PresalePermitNumber',
+                  'HousingCount']
+    bdDF = bdDF.drop(*dropColumn)
+    preBuildingDF = bdDF.join(buildingAddressPresalePermitNumberDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, bdDF.columns))
+                + [buildingAddressPresalePermitNumberDF.PresalePermitNumber,
+                   buildingAddressPresalePermitNumberDF.Address,
+                   buildingHousingCountDF.HousingCount])\
+        .dropDuplicates()
+    groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
+                BUILDING_FIELDS, 'building_info_dongguan')
+
+
+def houseETL(hsDF=houseDF):
+    districtNameDF = spark.sql('''
+        select ProjectUUID,first(DistrictName) as DistrictName,first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress,DistrictName from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        ''')
+
+
+    dropColumn = ['Address', 'DistrictName']
+    hsDF = hsDF.drop(*dropColumn)
+    preHouseDF = hsDF.join(districtNameDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, hsDF.columns))
+                + [districtNameDF.DistrictName,
+                   districtNameDF.Address])\
+        .dropDuplicates()
+    groupedWork(preHouseDF, HouseCore.METHODS, HouseCore,
+                HOUSE_FIELDS, 'house_info_dongguan')
+
+
+def supplyETL(supplyDF=houseDF):
+    projectDF = spark.sql('''
+        select ProjectUUID,
+        first(RegionName) as RegionName,
+        first(DistrictName) as DistrictName,
+        first(ProjectAddress) as Address，
+        first(PresalePermitNumber) as PresalePermitNumber,
+        from (select ProjectUUID, RegionName,ProjectAddress,DistrictName，PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
+        ''')
+    buildingDF = spark.sql('''
+            select BuildingUUID,first(Floors) as Floors 
+            from (select BuildingUUID, Floors from BuildingInfoItem order by RecordTime DESC) as col group by BuildingUUID        
+            ''')
+    supplyDF = supplyDF[((supplyDF['HouseSaleState'] == '可售') & (supplyDF['HouseSaleStateLatest'] == ''))]
+    dropColumn = ['Address', 'DistrictName','PresalePermitNumber','RegionName','Floors']
+    supplyDF = supplyDF.drop(*dropColumn)
+    preHouseDF = supplyDF.join(projectDF, 'ProjectUUID', 'left') \
+        .join(buildingDF, 'BuildingUUID', 'left') \
+        .select(list(filter(lambda x: x not in dropColumn, supplyDF.columns))
+                + [projectDF.DistrictName,
+                   projectDF.Address,
+                   projectDF.RegionName,
+                   buildingDF.Floors])\
+        .dropDuplicates()
+    groupedWork(preHouseDF, SupplyCaseCore.METHODS, HouseCore,
+                CASE_FIELDS, 'supply_case_dongguan')
+def main():
+    return 0
+
 if __name__ == "__main__":
-    main()
+    houseETL(houseDF)
+

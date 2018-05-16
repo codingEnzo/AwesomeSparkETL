@@ -163,22 +163,10 @@ def lssueDate(data):
 
 def presalePermitNumber(data):
     # 预售正编号
-    sql = u"select ExtraJson from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-        projectUUID=data['ProjectUUID'])
-    query = spark.sql(sql).toPandas()
-    if not query.empty:
-        query['PresalePermitNumber'] = query.apply(lambda x: Meth.jsonLoad(
-            x['ExtraJson']).get('ExtraPresalePermitNumber', ''), axis=1)
-        data['PresalePermitNumber'] = ','.join(list(set(query['PresalePermitNumber'])))
     return data
 
 
 def houseBuildingCount(data):
-    sql = "select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(
-        projectUUID=data['ProjectUUID'])
-    query = spark.sql(sql).toPandas()
-    if not query.empty:
-        data['HouseBuildingCount'] = str(len(list(set(query.col.values) - set(['']))))
     return data
 
 
