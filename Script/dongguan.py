@@ -153,16 +153,28 @@ def houseETL(hsDF=houseDF):
 
 
 def supplyETL(supplyDF=houseDF):
-    districtNameDF = spark.sql('''
-        select ProjectUUID,first(DistrictName) as DistrictName,first(ProjectAddress) as Address ，first(PresalePermitNumber) as PresalePermitNumber from (select ProjectUUID, ProjectAddress,DistrictName，PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
+    projectDF = spark.sql('''
+        select ProjectUUID,
+        first(RegionName) as RegionName,
+        first(DistrictName) as DistrictName,
+        first(ProjectAddress) as Address，
+        first(PresalePermitNumber) as PresalePermitNumber,
+        from (select ProjectUUID, RegionName,ProjectAddress,DistrictName，PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
         ''')
-
-    dropColumn = ['Address', 'DistrictName']
+    buildingDF = spark.sql('''
+            select BuildingUUID,first(Floors) as Floors 
+            from (select BuildingUUID, Floors from BuildingInfoItem order by RecordTime DESC) as col group by BuildingUUID        
+            ''')
+    supplyDF = supplyDF[((supplyDF['HouseSaleState'] == '可售') & (supplyDF['HouseSaleStateLatest'] == ''))]
+    dropColumn = ['Address', 'DistrictName','PresalePermitNumber','RegionName','Floors']
     supplyDF = supplyDF.drop(*dropColumn)
-    preHouseDF = supplyDF.join(districtNameDF, 'ProjectUUID', 'left')\
+    preHouseDF = supplyDF.join(projectDF, 'ProjectUUID', 'left') \
+        .join(buildingDF, 'BuildingUUID', 'left') \
         .select(list(filter(lambda x: x not in dropColumn, supplyDF.columns))
-                + [districtNameDF.DistrictName,
-                   districtNameDF.Address])\
+                + [projectDF.DistrictName,
+                   projectDF.Address,
+                   projectDF.RegionName,
+                   buildingDF.Floors])\
         .dropDuplicates()
     groupedWork(preHouseDF, SupplyCaseCore.METHODS, HouseCore,
                 CASE_FIELDS, 'supply_case_dongguan')

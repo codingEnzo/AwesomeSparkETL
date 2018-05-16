@@ -186,10 +186,7 @@ def districtName(data):
 
 
 def regionName(data):
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select RegionName as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['RegionName'] = df.col.values[-1] if not df.empty else ''
+
     return data
 
 
@@ -202,10 +199,6 @@ def buildingName(data):
 
 
 def presalePermitNumber(data):
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select PresalePermitNumber as col from ProjectInfoItem where City = '东莞' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['PresalePermitNumber'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -233,10 +226,6 @@ def priceType(data):
 
 
 def address(data):
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select ProjectAddress as col from ProjectInfoItem where City = '东莞' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['Address'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -253,10 +242,6 @@ def FloorName(data):
 
 
 def floors(data):
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select Floors as col from BuildingInfoItem where City = '东莞' and ProjectName='{projectName}' order by RecordTime".format(
-                         BuildingName=data['BuildingName']))
-    data['Floors'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
