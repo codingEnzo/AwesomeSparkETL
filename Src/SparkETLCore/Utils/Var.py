@@ -7,7 +7,7 @@ if sys.version_info.major >= 3:
 else:
     from UserDict import UserDict
 
-ENGINE = create_engine('mysql+pymysql://root:gh001@10.30.1.70:3307/spark_test?charset=utf8')
+ENGINE = create_engine('mysql+pymysql://root:yunfangdata@10.30.1.7:3307/spark_test?charset=utf8')
 MIRROR_ENGINE = create_engine(
     'mysql+pymysql://root:gh001@10.30.1.70:3307/spark_mirror?charset=utf8')
 
@@ -47,6 +47,48 @@ PROJECT_FIELDS = ['ApprovalPresaleAmount', 'ApprovalPresaleArea', 'AveragePrice'
                   'ProjectAddress', 'ProjectApproveData', 'ProjectBookingData', 'ProjectID', 'ProjectName',
                   'ProjectType', 'ProjectUUID', 'PromotionName', 'PropertyRightsDescription', 'QualificationNumber',
                   'RealEstateProjectID', 'RecordTime', 'RegionName', 'Remarks', 'SourceUrl', 'TotalBuidlingArea']
+PRESELL_FIELDS = [
+    'RecordTime',
+    'ProjectName',
+    'RealEstateProjectID',
+    'ProjectUUID',
+    'PresalePermitNumber',
+    'TotalBuidlingArea',
+    'ApprovalPresaleAmount',
+    'ApprovalPresaleArea',
+    'ApprovalPresaleHouseAmount',
+    'ApprovalPresaleHouseArea',
+    'PresaleBuildingAmount',
+    'ConstructionFloorCount',
+    'BuiltFloorCount',
+    'PeriodsCount',
+    'ConstructionTotalArea',
+    'GroundArea',
+    'UnderGroundArea',
+    'PresaleTotalBuidlingArea',
+    'Contacts',
+    'PresaleBuildingSupportingAreaInfo',
+    'PresaleHousingLandIsMortgage',
+    'ValidityDateStartDate',
+    'ValidityDateClosingDate',
+    'LssueDate',
+    'LssuingAuthority',
+    'PresaleRegistrationManagementDepartment',
+    'ValidityDateDescribe',
+    'ApprovalPresalePosition',
+    'LandUse',
+    'EarliestStartDate',
+    'LatestDeliversHouseDate',
+    'EarliestOpeningDate',
+    'HouseSpread',
+    'PresalePermitTie',
+    'PresaleHouseCount',
+    'Remarks',
+    'SourceUrl',
+    'ExtraJson',
+    'PermitID',
+    'City',
+]
 PERMIT_FIELDS = ['ApprovalPresaleAmount', 'ApprovalPresaleArea', 'ApprovalPresaleHouseAmount',
                  'ApprovalPresaleHouseArea', 'ApprovalPresalePosition', 'BuiltFloorCount', 'City',
                  'ConstructionFloorCount', 'ConstructionTotalArea', 'Contacts', 'EarliestOpeningDate',

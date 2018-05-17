@@ -109,7 +109,7 @@ def theGroundFloor(data):
     arr = data['ActualFloor'].split('@#$')
     if '' in arr:
         arr.remove('')
-    arr = list(filter(lambda x: int(x) < 0, arr))
+        arr = list(filter(lambda x: int(x) < 0, arr))
     data['TheGroundFloor'] = str(len(arr))
     return data
 

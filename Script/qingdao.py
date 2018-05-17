@@ -157,6 +157,7 @@ def projectETL(pjDF=projectDF):
 def buildingETL(buildDF=buildingDF):
     buildingProjectDF = spark.sql('''
         select ProjectUUID,
+        RealEstateProjectId,
         max(ProjectAddress) as Address  
         from ProjectInfoItem 
         group by ProjectUUID
@@ -170,13 +171,14 @@ def buildingETL(buildDF=buildingDF):
         group by BuildingUUID
         ''')
 
-    dropColumn = ['Address', 'Floors', 'BuildingStructure', 'MeasuredBuildingArea']
+    dropColumn = ['RealEstateProjectId','Address', 'Floors', 'BuildingStructure', 'MeasuredBuildingArea']
     buildDF = buildDF.drop(*dropColumn).dropDuplicates()
 
     bDF = buildDF.join(buildingProjectDF, 'ProjectUUID', 'left') \
         .join(buildingHouseDF, 'BuildingUUID', 'left') \
         .select([lambda x: x not in dropColumn, buildDF.columns][1]
-                + [buildingProjectDF.Address,
+                + [buildingProjectDF.RealEstateProjectId,
+                   buildingProjectDF.Address,
                    buildingHouseDF.ActualFloor,
                    buildingHouseDF.BuildingStructure,
                    buildingHouseDF.MeasuredBuildingArea]) \
