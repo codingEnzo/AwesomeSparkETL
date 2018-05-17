@@ -1,9 +1,8 @@
 # coding=utf-8
 from __future__ import division
 import datetime
-import pandas as pd
 
-from SparkETLCore.Utils import Meth, Var
+from SparkETLCore.Utils import Meth
 
 METHODS = [
     'RecordTime',
@@ -173,10 +172,6 @@ def unenclosedBalconys(data):
 
 
 def districtName(data):
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql=u"select DistrictName as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
-                         projectName=data['ProjectName']))
-    data['DistrictName'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
