@@ -59,109 +59,94 @@ METHODS = ['Address',
 
 def realEstateProjectId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['RealEstateProjectID'] = data['ProjectUUID']
-    return Row(**data)
+    return data
 
 
 def buildingId(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingID'] = data['BuildingUUID']
-    return Row(**data)
+    return data
 
 
 def houseId(data):
-    data = data.asDict()
     data['HouseID'] = data['HouseID']
-    return Row(**data)
+    return data
 
 
 def forecastBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastBuildingArea'] = data['ForecastBuildingArea']
-    return Row(**data)
+    return data
 
 
 def forecastInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
-    return Row(**data)
+    return data
 
 
 def forecastPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ForecastPublicArea'] = data['ForecastPublicArea']
-    return Row(**data)
+    return data
 
 
 def measuredBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
-    return Row(**data)
+    return data
 
 
 def measuredInsideOfBuildingArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
-    return Row(**data)
+    return data
 
 
 def measuredSharedPublicArea(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
-    return Row(**data)
+    return data
 
 
 def isMortgage(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsMortgage'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsMortgage', '')
-    return Row(**data)
+    return data
 
 
 def isAttachment(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsAttachment'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsAttachment', '')
-    return Row(**data)
+    return data
 
 
 def isPrivateUse(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsPrivateUse'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsPrivateUse', '')
-    return Row(**data)
+    return data
 
 
 def isMoveBack(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsMoveBack'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsMoveBack', '')
-    return Row(**data)
+    return data
 
 
 def isSharedPublicMatching(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['IsSharedPublicMatching'] = Meth.jsonLoad(
         data['ExtraJson']).get('ExtraIsSharedPublicMatching', '')
-    return Row(**data)
+    return data
 
 
 def buildingStructure(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingStructure'] = data['BuildingStructure'].replace('钢混', '钢混结构')\
         .replace('框架', '框架结构')\
         .replace('钢筋混凝土', '钢混结构')\
@@ -170,7 +155,7 @@ def buildingStructure(data):
         .replace('砖混', '砖混结构')\
         .replace('框剪', '框架剪力墙结构')\
         .replace('钢，', '')
-    return Row(**data)
+    return data
 
 
 def sellSchedule(data):
@@ -178,27 +163,25 @@ def sellSchedule(data):
 
 
 def sellState(data):
+    data['SellState'] = data['HouseState']
     return data
 
 
 def sourceLink(data):
-    data = data.asDict()
     data['Sourcelink'] = data.get('SourceURL', '')
-    return Row(**data)
+    return data
 
 
 def caseTime(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['CaseTime'] = str(datetime.datetime.now()) if data[
         'CaseTime'] == '' else data['CaseTime']
-    return Row(**data)
+    return data
 
 
 def caseFrom(data):
-    data = data.asDict()
     data['CaseFrom'] = data.get('SourceURL', '')
-    return Row(**data)
+    return data
 
 
 def unitShape(data):
@@ -208,9 +191,8 @@ def unitShape(data):
         return x
 
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['UnitShape'] = translate(data['UnitShape'])
-    return Row(**data)
+    return data
 
 
 def unitStructure(data):
@@ -219,29 +201,19 @@ def unitStructure(data):
 
 def balconys(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Balconys'] = data['Balconys']
-    return Row(**data)
+    return data
 
 
 def unenclosedBalconys(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['UnenclosedBalconys'] = data['UnenclosedBalconys']
-    return Row(**data)
+    return data
 
 
 def districtName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select DistrictName as Dcol, RegionName as Rcol, ProjectAddress as Acol, PresalePermitNumber as Pcol from ProjectInfoItem where ProjectName='{projectName}' order by RecordTime DESC limit 1".format(
-                         projectName=data['ProjectName']))
-    data['DistrictName'] = df.Dcol.values[-1] if not df.empty else ''
-    data['RegionName'] = df.Rcol.values[-1] if not df.empty else ''
-    data['Address'] = df.Acol.values[-1] if not df.empty else ''
-    data['PresalePermitNumber'] = df.Pcol.values[-1] if not df.empty else ''
-    return Row(**data)
+    return data
 
 
 def regionName(data):
@@ -250,16 +222,14 @@ def regionName(data):
 
 def projectName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def buildingName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-    return Row(**data)
+    return data
 
 
 def presalePermitNumber(data):
@@ -268,16 +238,14 @@ def presalePermitNumber(data):
 
 def houseName(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['HouseName'] = data['FloorName'] + data['HouseNumber']
-    return Row(**data)
+    return data
 
 
 def houseNumber(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['HouseNumber'] = data['HouseNumber']
-    return Row(**data)
+    return data
 
 
 def totalPrice(data):
@@ -287,14 +255,14 @@ def totalPrice(data):
 def price(data):
     def calculatePrice(nowInfo, oldInfo=None, houseUseType='Other', measuredArea=0.0):
         totalprice, price = 0, 0
-        if nowInfo['ExtraJson']['Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)] not in ['0', '']:
-            now_avg_price = float(nowInfo['ExtraJson'][
+        if nowInfo['Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)] not in ['0', '']:
+            now_avg_price = float(nowInfo[
                                   'Extra{houseUseType}TotalSoldPrice'.format(houseUseType=houseUseType)])
-            now_total_area = float(nowInfo['ExtraJson'][
+            now_total_area = float(nowInfo[
                                    'Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)])
-            old_avg_price = float(oldInfo['ExtraJson'][
+            old_avg_price = float(oldInfo[
                                   'Extra{houseUseType}TotalSoldPrice'.format(houseUseType=houseUseType)] or 0) if oldInfo else 0
-            old_total_area = float(oldInfo['ExtraJson'][
+            old_total_area = float(oldInfo[
                                    'Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)] or 0) if oldInfo else 0
             if (now_total_area != old_total_area) or (now_avg_price != old_avg_price):
                 now_total_value = now_avg_price * now_total_area
@@ -315,29 +283,31 @@ def price(data):
                        '商业': 'Shop',
                        '办公': 'Office',
                        '其他': 'Other'}
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql='SELECT * FROM ProjectInfoItem WHERE ProjectUUID="{0}" AND RecordTime <="{1}" ORDER BY RecordTime LIMIT 2'.
-                     format(data['ProjectUUID'], str(data['CaseTime'])))
-    df['ExtraJson'] = df['ExtraJson'].apply(Meth.jsonLoad)
-    infoList = [row.to_dict() for index, row in df.iterrows()]
-    if len(infoList) > 1:
-        nowInfo, oldInfo = infoList[0], infoList[1]
-    else:
-        nowInfo, oldInfo = infoList[0], None
-    data['totalPrice'], data['price'] = calculatePrice(nowInfo,
-                                                       oldInfo,
-                                                       houseUseTypeMap.get(
-                                                           data['HouseUseType'].strip(), 'Other'),
-                                                       float(data['ForecastBuildingArea']))
-    return Row(**data)
+    priceList = data['Price'].split('@#$')
+
+    nowInfo, oldInfo = None, None
+    if len(priceList) > 0:
+        nowInfo = Meth.jsonLoad(priceList[0]) if priceList[0] else None
+    if len(priceList) > 1:
+        oldInfo = Meth.jsonLoad(priceList[1]) if priceList[1] else None
+    try:
+        measuredArea = float(data['ForecastBuildingArea'])
+        data['TotalPrice'], data['Price'] = calculatePrice(nowInfo,
+                                                           oldInfo,
+                                                           houseUseTypeMap.get(
+                                                               data['HouseUseType'].strip(), 'Other'),
+                                                           measuredArea) if nowInfo else ('0', '0')
+    except Exception as e:
+        data['TotalPrice'], data['Price'] = '0', '0'
+        print(data['ForecastBuildingArea'], e)
+
+    return data
 
 
 def priceType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['PriceType'] = '成交均价'
-    return Row(**data)
+    return data
 
 
 def Address(data):
@@ -350,23 +320,20 @@ def buildingCompletedYear(data):
 
 def floor(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Floor'] = data['ActualFloor']
-    return Row(**data)
+    return data
 
 
 def nominalFloor(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['NominalFloor'] = data['FloorName']
-    return Row(**data)
+    return data
 
 
 def floors(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['Floors'] = data['FloorCount'].replace('层', '')
-    return Row(**data)
+    return data
 
 
 def houseUseType(data):
@@ -379,16 +346,14 @@ def dwelling(data):
 
 def state(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['State'] = '明确成交'
-    return Row(**data)
+    return data
 
 
 def dealType(data):
     # print(data, inspect.stack()[0][3])
-    data = data.asDict()
     data['DealType'] = '最新成交'
-    return Row(**data)
+    return data
 
 
 def remarks(data):

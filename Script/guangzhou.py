@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+import sys
 
 from pyspark.sql import Row, SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 
 from SparkETLCore.Utils.Var import *
-from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore, PresellCore, HouseCore
+from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore, PresellCore, HouseCore, DealCaseCore, SupplyCaseCore, QuitCaseCore
 
 
-def kwarguments(tableName, city, groupKey=None, db='spark_test'):
+def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='spark_test'):
     if groupKey:
         dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
             city=city, tableName=tableName, groupKey=groupKey)
@@ -17,7 +20,7 @@ def kwarguments(tableName, city, groupKey=None, db='spark_test'):
     return {
         "url": "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8".format(db),
         "driver": "com.mysql.jdbc.Driver",
-        "dbtable": dbtable,
+        "dbtable": query or dbtable,
         "user": "root",
         "password": "yunfangdata"
     }
@@ -36,22 +39,30 @@ def groupedWork(data, methods, target, fields, tableName):
     df = data
     df = df.rdd.map(lambda r: cleanFields(
         r, methods, target, fields))
-    df = df.toDF().select(fields).write.format("jdbc") \
-        .options(
-        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
-        driver="com.mysql.jdbc.Driver",
-        dbtable=tableName,
-        user="root",
-        password="yunfangdata") \
-        .mode("append") \
-        .save()
+    try:
+        df = df.toDF().select(fields).write.format("jdbc") \
+            .options(
+            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+            driver="com.mysql.jdbc.Driver",
+            dbtable=tableName,
+            user="root",
+            password="yunfangdata") \
+            .mode("append") \
+            .save()
+    except ValueError as e:
+        import traceback
+        traceback.print_exc()
     return df
 
 
-appName = 'guangzhou'
+city = "Guangzhou"
+if len(sys.argv) < 2:
+    appName = 'test'
+else:
+    appName = sys.argv[1]
 spark = SparkSession\
     .builder\
-    .appName(appName)\
+    .appName('_'.join([city, appName]))\
     .config('spark.cores.max', 4)\
     .config('spark.sql.execution.arrow.enabled', "true")\
     .config("spark.sql.codegen", "true")\
@@ -62,10 +73,10 @@ spark = SparkSession\
 # ---
 projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectUUID')
 projectDF = spark.read \
-                 .format("jdbc") \
-                 .options(**projectArgs) \
-                 .load() \
-                 .fillna("")
+    .format("jdbc") \
+    .options(**projectArgs) \
+    .load() \
+    .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
 buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingUUID')
@@ -84,12 +95,54 @@ houseDF = spark.read \
     .fillna("")
 houseDF.createOrReplaceTempView("HouseInfoItem")
 
+dealArgs = kwarguments(query='''
+    (SELECT * FROM HouseInfoItem
+    WHERE City="广州" AND RecordTime BETWEEN '{0}' AND '{1}'
+    AND find_in_set("已签约",HouseLabel) AND ! find_in_set("已签约",HouseLabelLatest)
+    AND HouseUseType!="详见附注" AND HouseStateLatest !="") DealInfoItem
+    '''.format('2018-04-21', '2018-04-26'))
+dealDF = spark.read \
+    .format("jdbc") \
+    .options(**dealArgs) \
+    .load() \
+    .fillna("")
+dealDF.createOrReplaceTempView("DealInfoItem")
+
+supplyArgs = kwarguments(query='''
+    (SELECT * FROM HouseInfoItem
+    WHERE City="广州" AND RecordTime BETWEEN '{0}' AND '{1}'
+    AND HouseState in ("预售可售","确权可售")
+    AND HouseStateLatest in ("预售可售","确权可售")) SupplyInfoItem
+    '''.format('2018-04-21', '2018-04-26'))
+supplyDF = spark.read \
+    .format("jdbc") \
+    .options(**supplyArgs) \
+    .load() \
+    .fillna("")
+supplyDF.createOrReplaceTempView("SupplyInfoItem")
+
+quitArgs = kwarguments(query='''
+    (SELECT * FROM HouseInfoItem
+    WHERE City="广州"
+    AND RecordTime BETWEEN '{0}' AND '{1}'
+    AND HouseLabel ="" AND find_in_set("已签约",HouseLabelLatest)
+    AND HouseState in ("预售可售","确权可售") AND find_in_set("已签约",HouseState)
+    AND find_in_set("不可",HouseStateLatest)) QuitInfoItem
+    '''.format('2018-04-01', '2018-04-26'))
+quitDF = spark.read \
+    .format("jdbc") \
+    .options(**quitArgs) \
+    .load() \
+    .fillna("")
+print(quitDF.count())
+quitDF.createOrReplaceTempView("QuitInfoItem")
+
 presellArgs = kwarguments('PresellInfoItem', '广州', 'PresalePermitNumber')
 presellDF = spark.read \
-                 .format("jdbc") \
-                 .options(**presellArgs) \
-                 .load() \
-                 .fillna("")
+    .format("jdbc") \
+    .options(**presellArgs) \
+    .load() \
+    .fillna("")
 presellDF.createOrReplaceTempView("PresellInfoItem")
 
 
@@ -191,11 +244,110 @@ def houseETL(hsDF=houseDF):
                        HOUSE_FIELDS, 'house_info_guangzhou')
 
 
+def dealETL(dlDF=dealDF):
+    # Load the DF of Table join with Building
+    # Initialize The pre BuildingDF
+    # ---
+    projectRawDF = spark.read \
+        .format("jdbc") \
+        .options(**kwarguments('ProjectInfoItem', '广州')) \
+        .load() \
+        .select('ProjectUUID', 'ExtraJson', F.row_number()
+                .over(Window.partitionBy('ProjectUUID')
+                      .orderBy(F.desc('RecordTime')))
+                .alias('Rn')) \
+        .fillna("")
+    projectRawDF.createOrReplaceTempView('PriceRaw')
+    dealPriceDF = spark.sql("""
+            select ProjectUUID, concat_ws('@#$', collect_list(distinct ExtraJson)) as Price from
+            ((select ProjectUUID, ExtraJson from
+            PriceRaw where Rn <= 2) as col2) group by ProjectUUID
+        """)
+    projectInfoDF = spark.sql('''
+        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
+        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
+        group by col.ProjectUUID
+        ''')
+    dropColumn = ['Address', 'DistrictName',
+                  'RegionName', 'PresalePermitNumber', 'Price', 'TotalPrice']
+    dlDF = dlDF.drop(*dropColumn)
+    preDealDF = dlDF.join(projectInfoDF, 'ProjectUUID', 'left')\
+        .join(dealPriceDF, 'ProjectUUID', 'left')\
+        .select(list(filter(lambda x: x not in dropColumn, dlDF.columns))
+                + [projectInfoDF.DistrictName,
+                   projectInfoDF.Address,
+                   projectInfoDF.RegionName,
+                   projectInfoDF.PresalePermitNumber,
+                   dealPriceDF.Price])\
+        .dropDuplicates()\
+        .fillna('')
+    return groupedWork(preDealDF, DealCaseCore.METHODS, DealCaseCore,
+                       DEAL_FIELDS, 'deal_info_guangzhou')
+
+
+def supplyETL(spDF=supplyDF):
+    # Load the DF of Table join with Building
+    # Initialize The pre BuildingDF
+    # ---
+    projectInfoDF = spark.sql('''
+        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
+        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
+        group by col.ProjectUUID
+        ''')
+    dropColumn = ['Address', 'DistrictName',
+                  'RegionName', 'PresalePermitNumber']
+    spDF = spDF.drop(*dropColumn)
+    preSupplyDF = spDF.join(projectInfoDF, 'ProjectUUID', 'left') \
+        .select(list(filter(lambda x: x not in dropColumn, spDF.columns))
+                + [projectInfoDF.DistrictName,
+                   projectInfoDF.Address,
+                   projectInfoDF.RegionName,
+                   projectInfoDF.PresalePermitNumber])\
+        .dropDuplicates()\
+        .fillna('')
+    return groupedWork(preSupplyDF, SupplyCaseCore.METHODS, SupplyCaseCore,
+                       SUPPLY_FIELDS, 'supply_info_guangzhou')
+
+
+def quitETL(qtDF=quitDF):
+    # Load the DF of Table join with Building
+    # Initialize The pre BuildingDF
+    # ---
+    projectInfoDF = spark.sql('''
+        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
+        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
+        group by col.ProjectUUID
+        ''')
+    dropColumn = ['Address', 'DistrictName',
+                  'RegionName', 'PresalePermitNumber']
+    qtDF = qtDF.drop(*dropColumn)
+    preQuitDF = qtDF.join(projectInfoDF, 'ProjectUUID', 'left') \
+        .select(list(filter(lambda x: x not in dropColumn, qtDF.columns))
+                + [projectInfoDF.DistrictName,
+                   projectInfoDF.Address,
+                   projectInfoDF.RegionName,
+                   projectInfoDF.PresalePermitNumber])\
+        .dropDuplicates()\
+        .fillna('')
+    return groupedWork(preQuitDF, QuitCaseCore.METHODS, QuitCaseCore,
+                       QUIT_FIELDS, 'quit_info_guangzhou')
+
+
 def main():
-    projectETL()
-    buildingETL()
-    presellETL()
-    houseETL()
+    methodsDict = {'projectETL': projectETL,
+                   'buildingETL': buildingETL,
+                   'presellETL': presellETL,
+                   'houseETL': houseETL,
+                   'dealETL': dealETL,
+                   'supplyETL': supplyETL,
+                   'quitETL': quitETL,
+                   }
+    if len(sys.argv) < 2:
+        return 0
+    else:
+        methodInstance = methodsDict.get(sys.argv[1])
+        if methodInstance:
+            methodInstance()
     return 0
 
 
