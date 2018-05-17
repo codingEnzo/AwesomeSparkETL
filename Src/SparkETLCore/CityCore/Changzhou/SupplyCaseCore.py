@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
-# @Date    : 2018-04-26 10:37:06
-# @Author  : Sun Jiajia (jiajia.sun@yunfangdata.com)
 from __future__ import division
-import sys
 import datetime
-import inspect
 import re
-import pandas as pd
-import numpy as np
 
-from pyspark.sql import Row
-from SparkETLCore.Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = [
     'RecordTime',
@@ -61,178 +54,172 @@ METHODS = [
 ]
 
 
-def recordTime(spark, data):
+def recordTime(data):
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
 
 
-def projectUUID(spark, data):
+def projectUUID(data):
     return data
 
 
-def buildingUUID(spark, data):
+def buildingUUID(data):
     return data
 
 
-def houseUUID(spark, data):
+def houseUUID(data):
     return data
 
 
-def houseId(spark, data):
+def houseId(data):
     return data
 
 
-def forecastBuildingArea(spark, data):
+def forecastBuildingArea(data):
     return data
 
 
-def forecastInsideOfBuildingArea(spark, data):
+def forecastInsideOfBuildingArea(data):
     return data
 
 
-def forecastPublicArea(spark, data):
+def forecastPublicArea(data):
     return data
 
 
-def measuredBuildingArea(spark, data):
+def measuredBuildingArea(data):
     return data
 
 
-def measuredInsideOfBuildingArea(spark, data):
+def measuredInsideOfBuildingArea(data):
     return data
 
 
-def measuredSharedPublicArea(spark, data):
+def measuredSharedPublicArea(data):
     return data
 
 
-def isMortgage(spark, data):
+def isMortgage(data):
     return data
 
 
-def isAttachment(spark, data):
+def isAttachment(data):
     return data
 
 
-def isPrivateUse(spark, data):
+def isPrivateUse(data):
     return data
 
 
-def isMoveBack(spark, data):
+def isMoveBack(data):
     return data
 
 
-def isSharedPublicMatching(spark, data):
+def isSharedPublicMatching(data):
     return data
 
 
-def buildingStructure(spark, data):
+def buildingStructure(data):
     return data
 
 
-def sellSchedule(spark, data):
+def sellSchedule(data):
     return data
 
 
-def sellState(spark, data):
+def sellState(data):
     return data
 
 
-def sourceUrl(spark, data):
+def sourceUrl(data):
     return data
 
 
-def caseTime(spark, data):
+def caseTime(data):
     data['CaseTime'] = str(datetime.datetime.now()
                            ) if data['CaseTime'] == '' else data['CaseTime']
     return data
 
 
-def caseFrom(spark, data):
+def caseFrom(data):
     return data
 
 
-def unitShape(spark, data):
+def unitShape(data):
     return data
 
 
-def unitStructure(spark, data):
+def unitStructure(data):
     return data
 
 
-def balconys(spark, data):
+def balconys(data):
     return data
 
 
-def unenclosedBalconys(spark, data):
+def unenclosedBalconys(data):
     return data
 
 
-def districtName(spark, data):
+def districtName(data):
     return data
 
 
-def regionName(spark, data):
-    sql = u"select RegionName as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
-        projectName=data['ProjectName'])
-    df = spark.sql(sql).toPandas()
-    data['RegionName'] = df.col.values[-1] if not df.empty else ''
+def regionName(data):
     return data
 
 
-def projectName(spark, data):
+def projectName(data):
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
     return data
 
 
-def buildingName(spark, data):
+def buildingName(data):
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
     return data
 
 
-def presalePermitNumber(spark, data):
+def presalePermitNumber(data):
     data['PresalePermitNumber'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraPresalePermitNumber', ''))
+        data['ExtraJson']).get('ExtraProjectPresaleNumber', ''))
     return data
 
 
-def houseName(spark, data):
+def houseName(data):
     data['HouseName'] = Meth.cleanName(data['HouseName'])
     return data
 
 
-def houseNumber(spark, data):
+def houseNumber(data):
     return data
 
 
-def totalPrice(spark, data):
+def totalPrice(data):
     return data
 
 
-def price(spark, data):
+def price(data):
+    if data['Price'] == '0.0':
+        data['Price'] = ''
     return data
 
 
-def priceType(spark, data):
+def priceType(data):
     data['PriceType'] = u'成交均价'
     return data
 
 
-def address(spark, data):
-    sql = "select ProjectAddress as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
-        projectName=data['ProjectName'])
-    df = spark.sql(sql).toPandas()
-    data['Address'] = df.col.values[-1] if not df.empty else ''
+def address(data):
     return data
 
 
-def buildingCompletedYear(spark, data):
+def buildingCompletedYear(data):
     return data
 
 
-def ActualFloor(spark, data):
+def ActualFloor(data):
     def getFloor(x):
         if x == '':
             return 0
@@ -255,52 +242,26 @@ def ActualFloor(spark, data):
     return data
 
 
-def FloorName(spark, data):
+def FloorName(data):
     return data
 
 
-def floors(spark, data):
-    def getFloor(x):
-        if x == '':
-            return 0
-        x_match = re.search(r'(\d+)', x)
-        if not x_match:
-            return 0
-        if len(x_match.group(1)) <= 3:
-            res = int(x_match.group(1)[0])
-        else:
-            res = int(x_match.group(1)[0:2])
-        if x[0] == '-':
-            res = -res
-        return res
-
-    sql = "select distinct HouseName from HouseInfoItem where BuildingUUID='{buildingUUID}'".format(
-        buildingUUID=data['BuildingUUID'])
-    df = spark.sql(sql).toPandas()
-    if not df.empty:
-        df['ActualFloor'] = df['HouseName'].apply(getFloor)
-        acttualfloor = df.ActualFloor.agg('max')
-        if acttualfloor == 0:
-            data['Floors'] = None
-        else:
-            data['Floors'] = str(acttualfloor)
+def floors(data):
     return data
 
 
-def houseUseType(spark, data):
-    data['HouseUseType'] = str(Meth.jsonLoad(
-        data['ExtraJson']).get('ExtraHouseUseType', ''))
+def houseUseType(data):
     return data
 
 
-def dwelling(spark, data):
+def dwelling(data):
     return data
 
 
-def state(spark, data):
+def state(data):
     data['State'] = u'明确供应'
     return data
 
 
-def remarks(spark, data):
+def remarks(data):
     return data
