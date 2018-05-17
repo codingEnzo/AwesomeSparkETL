@@ -1,14 +1,10 @@
 # coding=utf-8
 from __future__ import division
-import sys
 import datetime
-import inspect
-import re
 import pandas as pd
-import numpy as np
 
-from pyspark.sql import Row
-from SparkETLCore.Utils import Meth, Var, Config
+
+from SparkETLCore.Utils import Meth, Var
 
 METHODS = [
     'RecordTime',

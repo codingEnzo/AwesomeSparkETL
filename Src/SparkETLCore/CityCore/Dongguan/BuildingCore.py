@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import datetime
-from SparkETLCore.Utils import Var, Meth, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = ['address',
            'buildingArea',
