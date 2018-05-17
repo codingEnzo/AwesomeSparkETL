@@ -1,13 +1,8 @@
 # coding=utf-8
 from __future__ import division
-import sys
-import inspect
-import pandas as pd
-import numpy as np
 import datetime
-from pyspark.sql import Row
 
-from SparkETLCore.Utils import Var, Meth, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = ['approvalPresaleAmount',
            'approvalPresaleArea',
@@ -170,10 +165,6 @@ def presalePermitNumber(data):
 
 
 def houseBuildingCount(data):
-    #
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql=u"select distinct(BuildingName) as col from HouseInfoItem where ProjectUUID='{projectUUID}'".format(projectUUID=data['ProjectUUID']))
-    # data['HouseBuildingCount'] = str(len(list(set(df.col.values) - set(['']))))
     return data
 
 
