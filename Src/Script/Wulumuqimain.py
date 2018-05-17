@@ -5,7 +5,6 @@ import pandas as pd
 import pyspark
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
-# from pyspark import SparkContext
 from sqlalchemy import *
 from pyspark.sql.types import *
 sys.path.append(os.path.dirname(os.getcwd()))

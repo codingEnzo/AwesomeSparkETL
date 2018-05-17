@@ -81,19 +81,15 @@ def caseTime(data):
     return data
 
 def projectName(data):
-    data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
-
+    return data
 
 def realEstateProjectId(data):
     return data
 
-
 def buildingName(data):
-    data = data.asDict()
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
-    return Row(**data)
+    return data
 
 
 def buildingId(data):
@@ -101,19 +97,12 @@ def buildingId(data):
 
 
 def city(data):
-    data = data.asDict()
-    data['City'] = '合肥'.decode('utf-8')
-    return Row(**data)
-
+    return data
 
 def districtname(data):
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select DistrictName as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and DistrictName !=''".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        data['DistrictName'] = Meth.cleanName(df.col.values[0])
-    return Row(**data)
+    if data['ProDistrictName']:
+        data['DistrictName'] = Meth.cleanName(data['ProDistrictName'])
+    return data
 
 def unitName(data):
     return data
@@ -123,15 +112,13 @@ def unitId(data):
 
 
 def houseNumber(data):
-    data = data.asDict()
     data['HouseNumber'] = Meth.cleanName(data['HouseNumber'])
-    return Row(**data)
+    return data
 
 def houseName(data):
-    data = data.asDict()
     data['HouseName'] =  data['FloorName'].decode('utf-8')\
                         +Meth.cleanName(data['HouseNumber']).decode('utf-8')
-    return Row(**data)
+    return data
 
 
 def houseId(data):
@@ -143,23 +130,17 @@ def houseUUID(data):
 
 
 def address(data):
-    data = data.asDict()
-    df = pd.read_sql(con=Var.ENGINE,
-                     sql="select ProjectAddress  as col from ProjectInfoItem where ProjectUUID='{projectUUID}' and ProjectAddress!=''".format(
-                         projectUUID=data['ProjectUUID']))
-    if not df.empty:
-        data['Address'] = Meth.cleanName(df.col.values[0])
-    return Row(**data)
+    if data['ProProjectAddress']:
+        data['Address'] = Meth.cleanName(data['ProProjectAddress'])
+    return data
 
 def floorName(data):
-    data = data.asDict()
     data['FloorName'] =  data['FloorName'].decode('utf-8')+u'层'
-    return Row(**data)
+    return data
 
 def actualFloor(data):
-    data = data.asDict()
-    data['ActualFloor'] =  data['FloorName'].decode('utf-8')
-    return Row(**data)
+    data['ActualFloor'] =  data['FloorName']
+    return data
 
 def floorCount(data):
     return data
@@ -173,10 +154,9 @@ def floorRight(data):
 
 
 def unitShape(data):
-    data = data.asDict()
     data['UnitShape'] = Meth.cleanName(
                     Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8'))
-    return Row(**data)
+    return data
 
 
 def unitStructure(data):
@@ -228,21 +208,21 @@ def forecastPublicArea(data):
 
 
 def measuredBuildingArea(data):
-    data = data.asDict()
-    data['MeasuredBuildingArea'] = Meth.cleanUnit(data['MeasuredBuildingArea'])
-    return Row(**data)
+    if data['MeasuredBuildingArea']: 
+        data['MeasuredBuildingArea'] = Meth.cleanUnit(data['MeasuredBuildingArea'])
+    return data
 
 
 def measuredInsideOfBuildingArea(data):
-    data = data.asDict()
-    data['MeasuredInsideOfBuildingArea'] = Meth.cleanUnit(data['MeasuredInsideOfBuildingArea'])
-    return Row(**data)
+    if data['MeasuredInsideOfBuildingArea']: 
+        data['MeasuredInsideOfBuildingArea'] = Meth.cleanUnit(data['MeasuredInsideOfBuildingArea'])
+    return data
 
 
 def measuredSharedPublicArea(data):
-    data = data.asDict()
-    data['MeasuredSharedPublicArea'] = Meth.cleanUnit(data['MeasuredSharedPublicArea'])
-    return Row(**data)
+    if data['MeasuredSharedPublicArea']:
+        data['MeasuredSharedPublicArea'] = Meth.cleanUnit(data['MeasuredSharedPublicArea'])
+    return data
 
 
 def measuredUndergroundArea(data):
@@ -274,8 +254,8 @@ def houseUseType(data):
 
 
 def buildingStructure(data):
-    data = data.asDict()
-    data['BuildingStructure'] = Meth.cleanName(data['BuildingStructure']).replace('钢混','钢混结构')\
+    if data['BuildingStructure']: 
+        data['BuildingStructure'] = Meth.cleanName(data['BuildingStructure']).replace('钢混','钢混结构')\
                                                      .replace('框架','框架结构')\
                                                      .replace('钢筋混凝土','钢混结构')\
                                                      .replace('混合','混合结构')\
@@ -283,7 +263,7 @@ def buildingStructure(data):
                                                      .replace('砖混','砖混结构')\
                                                      .replace('框剪','框架剪力墙结构')\
                                                      .replace('钢、','')
-    return Row(**data)
+    return data
 
 
 def houseSalePrice(data):
@@ -343,36 +323,32 @@ def houseLabelLatest(data):
 
 
 def totalPrice(data):
-    data = data.asDict()
     rule = re.compile('\d+\.?\d+')
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     area  = Meth.cleanUnit(data['MeasuredBuildingArea'])
-    print (price,area)
     if price and area:
-        data['TotalPrice'] = round(float(price.group()) *float(area),2)
+        data['TotalPrice'] = round(float(price.group()) *float(area),2).__str__()
     else: 
         data['TotalPrice'] = ''
-    return Row(**data)
+    return data
 
 
 def price(data):
     rule = re.compile('\d+\.?\d+')
-    data = data.asDict()
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     if price:
         data['Price'] = price.group()
     else: 
         data['Price'] = ''
-    return Row(**data)
+    return data
 
 
 def priceType(data):
     rule = re.compile('\d+\.?\d+')
-    data = data.asDict()
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     if price:
         data['PriceType'] = '备案价格'.decode('utf-8')
-    return Row(**data)
+    return data
 
 
 def decorationPrice(data):
