@@ -1,14 +1,9 @@
 # coding=utf-8
 from __future__ import division
-import sys
 import datetime
-import inspect
 import re
-import pandas as pd
-import numpy as np
 
-from pyspark.sql import Row
-from SparkETLCore.Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = ['actualFloor',
            'address',
@@ -80,94 +75,89 @@ METHODS = ['actualFloor',
            'unitUUID']
 
 
-def recordTime(spark, data):
+def recordTime(data):
     nowtime = str(datetime.datetime.now())
     if data['RecordTime'] == '':
         data['RecordTime'] = nowtime
     return data
 
 
-def projectUUID(spark, data):
+def projectUUID(data):
     return data
 
 
-def buildingUUID(spark, data):
+def buildingUUID(data):
     return data
 
 
-def unitUUID(spark, data):
+def unitUUID(data):
     return data
 
 
-def caseTime(spark, data):
+def caseTime(data):
     data['CaseTime'] = str(datetime.datetime.now()) if data['CaseTime'] == '' else data['CaseTime']
     return data
 
 
-def projectName(spark, data):
+def projectName(data):
     return data
 
 
-def realEstateProjectId(spark, data):
+def realEstateProjectId(data):
     return data
 
 
-def buildingName(spark, data):
+def buildingName(data):
     data['BuildingName'] = Meth.cleanName(data['BuildingName'])
     return data
 
 
-def buildingId(spark, data):
+def buildingId(data):
     return data
 
 
-def city(spark, data):
+def city(data):
     data['City'] = u'常州'
     return data
 
 
-def districtName(spark, data):
+def districtName(data):
     return data
 
 
-def unitName(spark, data):
+def unitName(data):
     return data
 
 
-def unitId(spark, data):
+def unitId(data):
     return data
 
 
-def houseNumber(spark, data):
+def houseNumber(data):
     return data
 
 
-def houseName(spark, data):
+def houseName(data):
     return data
 
 
-def houseId(spark, data):
+def houseId(data):
     return data
 
 
-def houseUUID(spark, data):
+def houseUUID(data):
     return data
 
 
-def address(spark, data):
-    sql = u"select ProjectAddress as col from ProjectInfoItem where City='常州' and ProjectName='{projectName}' order by RecordTime".format(
-        projectName=data['ProjectName'])
-    df = spark.sql(sql).toPandas()
-    data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
+def address(data):
     return data
 
 
-def floorName(spark, data):
+def floorName(data):
     return data
 
 
-def actualFloor(spark, data):
+def actualFloor(data):
     def getFloor(x):
         if x == '':
             return None
@@ -186,194 +176,195 @@ def actualFloor(spark, data):
     return data
 
 
-def floorCount(spark, data):
+def floorCount(data):
     return data
 
 
-def floorType(spark, data):
+def floorType(data):
     return data
 
 
-def floorHight(spark, data):
+def floorHight(data):
     return data
 
 
-def unitShape(spark, data):
+def unitShape(data):
     return data
 
 
-def unitStructure(spark, data):
+def unitStructure(data):
     return data
 
 
-def rooms(spark, data):
+def rooms(data):
     return data
 
 
-def halls(spark, data):
+def halls(data):
     return data
 
 
-def kitchens(spark, data):
+def kitchens(data):
     return data
 
 
-def toilets(spark, data):
+def toilets(data):
     return data
 
 
-def balconys(spark, data):
+def balconys(data):
     return data
 
 
-def unenclosedBalconys(spark, data):
+def unenclosedBalconys(data):
     return data
 
 
-def houseShape(spark, data):
+def houseShape(data):
     return data
 
 
-def dwelling(spark, data):
+def dwelling(data):
     return data
 
 
-def forecastBuildingArea(spark, data):
+def forecastBuildingArea(data):
     return data
 
 
-def forecastInsideOfBuildingArea(spark, data):
+def forecastInsideOfBuildingArea(data):
     return data
 
 
-def forecastPublicArea(spark, data):
+def forecastPublicArea(data):
     return data
 
 
-def measuredBuildingArea(spark, data):
+def measuredBuildingArea(data):
     return data
 
 
-def measuredInsideOfBuildingArea(spark, data):
+def measuredInsideOfBuildingArea(data):
     return data
 
 
-def measuredSharedPublicArea(spark, data):
+def measuredSharedPublicArea(data):
     return data
 
 
-def measuredUndergroundArea(spark, data):
+def measuredUndergroundArea(data):
     return data
 
 
-def toward(spark, data):
+def toward(data):
     return data
 
 
-def houseType(spark, data):
+def houseType(data):
     return data
 
 
-def houseNature(spark, data):
+def houseNature(data):
     return data
 
 
-def decoration(spark, data):
+def decoration(data):
     return data
 
 
-def natureOfPropertyRight(spark, data):
+def natureOfPropertyRight(data):
     return data
 
 
-def houseUseType(spark, data):
-    data['HouseUseType'] = data['HouseUseType']
+def houseUseType(data):
     return data
 
 
-def buildingStructure(spark, data):
+def buildingStructure(data):
     return data
 
 
-def houseSalePrice(spark, data):
+def houseSalePrice(data):
     return data
 
 
-def salePriceByBuildingArea(spark, data):
+def salePriceByBuildingArea(data):
     return data
 
 
-def salePriceByInsideOfBuildingArea(spark, data):
+def salePriceByInsideOfBuildingArea(data):
     return data
 
 
-def isMortgage(spark, data):
+def isMortgage(data):
     return data
 
 
-def isAttachment(spark, data):
+def isAttachment(data):
     return data
 
 
-def isPrivateUse(spark, data):
+def isPrivateUse(data):
     return data
 
 
-def isMoveBack(spark, data):
+def isMoveBack(data):
     return data
 
 
-def isSharedPublicMatching(spark, data):
+def isSharedPublicMatching(data):
     return data
 
 
-def sellState(spark, data):
+def sellState(data):
     return data
 
 
-def sellSchedule(spark, data):
+def sellSchedule(data):
     return data
 
 
-def houseState(spark, data):
+def houseState(data):
     return data
 
 
-def houseStateLatest(spark, data):
+def houseStateLatest(data):
     return data
 
 
-def houseLabel(spark, data):
+def houseLabel(data):
     return data
 
 
-def houseLabelLatest(spark, data):
+def houseLabelLatest(data):
     return data
 
 
-def totalPrice(spark, data):
+def totalPrice(data):
     return data
 
 
-def price(spark, data):
+def price(data):
+    if data['Prince'] == '0.0':
+        data['Prince'] = ''
     return data
 
 
-def priceType(spark, data):
+def priceType(data):
     return data
 
 
-def decorationPrice(spark, data):
+def decorationPrice(data):
     return data
 
 
-def remarks(spark, data):
+def remarks(data):
     return data
 
 
-def sourceUrl(spark, data):
+def sourceUrl(data):
     return data
 
 
-def extraJson(spark, data):
+def extraJson(data):
     return data
