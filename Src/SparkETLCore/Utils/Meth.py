@@ -61,7 +61,7 @@ def isInt(val):
 
 def dateFormatter(dateString):
     ds = dateString.replace('/', '-')
-    ds = datetime.datetime.strftime(dateString, "%Y-%m-%d")
+    ds = datetime.datetime.strptime(dateString, "%Y-%m-%d")
     return ds
 
 
