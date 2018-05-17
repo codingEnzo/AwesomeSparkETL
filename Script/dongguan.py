@@ -157,9 +157,9 @@ def supplyETL(supplyDF=houseDF):
         select ProjectUUID,
         first(RegionName) as RegionName,
         first(DistrictName) as DistrictName,
-        first(ProjectAddress) as Address，
+        first(ProjectAddress) as Address,
         first(PresalePermitNumber) as PresalePermitNumber,
-        from (select ProjectUUID, RegionName,ProjectAddress,DistrictName，PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
+        from (select ProjectUUID, RegionName,ProjectAddress,DistrictName, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col group by ProjectUUID        
         ''')
     buildingDF = spark.sql('''
             select BuildingUUID,first(Floors) as Floors 
