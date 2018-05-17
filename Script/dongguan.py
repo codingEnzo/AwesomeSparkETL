@@ -36,15 +36,19 @@ def groupedWork(data, methods, target, fields, tableName):
     df = data
     df = df.rdd.map(lambda r: cleanFields(
         r, methods, target, fields))
-    df.toDF().select(fields).write.format("jdbc") \
-        .options(
-        url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
-        driver="com.mysql.jdbc.Driver",
-        dbtable=tableName,
-        user="root",
-        password="yunfangdata") \
-        .mode("append") \
-        .save()
+    try:
+        df.toDF().select(fields).write.format("jdbc") \
+            .options(
+            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+            driver="com.mysql.jdbc.Driver",
+            dbtable=tableName,
+            user="root",
+            password="yunfangdata") \
+            .mode("append") \
+            .save()
+    except ValueError as e:
+        import traceback
+        traceback.print_exc()
     return df
 
 
