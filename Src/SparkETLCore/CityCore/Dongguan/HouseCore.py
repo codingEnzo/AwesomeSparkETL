@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import datetime
-from SparkETLCore.Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth
 
 METHODS = ['actualFloor',
            'address',
@@ -78,8 +78,7 @@ def recordTime(data):
 
 
 def caseTime(data):
-    data['CaseTime'] = str(datetime.datetime.now()
-                           ) if data['CaseTime'] == '' else data['CaseTime']
+    data['CaseTime'] = str(datetime.datetime.now()) if data['CaseTime'] == '' else data['CaseTime']
     return data
 
 
@@ -89,7 +88,6 @@ def projectName(data):
 
 
 def realEstateProjectId(data):
-    data['RealEstateProjectID'] = data['ProjectUUID']
     return data
 
 
@@ -99,7 +97,6 @@ def buildingName(data):
 
 
 def buildingId(data):
-    data['BuildingID'] = data['BuildingUUID']
     return data
 
 
@@ -109,10 +106,6 @@ def city(data):
 
 
 def districtName(data):
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql=u"select DistrictName as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
-    #                      projectName=data['ProjectName']))
-    # data['DistrictName'] = df.col.values[-1] if not df.empty else ''
     return data
 
 
@@ -125,46 +118,34 @@ def unitId(data):
 
 
 def houseNumber(data):
-    data['HouseNumber'] = data['HouseNumber']
     return data
 
 
 def houseName(data):
-    data['HouseName'] = data['HouseName']
     return data
 
 
 def houseId(data):
-    data['HouseID'] = data['HouseID']
     return data
 
 
 def houseUUID(data):
-    data['HouseUUID'] = data['HouseUUID']
     return data
 
 
 def address(data):
-    # df = pd.read_sql(con=Var.ENGINE,
-    #                  sql=u"select ProjectAddress as col from ProjectInfoItem where City='东莞' and ProjectName='{projectName}' order by RecordTime".format(
-    #                      projectName=data['ProjectName']))
-    # data['Address'] = df.col.values[-1] if not df.empty else ''
-    # data['Address'] = 'testAddress'.decode('utf-8') if not df.empty else ''
     return data
 
 
 def floorName(data):
-    data['FloorName'] = data['FloorName']
     return data
 
 
 def actualFloor(data):
-    data['ActualFloor'] = data['ActualFloor']
     return data
 
 
 def floorCount(data):
-    data['FloorCount'] = data['FloorCount']
     return data
 
 
@@ -173,7 +154,6 @@ def floorType(data):
 
 
 def floorHight(data):
-    data['FloorHight'] = data['FloorHight']
     return data
 
 
@@ -195,22 +175,18 @@ def halls(data):
 
 
 def kitchens(data):
-    data['Kitchens'] = data['Kitchens']
     return data
 
 
 def toilets(data):
-    data['Toilets'] = data['Toilets']
     return data
 
 
 def balconys(data):
-    data['Balconys'] = data['Balconys']
     return data
 
 
 def unenclosedBalconys(data):
-    data['UnenclosedBalconys'] = data['UnenclosedBalconys']
     return data
 
 
@@ -223,32 +199,26 @@ def dwelling(data):
 
 
 def forecastBuildingArea(data):
-    data['ForecastBuildingArea'] = data['ForecastBuildingArea']
     return data
 
 
 def forecastInsideOfBuildingArea(data):
-    data['ForecastInsideOfBuildingArea'] = data['ForecastInsideOfBuildingArea']
     return data
 
 
 def forecastPublicArea(data):
-    data['ForecastPublicArea'] = data['ForecastPublicArea']
     return data
 
 
 def measuredBuildingArea(data):
-    data['MeasuredBuildingArea'] = data['MeasuredBuildingArea']
     return data
 
 
 def measuredInsideOfBuildingArea(data):
-    data['MeasuredInsideOfBuildingArea'] = data['MeasuredInsideOfBuildingArea']
     return data
 
 
 def measuredSharedPublicArea(data):
-    data['MeasuredSharedPublicArea'] = data['MeasuredSharedPublicArea']
     return data
 
 
@@ -277,7 +247,6 @@ def natureOfPropertyRight(data):
 
 
 def houseUseType(data):
-    data['HouseUseType'] = data['HouseUseType']
     return data
 
 
@@ -298,27 +267,22 @@ def salePriceByInsideOfBuildingArea(data):
 
 
 def isMortgage(data):
-    data['IsMortgage'] = data['IsMortgage']
     return data
 
 
 def isAttachment(data):
-    data['IsAttachment'] = data['IsAttachment']
     return data
 
 
 def isPrivateUse(data):
-    data['IsPrivateUse'] = data['IsPrivateUse']
     return data
 
 
 def isMoveBack(data):
-    data['IsMoveBack'] = data['IsMoveBack']
     return data
 
 
 def isSharedPublicMatching(data):
-    data['IsSharedPublicMatching'] = data['IsSharedPublicMatching']
     return data
 
 
@@ -331,23 +295,18 @@ def sellSchedule(data):
 
 
 def houseState(data):
-    data['HouseState'] = data['HouseState']
     return data
 
 
 def houseStateLatest(data):
-    data['HouseStateLatest'] = data['HouseStateLatest']
-
     return data
 
 
 def houseLabel(data):
-    data['HouseLabel'] = data['HouseLabel']
     return data
 
 
 def houseLabelLatest(data):
-    data['HouseLabelLatest'] = data['HouseLabelLatest']
     return data
 
 
