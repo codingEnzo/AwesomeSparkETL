@@ -345,8 +345,8 @@ def totalPrice(data):
 
 
 def price(data):
-    if data['Prince'] == '0.0':
-        data['Prince'] = ''
+    if data['Price'] == '0.0':
+        data['Price'] = ''
     return data
 
 

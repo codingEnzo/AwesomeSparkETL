@@ -86,7 +86,7 @@ houseDF = spark.read \
     .fillna("")
 houseDF.createOrReplaceTempView("HouseInfoItem")
 
-supplyArgs = kwarguments(tableName='HouseInfoItem', city='东莞', groupKey='HouseUUID', case='')
+supplyArgs = kwarguments(tableName='HouseInfoItem', city='东莞', groupKey='HouseUUID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
