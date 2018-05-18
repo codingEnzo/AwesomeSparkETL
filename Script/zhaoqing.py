@@ -3,7 +3,7 @@ from __future__ import print_function
 from pyspark.sql.functions import lit, col, collect_list
 from pyspark.sql import Row, SparkSession
 from SparkETLCore.Utils.Var import ENGINE, MIRROR_ENGINE, NiceDict
-from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS, PRESELL_FIELDS,PERMIT_FIELDS, HOUSE_FIELDS
+from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS, PRESELL_FIELDS,PERMIT_FIELDS, HOUSE_FIELDS,DEAL_FIELDS,SUPPLY_FIELDS,QUIT_FIELDS
 from SparkETLCore.CityCore.Zhaoqing import ProjectCore, BuildingCore, PresellCore, HouseCoreNew
 
 
@@ -54,19 +54,19 @@ def groupedWork(data, methods, target, fields, tableName):
         if tableName == 'house_info_zhaoqing':
             supply_df = outdf.filter((outdf.HouseState == '可售') & (outdf.HouseStateLatest != '可售'))
             # supply_df = supply_df.withColumn("State", lit('明确供应'))
-            write(supply_df, 'supply_case_zhaoqing')
+            write(supply_df.select(SUPPLY_FIELDS), 'supply_case_zhaoqing')
 
             quit_df = outdf.filter((outdf.HouseState == '可售') & (outdf.HouseStateLatest == '已售'))
             # quit_df = quit_df.withColumn("State", lit('明确退房'))
-            write(quit_df, 'quit_case_zhaoqing')
+            write(quit_df.select(QUIT_FIELDS), 'quit_case_zhaoqing')
 
             deal_df = outdf.filter((outdf.HouseStateLatest == '可售') & (outdf.HouseState == '已售'))
             # deal_df = deal_df.withColumn("DealType", lit('明确成交'))
-            write(deal_df, 'deal_case_zhaoqing')
+            write(deal_df.select(QUIT_FIELDS), 'deal_case_zhaoqing')
 
             deal_df2 = outdf.filter((outdf.HouseStateLatest == '') & (outdf.HouseState == '已售'))
             # deal_df2 = deal_df2.withColumn("DealType", lit('明确成交'))
-            write(deal_df2, 'deal_case_zhaoqing')
+            write(deal_df2.select(QUIT_FIELDS), 'deal_case_zhaoqing')
 
         write(outdf, tableName)
     except ValueError as e:
@@ -154,7 +154,8 @@ def projectETL(pjDF=projectDF):
                    presellBuildingDF.PresalePermitNumber,
                    presellBuildingDF.LssueDate,
                    projectHouseBuildingCountDF.HouseBuildingCount]) \
-        .dropDuplicates()
+        .dropDuplicates()\
+        .fillna('')
     # print(preProjectDF.count())
     groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
                 PROJECT_FIELDS, 'project_info_zhaoqing')
@@ -235,5 +236,8 @@ def houseETL(hDF=houseDF):
     groupedWork(df, HouseCoreNew.METHODS, HouseCoreNew,
                 HOUSE_FIELDS, 'house_info_zhaoqing')
 
-# if __name__ == "__main__":
-#     projectETL(projectDF)
+if __name__ == "__main__":
+    projectETL(projectDF)
+    buildingETL(buildingDF)
+    presellETL(presellDF)
+    houseETL(houseDF)
