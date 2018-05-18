@@ -9,8 +9,6 @@ import os
 sys.path.append(os.path.dirname(os.getcwd()))
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 METHODS =   [
      'recordTime',
@@ -164,11 +162,11 @@ def caseTime (data):
     return data
 
 def caseFrom (data):
-    data['CaseFrom'] = '合肥市房产管理网'.decode('utf-8')
+    data['CaseFrom'] = '合肥市房产管理网'
     return data
 
 def unitShape (data):
-    data['UnitShape'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8')
+    data['UnitShape'] = Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','')
     return data
 
 def unitStructure (data):
@@ -198,7 +196,7 @@ def buildingName(data):
     return data
 
 def presalePermitNumber (data):
-    data['PresalePermitNumber'] = Meth.cleanName(data['BuildingName'])
+    data['PresalePermitNumber'] = Meth.cleanName(data['PresalePermitNumber'])
     return data
 
 def houseNumber(data):
@@ -206,9 +204,9 @@ def houseNumber(data):
     return data
 
 def houseName(data):
-    data['HouseName'] =  data['FloorName'].decode('utf-8')\
-                        +u'层'\
-                        +Meth.cleanName(data['HouseNumber']).decode('utf-8')
+    data['HouseName'] =  data['FloorName']\
+                        +'层'\
+                        +Meth.cleanName(data['HouseNumber'])
     return data
 
 def totalPrice (data):
@@ -216,8 +214,6 @@ def totalPrice (data):
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     area  = Meth.cleanUnit(data['MeasuredBuildingArea'])
     if price and area:
-        # print (area)
-        # print (price)
         data['TotalPrice'] = round(float(price.group()) *float(area),2)
     else: 
         data['TotalPrice'] = ''
@@ -233,7 +229,7 @@ def price (data):
     return data
 
 def priceType (data):
-    data['PriceType'] = '备案价格'.decode('utf-8')
+    data['PriceType'] = '备案价格'
     return data
 
 def address(data):
@@ -246,7 +242,7 @@ def buildingCompletedYear (data):
     return data
 
 def actualFloor (data):
-    data['ActualFloor'] =  data['FloorName'].decode('utf-8')
+    data['ActualFloor'] =  data['FloorName']
     return data
 
 def nominalFloor (data):
@@ -267,15 +263,15 @@ def dwelling (data):
 def state (data):
     if data['HouseState'] in ["现房销售","已签约","已备案","已办产权","网签备案单"] \
         and data['HouseStateLatest'] in ["可售","抵押可售","摇号销售","现房销售"]:
-        data['State'] = '明确成交'.decode('utf-8')
+        data['State'] = '明确成交'
     
     elif data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"]\
         and data['HouseStateLatest'] in ["现房销售","已签约","已备案","已办产权","网签备案单"]:
-        data['State'] = '明确退房'.decode('utf-8')
+        data['State'] = '明确退房'
     
     elif data['HouseState'] in ["可售","抵押可售","摇号销售","现房销售"]\
         and data['HouseStateLatest']=='':
-        data['State'] = '明确供应'.decode('utf-8')
+        data['State'] = '明确供应'
     else:
         pass
     return data

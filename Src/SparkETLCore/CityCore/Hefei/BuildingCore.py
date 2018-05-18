@@ -11,8 +11,6 @@ import re
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
 nowtime = datetime.datetime.now() 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 METHODS =  ['address',
              'buildingArea',
@@ -100,7 +98,7 @@ def estimatedCompletionDate(data):
     return data
 
 def housingCount(data):
-    cache =re.findall(u'(\d+)套',data['ExtraJson'])
+    cache =re.findall(r'(\d+)套',data['ExtraJson'])
     if cache:
         cache = list(map(int,cache))
         data['HousingCount'] = sum(cache).__str__()
@@ -122,14 +120,14 @@ def elevaltorInfo(data):
 
 def buildingStructure(data):
     if data['BuildingStructure']:
-        data['BuildingStructure'] = data['BuildingStructure'].encode('utf-8').replace('钢混','钢混结构')\
+        data['BuildingStructure'] = data['BuildingStructure'].replace('钢混','钢混结构')\
                                                      .replace('框架','框架结构')\
                                                      .replace('钢筋混凝土','钢混结构')\
                                                      .replace('混合','混合结构')\
                                                      .replace('结构结构','结构')\
                                                      .replace('砖混','砖混结构')\
                                                      .replace('框剪','框架剪力墙结构')\
-                                                     .replace('钢、','').decode('utf-8')
+                                                     .replace('钢、','')
     return data
 
 def buildingType(data):

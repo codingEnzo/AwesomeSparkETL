@@ -5,69 +5,71 @@ import datetime
 import pyspark
 import pandas as pd
 sys.path.append(os.path.dirname(os.getcwd()))
-from pyspark.sql import Row
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 from SparkETLCore.CityCore.Hefei import ProjectCore
 from SparkETLCore.CityCore.Hefei import BuildingCore
-from SparkETLCore.CityCore.Hefei import PresellCore
 from SparkETLCore.CityCore.Hefei import HouseCore
 from SparkETLCore.CityCore.Hefei import CaseCore
 from SparkETLCore.Utils.Var import ENGINE
 from SparkETLCore.Utils.Var import MIRROR_ENGINE
 from SparkETLCore.Utils.Var import PROJECT_FIELDS
 from SparkETLCore.Utils.Var import BUILDING_FIELDS
-from SparkETLCore.Utils.Var import PRESELL_FIELDS
 from SparkETLCore.Utils.Var import HOUSE_FIELDS
 from SparkETLCore.Utils.Var import DEAL_FIELDS
 from SparkETLCore.Utils.Var import SUPPLY_FIELDS 
 
-# input sc,mysql's tablename,groupby fileds;making a tempview and return dataframe 
-def readPub (sc,table,city,groupid=None):
-    if groupid:
-        options={'url':'''jdbc:mysql://10.30.1.70:3307/spark_test?
-                                 useUnicode=true&characterEncoding=utf-8''',
-                        'driver':"com.mysql.jdbc.Driver",
-                        "user":"root","password":"gh001",
-                        "dbtable":'''(SELECT * FROM 
-                                     (SELECT * FROM {table} 
-                                     WHERE City='{city}' AND {groupid} !=''
-                                     ORDER BY RecordTime DESC ) AS col 
-                                     Group BY col.{groupid}) {table}'''
-                                     .format(table=table,city=city,groupid=groupid)}
+
+def kwarguments(tableName=None, city=None,groupKey=None, query=None,):
+    if groupKey:
+        dbtable = '''(SELECT * FROM
+                    (SELECT * FROM {tableName}
+                     WHERE city="{city}"
+                     ORDER BY RecordTime DESC) AS col 
+                     Group BY {groupKey}) {tableName}'''.format(
+            city=city, tableName=tableName, groupKey=groupKey)
     else:
-        options={'url':'''jdbc:mysql://10.30.1.70:3307/spark_test?
-                                 useUnicode=true&characterEncoding=utf-8''',
-                        'driver':"com.mysql.jdbc.Driver",
-                        "user":"root","password":"gh001",
-                        "dbtable":'''(SELECT * FROM {table} 
-                                     WHERE City='{city}'
-                                     ORDER BY RecordTime DESC ) {table}'''
-                                     .format(table=table,city=city)}
-    df = sc.read.format("jdbc").options(**options).load().fillna('')
-    df.createOrReplaceTempView(table)
+        dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
+            city=city, tableName=tableName)
+    
+    return {
+            'url':'''jdbc:mysql://10.30.1.70:3307/spark_test?
+                    useUnicode=true&characterEncoding=utf-8'''.format(db),
+            "driver": "com.mysql.jdbc.Driver",
+            "dbtable": query or dbtable,
+            "user": "root",
+            "password": "yunfangdata"}
+
+
+def cleanFields(row, methods, target, fields):
+    row = row.asDict()
+    # row = NiceDict(dictionary=row, target=fields)
+    for i, method in enumerate(methods):
+        row = getattr(target, method)(row)
+    row = Row(**row)
+    return row
+
+
+def groupedWork(data, methods, target, fields, tableName):
+    df = data
+    df = df.rdd.map(lambda r: cleanFields(
+        r, methods, target, fields))
+    try:
+        df = df.toDF().select(fields).write.format("jdbc") \
+            .options(
+            url='''jdbc:mysql://10.30.1.70:3307/spark_test?
+                    useUnicode=true&characterEncoding=utf-8''',
+            driver="com.mysql.jdbc.Driver",
+            dbtable=tableName,
+            user="root",
+            password="yunfangdata") \
+            .mode("append") \
+            .save()
+    except ValueError as e:
+        import traceback
+        traceback.print_exc()
     return df
-
-# input df,and jdbc's options;writing into mysql 
-def writePub (df,option):
-    options = {'url':'''jdbc:mysql://10.30.1.70:3307/spark_caches?
-                            useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true''',
-                    'driver':"com.mysql.jdbc.Driver",
-                    "user":"root",
-                    "password":"gh001"}
-    options.update(option)
-    df.write.format("jdbc").mode('append').options(**options).save()
-    return 'finish'
-
-# using SparkETLCore for each row
-def cleanFields (data,cls):
-    data = data.asDict()
-    for index,method in enumerate(cls.METHODS):
-        func = getattr(cls,method)
-        data = func(data)
-    data = Row(**data)
-    return data
 
 def projectETL(sc,df):
     bDF = sc.sql(
@@ -80,12 +82,9 @@ def projectETL(sc,df):
     p,b = df.alias('p'),bDF.alias('b')
     p = p.join(b,p.ProjectUUID==b.BuiProjectUUID,'left').select(p.columns+b.columns)\
                 .dropDuplicates().fillna('')
-    try:
-        pass
-    except Exception as e:
-        raise e
-    cleandf = p.rdd.map(lambda r :cleanFields(r,ProjectCore)).toDF().select(PROJECT_FIELDS)
-    result = writePub(cleandf,{'dbtable':"project_info_hefei"})
+    
+    return groupedWork(p, ProjectCore.METHODS, ProjectCore,
+                       PROJECT_FIELDS, 'project_info_hefei')
 
 def buildingETL(sc,df):
     pDF = sc.sql(
@@ -100,9 +99,9 @@ def buildingETL(sc,df):
     b = b.join(p,p.ProProjectUUID==b.ProjectUUID,'left')\
           .join(h,h.HouBuildingUUID==b.BuildingUUID,'left')\
           .select(p.columns+b.columns+h.columns).fillna('')
-
-    cleandf = b.rdd.map(lambda r :cleanFields(r,BuildingCore)).toDF().select(BUILDING_FIELDS)
-    result = writePub(cleandf,{'dbtable':"building_info_hefei"})
+    
+    return groupedWork(b, BuildingCore.METHODS, BuildingCore,
+                       BUILDING_FIELDS, 'building_info_hefei')
 
 def houseETL(sc,df):
     pDF = sc.sql(
@@ -112,12 +111,19 @@ def houseETL(sc,df):
             FROM ProjectInfoItem 
             WHERE DistrictName !=''
             ''')
-    p,h = pDF.alias('p'),df.alias('h')
+    bDF = sc.sql(
+            '''SELECT ProjectUUID AS BuiProjectUUID,
+            first(PresalePermitNumber) AS BuiPresalePermitNumber,
+            FROM ProjectInfoItem 
+            WHERE DistrictName !=''
+            ''')
+    p,b,h = pDF.alias('p'),bDF.alias('b'),df.alias('h')
     h = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
-          .select(p.columns+h.columns).fillna('')
-
-    cleandf = h.rdd.map(lambda r :cleanFields(r,HouseCore)).toDF().select(HOUSE_FIELDS)
-    result = writePub(cleandf,{'dbtable':"house_info_hefei"})
+         .join(b,p.ProProjectUUID==b.BuiProjectUUID,'left')\
+          .select(p.columns+b.columns+h.columns).fillna('')
+    
+    return groupedWork(h, HouseCore.METHODS, HouseCore,
+                       HOUSE_FIELDS, 'house_info_hefei')
 
 def dealCaseETL(sc):
     pDF = sc.sql(
@@ -125,55 +131,66 @@ def dealCaseETL(sc):
             first(DistrictName) AS ProDistrictName,
             first(ProjectAddress) AS ProProjectAddress
             FROM ProjectInfoItem 
-            WHERE DistrictName !='' 
-            GROUP BY ProjectUUID''')
+            WHERE DistrictName !='' ''')
+    bDF = sc.sql(
+            '''SELECT ProjectUUID AS BuiProjectUUID,
+            first(PresalePermitNumber) AS BuiPresalePermitNumber,
+            FROM BuildingInfoItem ''')
     hDF = sc.sql(
             '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('已签约','已备案','已办产权','网签备案单') 
-            AND HouseStateLatest in ('可售','抵押可售','摇号销售','现房销售')
-            ''')
-    p,h = pDF.alias('p'),hDF.alias('h')
-    hh = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
-          .select(p.columns+h.columns).fillna('')
-          
-    cleandf = hh.rdd.map(lambda r :cleanFields(r,CaseCore)).toDF().select(DEAL_FIELDS)
-    result = writePub(cleandf,{'dbtable':"deal_case_hefei"})
+            AND HouseStateLatest in ('可售','抵押可售','摇号销售','现房销售')''')
+    
+    p,b,h = pDF.alias('p'),bDF.alias('b'),hDF.alias('h')
+    h = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
+         .join(b,p.ProProjectUUID==b.BuiProjectUUID,'left')\
+          .select(p.columns+b.columns+h.columns).fillna('')    
+    return groupedWork(h, CaseCore.METHODS, CaseCore,
+                       DEAL_FIELDS, 'deal_case_hefei')
 
 def supplyCaseETL(sc):
     pDF = sc.sql(
             '''SELECT ProjectUUID AS ProProjectUUID,
             first(DistrictName) AS ProDistrictName,
             first(ProjectAddress) AS ProProjectAddress
-            FROM ProjectInfoItem WHERE DistrictName !='' 
-            GROUP BY ProjectID''')
+            FROM ProjectInfoItem 
+            WHERE DistrictName !='' ''')
+    bDF = sc.sql(
+            '''SELECT ProjectUUID AS BuiProjectUUID,
+            first(PresalePermitNumber) AS BuiPresalePermitNumber,
+            FROM BuildingInfoItem ''')
     hDF = sc.sql(
             '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('可售','抵押可售','摇号销售','现房销售') 
             AND HouseStateLatest=''
             ''')
-    p,h = pDF.alias('p'),hDF.alias('h')
-    hh = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
-          .select(p.columns+h.columns).fillna('')
-    cleandf = hh.rdd.map(lambda r :cleanFields(r,CaseCore)).toDF().select(SUPPLY_FIELDS)
-    result = writePub(cleandf,{'dbtable':"supply_case_hefei"})
+    p,b,h = pDF.alias('p'),bDF.alias('b'),hDF.alias('h')
+    h = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
+          .select(p.columns+b.columns+h.columns).fillna('')
+    return groupedWork(h, CaseCore.METHODS, CaseCore,
+                       SUPPLY_FIELDS, 'supply_case_hefei')
 
 def quitCaseETL(sc):
     pDF = sc.sql(
             '''SELECT ProjectUUID AS ProProjectUUID,
             first(DistrictName) AS ProDistrictName,
             first(ProjectAddress) AS ProProjectAddress
-            FROM ProjectInfoItem WHERE DistrictName !='' 
-            GROUP BY ProjectUUID''')
+            FROM ProjectInfoItem 
+            WHERE DistrictName !='' ''')
+    bDF = sc.sql(
+            '''SELECT ProjectUUID AS BuiProjectUUID,
+            first(PresalePermitNumber) AS BuiPresalePermitNumber,
+            FROM BuildingInfoItem ''')
     hDF = sc.sql(
             '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('可售','抵押可售','摇号销售','现房销售')
             AND HouseStateLatest in ('已签约','已备案','已办产权','网签备案单') 
             ''')
-    p,h = pDF.alias('p'),hDF.alias('qh')
-    qh = qh.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
-          .select(p.columns+h.columns).fillna('')
-    cleandf = qh.rdd.map(lambda r :cleanFields(r,CaseCore)).toDF().select(QUIT_FIELDS)
-    result = writePub(cleandf,{'dbtable':"deal_case_hefei"})
+    p,b,h = pDF.alias('p'),bDF.alias('b'),hDF.alias('h')
+    h = h.join(p,p.ProProjectUUID==h.ProjectUUID,'left')\
+          .select(p.columns+b.columns+h.columns).fillna('')
+    return groupedWork(h, CaseCore.METHODS, CaseCore,
+                       QUIT_FIELDS, 'quit_case_hefei')
 
 def main(ETL=None):
     sc =SparkSession.builder.appName("Hefei")\
@@ -208,4 +225,3 @@ def main(ETL=None):
 
 if __name__ == '__main__':
     main()
-    

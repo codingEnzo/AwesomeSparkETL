@@ -9,8 +9,6 @@ import numpy as np
 sys.path.append(os.path.dirname(os.getcwd()))
 from pyspark.sql import Row
 from SparkETLCore.Utils import  Meth, Config,Var
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 METHODS = ['actualFloor',
      'address',
@@ -116,8 +114,7 @@ def houseNumber(data):
     return data
 
 def houseName(data):
-    data['HouseName'] =  data['FloorName'].decode('utf-8')\
-                        +Meth.cleanName(data['HouseNumber']).decode('utf-8')
+    data['HouseName'] =  data['FloorName']+Meth.cleanName(data['HouseNumber'])
     return data
 
 
@@ -135,7 +132,7 @@ def address(data):
     return data
 
 def floorName(data):
-    data['FloorName'] =  data['FloorName'].decode('utf-8')+u'层'
+    data['FloorName'] =  data['FloorName']+'层'
     return data
 
 def actualFloor(data):
@@ -155,7 +152,7 @@ def floorRight(data):
 
 def unitShape(data):
     data['UnitShape'] = Meth.cleanName(
-                    Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType','').decode('utf-8'))
+                    Meth.jsonLoad(data['ExtraJson']).get('ExtraHouseType',''))
     return data
 
 
@@ -347,7 +344,7 @@ def priceType(data):
     rule = re.compile('\d+\.?\d+')
     price = rule.search(Meth.jsonLoad(data['ExtraJson']).get('ExtraHousePreSellPrice',''))
     if price:
-        data['PriceType'] = '备案价格'.decode('utf-8')
+        data['PriceType'] = '备案价格'
     return data
 
 
