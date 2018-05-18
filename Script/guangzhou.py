@@ -134,7 +134,6 @@ quitDF = spark.read \
     .options(**quitArgs) \
     .load() \
     .fillna("")
-print(quitDF.count())
 quitDF.createOrReplaceTempView("QuitInfoItem")
 
 presellArgs = kwarguments('PresellInfoItem', '广州', 'PresalePermitNumber')
@@ -161,7 +160,7 @@ def projectETL(pjDF=projectDF):
         ''')
     projectHouseBuildingCountDF = spark.sql('''
         select ProjectUUID, count(distinct BuildingName) as HouseBuildingCount from BuildingInfoItem group by ProjectUUID
-        ''')
+        ''')a.a==b.a
     dropColumn = ['HousingCount', 'HouseUseType', 'LssueDate',
                   'PresalePermitNumber', 'HouseBuildingCount']
     pjDF = pjDF.drop(*dropColumn).dropDuplicates()
