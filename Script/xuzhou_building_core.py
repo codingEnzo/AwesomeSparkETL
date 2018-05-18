@@ -3,7 +3,6 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.functions import lit
 
 from SparkETLCore.CityCore.Xuzhou import BuildingCoreUDF
 from SparkETLCore.Utils import Var
@@ -67,7 +66,7 @@ def main():
     columns = df.columns
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
-            df = df.withColumn(c, lit(""))
+            df = df.withColumn(c, F.lit(""))
     name_list = set(Var.BUILDING_FIELDS) - set(['BuildingUUID'])
     df = df.dropDuplicates(['BuildingUUID'])
     df.select('x.BuildingUUID', *name_list).write.format("jdbc") \

@@ -3,9 +3,8 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.functions import lit
 
-from SparkETLCore.CityCore.Xuzhou import DealCaseCoreUDF
+from SparkETLCore.CityCore.Xuzhou import QuitCaseCoreUDF
 from SparkETLCore.Utils import Var
 
 
@@ -58,16 +57,17 @@ def main():
     z = presellDF.alias('z')
 
     # 1. 字段清洗 + 提取
-    y = y.withColumn("City", DealCaseCoreUDF.city_clean(y.City))
+    y = y.withColumn("City", QuitCaseCoreUDF.city_clean(y.City))
     y = y.withColumn("BuildingStructure",
-                     DealCaseCoreUDF.building_structure_clean(
+                     QuitCaseCoreUDF.building_structure_clean(
                          y.BuildingStructure))
-    y = y.withColumn("PriceType", lit("项目均价"))
+    y = y.withColumn("PriceType", F.lit("项目均价"))
+    y = y.withColumn("State", F.lit("明确退房"))
 
     z = z.withColumn('RegionName',
-                     DealCaseCoreUDF.region_name_extract(z.ExtraJson))
+                     QuitCaseCoreUDF.region_name_extract(z.ExtraJson))
     z = z.withColumn('PresalePermitNumber',
-                     DealCaseCoreUDF.presale_permit_number_clean(
+                     QuitCaseCoreUDF.presale_permit_number_clean(
                          z.PresalePermitNumber))
 
     # 2. 分组 + 聚合
@@ -82,28 +82,28 @@ def main():
     )
 
     # 3. 细节运算
-    x = x.withColumn("Address", DealCaseCoreUDF.address_apply(x.Address))
+    x = x.withColumn("Address", QuitCaseCoreUDF.address_apply(x.Address))
     x = x.withColumn("DistrictName",
-                     DealCaseCoreUDF.district_name_apply(x.DistrictName))
+                     QuitCaseCoreUDF.district_name_apply(x.DistrictName))
 
     z = z.withColumn("RegionName",
-                     DealCaseCoreUDF.region_name_apply(z.RegionName))
+                     QuitCaseCoreUDF.region_name_apply(z.RegionName))
     # 4. 联合入库
     y = y.drop(
         *[c for c in y.columns if (c in x.columns) and (c != 'ProjectUUID')])
     df = y.join(x, y.ProjectUUID == x.ProjectUUID, 'left') \
           .join(z, 'ProjectUUID', 'left')
     columns = df.columns
-    for i, c in enumerate(Var.DEAL_FIELDS):
+    for i, c in enumerate(Var.QUIT_FIELDS):
         if c not in columns:
-            df = df.withColumn(c, lit(""))
-    name_list = set(Var.DEAL_FIELDS) - set(['ProjectUUID'])
+            df = df.withColumn(c, F.lit(""))
+    name_list = set(Var.QUIT_FIELDS) - set(['ProjectUUID'])
     df = df.dropDuplicates(subset=['HouseUUID'])
     df.select('y.ProjectUUID', *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
-            dbtable='deal_case_info_xuzhou',
+            dbtable='quit_case_info_xuzhou',
             user="root",
             password="yunfangdata") \
         .mode("append") \

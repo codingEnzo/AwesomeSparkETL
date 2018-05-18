@@ -3,6 +3,8 @@ import demjson
 from pyspark.sql.types import StringType
 from pyspark.sql.functions import pandas_udf
 
+from SparkETLCore.Utils.Meth import cleanName
+
 
 @pandas_udf(StringType())
 def city_clean(s):
@@ -48,42 +50,6 @@ def building_structure_clean(s):
 def presale_permit_number_clean(s):
     s = s.apply(lambda v: v.replace('（', '(').replace('）', ')'))
     return s
-
-
-def price(data):
-    data = data.asDict()
-    pid = data['ProjectUUID']
-    sql = """
-    SELECT ProjectInfoItem.AveragePrice FROM ProjectInfoItem
-    WHERE ProjectInfoItem.ProjectUUID != {}
-    """.format(pid)
-    return data
-
-
-# 直接在 withColumn 内操作
-# def priceType(data):
-#     data = data.asDict()
-#     data['PriceType'] = '项目均价'
-#     data = Row(**data)
-#     return data
-
-
-@pandas_udf(StringType())
-def state_extract(s):
-    def func(value):
-        if values == '可销售':
-            return '明确成交'
-        else:
-            return '历史成交'
-
-    s = s.apply(lambda v: func(v))
-    return s
-
-
-# price = ProjeDF['AveragePrice'][(ProjeDF.ProjectUUID==temple['ProjectUUID'])&(ProjeDF.RecordTime <= deal_case.casetime)]
-# districtname = ProjeDF['DistrictName'][(ProjeDF.ProjectUUID==temple['ProjectUUID'])&(ProjeDF.DistrictName !='')]
-# address = ProjeDF['ProjectAddress'][(ProjeDF.ProjectUUID==temple['ProjectUUID'])&(ProjeDF.ProjectAddress!='')]
-# regionname = PresellInfoDF['ExtraRegionName'][(PresellInfoDF.PresalePermitNumber==temple['PresalePermitNumber'])&(PresellInfoDF.ExtraRegionName !='')]
 
 
 # PresellInfoItem

@@ -26,7 +26,7 @@ def region_name_apply(s):
     def func(v):
         r = [i for i in v if i != '']
         r = list(set(','.join(r).split(',')))
-        return demjson.encode(r)
+        return r[0] if r else ''
 
     s = s.apply(lambda x: func(x))
     return s

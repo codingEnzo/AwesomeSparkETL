@@ -3,7 +3,6 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.functions import lit
 
 from SparkETLCore.CityCore.Xuzhou import PresellCoreUDF
 from SparkETLCore.Utils import Var
@@ -38,13 +37,6 @@ def main():
                      .load() \
                      .fillna("")
 
-    # houseArgs = kwarguments('HouseInfoItem', '徐州')
-    # houseDF = spark.read \
-    #                  .format("jdbc") \
-    #                  .options(**houseArgs) \
-    #                  .load() \
-    #                  .fillna("")
-
     # PresellInfoItem Block --->
     x = presellDF.alias('x')
     # y = houseDF.alias('y')
@@ -55,19 +47,16 @@ def main():
     x = x.withColumn('PresalePermitNumber',
                      PresellCoreUDF.presale_permit_number_clean(
                          x.PresalePermitNumber))
-    # x = x.withColumn('LssueDate', PresellCoreUDF.lssue_date_clean(x.LssueDate))
     x = x.withColumn('LandUse', PresellCoreUDF.land_use_clean(x.LandUse))
 
     # 2. 分组 + 聚合
     # 3. 细节运算
     # 4. 联合入库
-    # x = x.drop(
-    #     *[c for c in x.columns if (c in y.columns) and (c != 'BuildingUUID')])
     df = x
     columns = df.columns
     for i, c in enumerate(Var.PRESELL_FIELDS):
         if c not in columns:
-            df = df.withColumn(c, lit(""))
+            df = df.withColumn(c, F.lit(""))
     name_list = set(Var.PRESELL_FIELDS) - set(['ProjectUUID'])
     df = df.dropDuplicates(['PresalePermitNumber'])
     df.select('x.ProjectUUID', *name_list).write.format("jdbc") \

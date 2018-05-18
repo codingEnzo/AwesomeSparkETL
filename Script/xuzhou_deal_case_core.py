@@ -3,7 +3,6 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.functions import lit
 
 from SparkETLCore.CityCore.Xuzhou import DealCaseCoreUDF
 from SparkETLCore.Utils import Var
@@ -62,7 +61,7 @@ def main():
     y = y.withColumn("BuildingStructure",
                      DealCaseCoreUDF.building_structure_clean(
                          y.BuildingStructure))
-    y = y.withColumn("PriceType", lit("项目均价"))
+    y = y.withColumn("PriceType", F.lit("项目均价"))
 
     z = z.withColumn('RegionName',
                      DealCaseCoreUDF.region_name_extract(z.ExtraJson))
@@ -96,7 +95,7 @@ def main():
     columns = df.columns
     for i, c in enumerate(Var.DEAL_FIELDS):
         if c not in columns:
-            df = df.withColumn(c, lit(""))
+            df = df.withColumn(c, F.lit(""))
     name_list = set(Var.DEAL_FIELDS) - set(['ProjectUUID'])
     df = df.dropDuplicates(subset=['HouseUUID'])
     df.select('y.ProjectUUID', *name_list).write.format("jdbc") \
