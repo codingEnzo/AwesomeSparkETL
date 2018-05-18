@@ -160,11 +160,10 @@ def projectETL(pjDF=projectDF):
         ''')
     projectHouseBuildingCountDF = spark.sql('''
         select ProjectUUID, count(distinct BuildingName) as HouseBuildingCount from BuildingInfoItem group by ProjectUUID
-        ''')a.a==b.a
+        ''')
     dropColumn = ['HousingCount', 'HouseUseType', 'LssueDate',
                   'PresalePermitNumber', 'HouseBuildingCount']
     pjDF = pjDF.drop(*dropColumn).dropDuplicates()
-    # print(pjDF.count())
     preProjectDF = pjDF.join(projectHousingInfoDF, 'ProjectUUID')\
         .join(projectHouseBuildingCountDF, 'ProjectUUID', 'left')\
         .join(projectLssueDateDF, 'ProjectUUID', 'left')\
