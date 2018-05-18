@@ -53,6 +53,8 @@ def main():
     y = y.withColumn("BuildingStructure",
                      HouseCoreUDF.building_structure_clean(
                          y.BuildingStructure))
+    y = y.withColumn("RecordTime", HouseCoreUDF.record_time_clean(
+        y.RecordTime))
 
     # 2. 分组 + 聚合
     x = x.groupBy("ProjectUUID").agg(

@@ -34,3 +34,11 @@ def building_structure_clean(s):
         .replace('钢、', '')
     )
     return s
+
+
+@pandas_udf(StringType())
+def record_time_clean(s):
+    import datetime
+    nt = datetime.datetime.now()
+    s = s.apply(lambda t: nt.strftime("%Y-%m-%d %H:%M:%S") if not t else t)
+    return s

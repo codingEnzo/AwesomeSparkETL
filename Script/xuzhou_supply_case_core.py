@@ -62,6 +62,9 @@ def main():
                      SupplyCaseCoreUDF.building_structure_clean(
                          y.BuildingStructure))
     y = y.withColumn("State", F.lit("明确供应"))
+    y = y.withColumn("RecordTime",
+                     SupplyCaseCoreUDF.record_time_clean(y.RecordTime))
+
     z = z.withColumn('RegionName',
                      SupplyCaseCoreUDF.region_name_extract(z.ExtraJson))
     z = z.withColumn('PresalePermitNumber',

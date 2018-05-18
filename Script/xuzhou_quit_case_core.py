@@ -63,6 +63,8 @@ def main():
                          y.BuildingStructure))
     y = y.withColumn("PriceType", F.lit("项目均价"))
     y = y.withColumn("State", F.lit("明确退房"))
+    y = y.withColumn("RecordTime",
+                     QuitCaseCoreUDF.record_time_clean(y.RecordTime))
 
     z = z.withColumn('RegionName',
                      QuitCaseCoreUDF.region_name_extract(z.ExtraJson))
