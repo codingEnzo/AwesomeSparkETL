@@ -5,15 +5,9 @@ import datetime
 import json
 import demjson
 from pyspark.sql import Row
-from sqlalchemy import create_engine
+
 from SparkETLCore.Utils import Var
 
-
-def getEngine(dbName):
-    eg = create_engine(
-        'mysql+pymysql://root:gh001@10.30.1.70:3307/{db}?charset=utf8'.format(
-            db=dbName))
-    return eg
 
 
 def jsonLoad(x):

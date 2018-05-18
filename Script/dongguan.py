@@ -7,10 +7,10 @@ from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore, HouseCore,
 from SparkETLCore.Utils.Var import *
 
 
-def kwarguments(tableName, city, groupKey=None, case='1=1', db='spark_test'):
+def kwarguments(tableName, city, groupKey=None, db='spark_test'):
     if groupKey:
-        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" AND {case} ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
-            city=city, tableName=tableName, groupKey=groupKey, case=case)
+        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}"  ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
+            city=city, tableName=tableName, groupKey=groupKey)
     else:
         dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
             city=city, tableName=tableName)
@@ -196,4 +196,4 @@ def main():
 
 
 if __name__ == "__main__":
-    houseETL(houseDF)
+    projectETL(projectDF)
