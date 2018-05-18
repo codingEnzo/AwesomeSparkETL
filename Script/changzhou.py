@@ -9,7 +9,7 @@ from SparkETLCore.Utils.Var import *
 
 def kwarguments(tableName, city, groupKey=None, db='spark_test'):
     if groupKey:
-        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" AND {case} ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
+        dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}"  ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
             city=city, tableName=tableName, groupKey=groupKey)
     else:
         dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
