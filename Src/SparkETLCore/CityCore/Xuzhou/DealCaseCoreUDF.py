@@ -60,14 +60,6 @@ def price(data):
     return data
 
 
-# 直接在 withColumn 内操作
-# def priceType(data):
-#     data = data.asDict()
-#     data['PriceType'] = '项目均价'
-#     data = Row(**data)
-#     return data
-
-
 @pandas_udf(StringType())
 def state_extract(s):
     def func(value):
