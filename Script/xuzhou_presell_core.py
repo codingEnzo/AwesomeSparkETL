@@ -69,7 +69,7 @@ def main():
         if c not in columns:
             df = df.withColumn(c, lit(""))
     name_list = set(Var.PRESELL_FIELDS) - set(['ProjectUUID'])
-    df = df.dropDuplicates()
+    df = df.dropDuplicates(['PresalePermitNumber'])
     df.select('x.ProjectUUID', *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
