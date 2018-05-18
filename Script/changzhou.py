@@ -59,7 +59,6 @@ spark = SparkSession \
     .config('spark.cores.max', 8) \
     .config('spark.sql.execution.arrow.enabled', "true") \
     .config("spark.sql.codegen", "true") \
-    .config("spark.local.dir", "~/.tmp") \
     .getOrCreate()
 
 projectArgs = kwarguments(tableName='ProjectInfoItem', city='常州', groupKey='ProjectUUID')
