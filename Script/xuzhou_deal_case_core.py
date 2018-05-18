@@ -62,6 +62,8 @@ def main():
                      DealCaseCoreUDF.building_structure_clean(
                          y.BuildingStructure))
     y = y.withColumn("PriceType", F.lit("项目均价"))
+    y = y.withColumn("State", DealCaseCoreUDF.state_extract(
+        y.HouseStateLatest))
 
     z = z.withColumn('RegionName',
                      DealCaseCoreUDF.region_name_extract(z.ExtraJson))
