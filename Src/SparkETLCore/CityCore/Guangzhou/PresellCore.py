@@ -8,7 +8,7 @@ import numpy as np
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount',
            'approvalPresaleArea',

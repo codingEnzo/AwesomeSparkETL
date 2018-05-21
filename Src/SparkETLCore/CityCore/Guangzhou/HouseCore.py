@@ -9,7 +9,7 @@ import numpy as np
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
-from Utils import Meth, Var, Config
+from SparkETLCore.Utils import Meth, Var, Config
 from pyspark.sql import SparkSession
 
 METHODS = ['actualFloor',

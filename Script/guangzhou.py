@@ -15,7 +15,7 @@ def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='spark_
         dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
             city=city, tableName=tableName, groupKey=groupKey)
     else:
-        dbtable = '(SELECT * FROM {tableName} WHERE city="{city}") {tableName}'.format(
+        dbtable = '(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) {tableName}'.format(
             city=city, tableName=tableName)
     return {
         "url": "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8".format(db),
@@ -63,10 +63,7 @@ else:
 spark = SparkSession\
     .builder\
     .appName('_'.join([city, appName]))\
-    .config('spark.cores.max', 4)\
-    .config('spark.sql.execution.arrow.enabled', "true")\
-    .config("spark.sql.codegen", "true")\
-    .config("spark.local.dir", "~/.tmp")\
+    .config("spark.cores.max", 8)\
     .getOrCreate()
 
 # Load The Initial DF of Project, Building, Presell, House
@@ -229,7 +226,7 @@ def houseETL(hsDF=houseDF):
     # Initialize The pre BuildingDF
     # ---
     projectInfoDF = spark.sql('''
-        select ProjectUUID, first(ProjectAddress) as Address, first(DistrictName) as DistrictName from (select ProjectUUID, ProjectAddress, DistrictName from ProjectInfoItem order by RecordTime DESC) as col group by col.ProjectUUID
+        select ProjectUUID, ProjectAddress as Address, DistrictName from ProjectInfoItem
         ''')
     dropColumn = ['Address', 'DistrictName']
     hsDF = hsDF.drop(*dropColumn)

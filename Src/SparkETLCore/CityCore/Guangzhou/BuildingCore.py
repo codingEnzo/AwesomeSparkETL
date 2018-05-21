@@ -9,7 +9,7 @@ import numpy as np
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
 from pyspark.sql import Row
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['address', 'buildingArea', 'buildingAveragePrice', 'buildingCategory', 'buildingHeight', 'buildingId', 'buildingName', 'buildingPriceRange', 'buildingStructure', 'buildingType', 'buildingUUID', 'elevaltorInfo', 'elevatorHouse', 'estimatedCompletionDate', 'extrajson', 'floors',
            'housingCount', 'isHasElevator', 'onTheGroundFloor', 'presalePermitNumber', 'projectName', 'realEstateProjectId', 'recordTime', 'remarks', 'sourceUrl', 'theGroundFloor',

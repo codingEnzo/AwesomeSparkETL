@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 
-from Utils import Var, Meth, Config
+from SparkETLCore.Utils import Var, Meth, Config
 
 METHODS = ['approvalPresaleAmount', 'approvalPresaleArea', 'averagePrice', 'buildingPermit', 'buildingType', 'certificateOfUseOfStateOwnedLand', 'completionDate', 'constructionPermitNumber', 'decoration', 'developer', 'districtName', 'earliestOpeningTime', 'earliestStartDate', 'extraJson', 'floorArea',
            'floorAreaRatio', 'greeningRate', 'houseBuildingCount', 'houseUseType', 'housingCount', 'landLevel', 'landUse', 'landUsePermit', 'latestDeliversHouseDate', 'legalPerson', 'legalPersonNumber', 'lssueDate',
