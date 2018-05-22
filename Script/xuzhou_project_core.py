@@ -11,7 +11,7 @@ from SparkETLCore.Utils import Var
 def kwarguments(tableName, city, db='spark_test'):
     return {
         "url":
-        "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8" \e
+        "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
         .format(db),
         "driver":
         "com.mysql.jdbc.Driver",
