@@ -16,7 +16,7 @@ def kwarguments(tableName, city, db='spark_test'):
         "driver":
         "com.mysql.jdbc.Driver",
         "dbtable":
-        "(SELECT * FROM {tb} WHERE City = '{ct}') {tb}".format(
+        "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".format(
             ct=city, tb=tableName),
         "user":
         "root",

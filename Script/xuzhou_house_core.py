@@ -16,7 +16,7 @@ def kwarguments(tableName, city, db='spark_test'):
         "driver":
         "com.mysql.jdbc.Driver",
         "dbtable":
-        "(SELECT * FROM {tb} WHERE City = '{ct}') {tb}".format(
+        "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".format(
             ct=city, tb=tableName),
         "user":
         "root",
@@ -28,7 +28,8 @@ def kwarguments(tableName, city, db='spark_test'):
 def main():
     appName = 'xuzhou'
     spark = SparkSession.builder.appName(appName).getOrCreate()
-    spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+    # spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+    # spark.conf.set("spark.network.timeout", "800s")
 
     projectArgs = kwarguments('ProjectInfoItem', '徐州')
     projectDF = spark.read \
