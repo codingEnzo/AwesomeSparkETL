@@ -37,12 +37,12 @@ def cleanFields(row, methods, target, fields):
 
 def groupedWork(data, methods, target, fields, tableName):
     df = data
-    df = df.rdd.map(lambda r: cleanFields(
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
         r, methods, target, fields))
     try:
         df = df.toDF().select(fields).write.format("jdbc") \
             .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
+            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
             dbtable=tableName,
             user="root",
@@ -63,7 +63,7 @@ else:
 spark = SparkSession\
     .builder\
     .appName('_'.join([city, appName]))\
-    .config("spark.cores.max", 8)\
+    .config("spark.cores.max", 16)\
     .getOrCreate()
 
 # Load The Initial DF of Project, Building, Presell, House
@@ -259,9 +259,7 @@ def dealETL(dlDF=dealDF):
             PriceRaw where Rn <= 2) as col2) group by ProjectUUID
         """)
     projectInfoDF = spark.sql('''
-        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
-        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
-        group by col.ProjectUUID
+        select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
     dropColumn = ['Address', 'DistrictName',
                   'RegionName', 'PresalePermitNumber', 'Price', 'TotalPrice']
@@ -285,9 +283,7 @@ def supplyETL(spDF=supplyDF):
     # Initialize The pre BuildingDF
     # ---
     projectInfoDF = spark.sql('''
-        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
-        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
-        group by col.ProjectUUID
+        select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
     dropColumn = ['Address', 'DistrictName',
                   'RegionName', 'PresalePermitNumber']
@@ -309,9 +305,7 @@ def quitETL(qtDF=quitDF):
     # Initialize The pre BuildingDF
     # ---
     projectInfoDF = spark.sql('''
-        select ProjectUUID, first(DistrictName) as DistrictName, first(RegionName) as RegionName, first(ProjectAddress) as Address, first(PresalePermitNumber) as PresalePermitNumber
-        from (select ProjectUUID, DistrictName, RegionName, ProjectAddress, PresalePermitNumber from ProjectInfoItem order by RecordTime DESC) as col
-        group by col.ProjectUUID
+        select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
     dropColumn = ['Address', 'DistrictName',
                   'RegionName', 'PresalePermitNumber']
