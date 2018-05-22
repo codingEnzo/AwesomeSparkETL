@@ -121,10 +121,9 @@ def main():
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
-    df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID")\
-        .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
+    name_list = set(Var.PROJECT_FIELDS) - set(['ProjectUUID'])
     df = df.dropDuplicates(['x.ProjectUUID'])
-    df.select(x.ProjectUUID, *Var.PROJECT_FIELDS).write.format("jdbc") \
+    df.select(x.ProjectUUID, *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
