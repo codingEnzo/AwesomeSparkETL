@@ -26,7 +26,7 @@ def kwarguments(tableName, city, db='spark_test'):
 
 
 def main():
-    appName = 'xuzhou'
+    appName = 'xuzhou_project'
     spark = SparkSession.builder.appName(appName).getOrCreate()
     spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 
@@ -123,8 +123,8 @@ def main():
             df = df.withColumn(c, F.lit(""))
     df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID")\
         .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
-    df = df.dropDuplicates(['ProjectUUID'])
-    df.select(*Var.PROJECT_FIELDS).write.format("jdbc") \
+    df = df.dropDuplicates(['x.ProjectUUID'])
+    df.select(x.ProjectUUID, *Var.PROJECT_FIELDS).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
