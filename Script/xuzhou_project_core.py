@@ -121,8 +121,8 @@ def main():
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
-    df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID")
-           .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
+    df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID")\
+        .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
     df = df.dropDuplicates(['ProjectUUID'])
     df.select(*Var.PROJECT_FIELDS).write.format("jdbc") \
         .options(
