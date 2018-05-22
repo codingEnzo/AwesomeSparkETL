@@ -16,7 +16,7 @@ def kwarguments(tableName, city, db='spark_test'):
         "driver":
         "com.mysql.jdbc.Driver",
         "dbtable":
-        "(SELECT * FROM {tb} WHERE City = '{ct}') {tb} ORDER BY RecordTime DESC".
+        "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".
         format(ct=city, tb=tableName),
         "user":
         "root",
@@ -26,7 +26,7 @@ def kwarguments(tableName, city, db='spark_test'):
 
 
 def main():
-    appName = 'xuzhou'
+    appName = 'xuzhou_supply_case'
     spark = SparkSession.builder.appName(appName).getOrCreate()
     spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 

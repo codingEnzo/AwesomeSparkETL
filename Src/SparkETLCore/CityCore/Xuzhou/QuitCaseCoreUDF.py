@@ -75,3 +75,11 @@ def region_name_apply(s):
 def presale_permit_number_clean(s):
     s = s.apply(lambda v: cleanName(v))
     return s
+
+
+@pandas_udf(StringType())
+def record_time_clean(s):
+    import datetime
+    nt = datetime.datetime.now()
+    s = s.apply(lambda t: nt.strftime("%Y-%m-%d %H:%M:%S") if not t else t)
+    return s

@@ -26,7 +26,7 @@ def kwarguments(tableName, city, db='spark_test'):
 
 
 def main():
-    appName = 'xuzhou'
+    appName = 'xuzhou_building'
     spark = SparkSession.builder.appName(appName).getOrCreate()
     spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 
