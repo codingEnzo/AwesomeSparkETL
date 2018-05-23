@@ -20,7 +20,7 @@ def district_name_apply(s):
         r = list(set(','.join(r).split(',')))
         return r[0].replace('金山桥经济开发区', '经济技术开发区')
 
-    s = s.apply(lambda x: fun(x))
+    s = s.apply(lambda x: func(x))
     return s
 
 
