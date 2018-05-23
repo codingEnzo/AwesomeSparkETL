@@ -5,16 +5,8 @@ import bisect
 import datetime
 import json
 import demjson
-from SparkETLCore.Utils.Var import *
+from SparkETLCore.Utils import Var
 from pyspark.sql import Row
-from sqlalchemy import create_engine
-
-
-def getEngine(dbName):
-    eg = create_engine(
-        'mysql+pymysql://root:gh001@10.30.1.70:3307/{db}?charset=utf8'.format(
-            db=dbName))
-    return eg
 
 
 def jsonLoad(x):
@@ -69,7 +61,7 @@ def bisectCheckFloorType(floor):
     ix = bisect.bisect(floorstack, floor) - 1
     if ix < 0:
         ix = 0
-    floortype = FLOORTYPES.get(floorstack[ix])
+    floortype = Var.FLOORTYPES.get(floorstack[ix])
     return floortype
 
 
