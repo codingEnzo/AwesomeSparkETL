@@ -1,20 +1,46 @@
 # coding=utf-8
 from __future__ import division
-
-import re
-import sys
-import inspect
+from __future__ import unicode_literals
 import pandas as pd
 import numpy as np
+from SparkETLCore.Utils import Var, Meth, Config
 
-sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
-
-from pyspark.sql import Row
-from Utils import Var, Meth, Config
-
-
-def permitUUID(data):
-    return data
+METHODS = ['approvalPresaleAmount',
+           'approvalPresaleArea',
+           'approvalPresaleHouseAmount',
+           'approvalPresaleHouseArea',
+           'approvalPresalePosition',
+           'builtFloorCount',
+           'constructionFloorCount',
+           'constructionTotalArea',
+           'contacts',
+           'earliestOpeningDate',
+           'earliestStartDate',
+           'groundArea',
+           'houseSpread',
+           'landUse',
+           'latestDeliversHouseDate',
+           'lssueDate',
+           'lssuingAuthority',
+           'periodsCount',
+           'presaleBuildingAmount',
+           'presaleBuildingSupportingAreaInfo',
+           'presaleHouseCount',
+           'presaleHousingLandIsMortgage',
+           'presalePermitNumber',
+           'presalePermitTie',
+           'presaleRegistrationManagementDepartment',
+           'presaleTotalBuidlingArea',
+           'projectName',
+           'realEstateProjectID',
+           'recordTime',
+           'remarks',
+           'sourceUrl',
+           'totalBuidlingArea',
+           'underGroundArea',
+           'validityDateClosingDate',
+           'validityDateDescribe',
+           'validityDateStartDate']
 
 
 def recordTime(data):
@@ -22,24 +48,17 @@ def recordTime(data):
 
 
 def projectName(data):
-    data = data.asDict()
     data['ProjectName'] = Meth.cleanName(data['ProjectName'])
-    return Row(**data)
+    return data
 
 
 def realEstateProjectID(data):
-    data = data.asDict()
-    df = pd.read_sql(con = Var.ENGINE,
-                     sql = "select ExtraJson as col from ProjectInfoItem where ProjectUUID='{projectUUID}' limit 0,1 ".format(
-                             projectUUID = data['ProjectUUID']))
-    data['RealEstateProjectID'] = Meth.jsonLoad(df.col.values[0]).get('ExtraPropertyID', '')
-    return Row(**data)
+    return data
 
 
 def presalePermitNumber(data):
-    data = data.asDict()
     data['PresalePermitNumber'] = Meth.cleanName(data['PresalePermitNumber'])
-    return Row(**data)
+    return data
 
 
 def totalBuidlingArea(data):
@@ -47,10 +66,12 @@ def totalBuidlingArea(data):
 
 
 def approvalPresaleAmount(data):
+    data['ApprovalPresaleAmount'] = data['ApprovalPresaleAmount'].replace('套', '')
     return data
 
 
 def approvalPresaleArea(data):
+    data['ApprovalPresaleArea'] = data['ApprovalPresaleArea'].replace('㎡', '')
     return data
 
 
@@ -167,8 +188,4 @@ def remarks(data):
 
 
 def sourceUrl(data):
-    return data
-
-
-def extraJsondef(data):
     return data

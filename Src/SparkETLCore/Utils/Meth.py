@@ -45,7 +45,7 @@ def cleanBuildingStructure(x):
 
 
 def numberTable(x):
-    return Var.NUMTAB.get(x, '')
+    return NUMTAB_TRANS.get(x, '')
 
 
 def isInt(val):
