@@ -185,7 +185,7 @@ def buildingETL(bdDF=buildingDF):
         select ProjectUUID, concat_ws('@#$', collect_list(distinct PresalePermitNumber)) as PresalePermitNumber from PresellInfoItem group by ProjectUUID
         ''')
     buildingAddressDF = spark.sql('''
-        select ProjectUUID, first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress from ProjectInfoItem order by RecordTime DESC) as col group by col.ProjectUUID
+        select ProjectUUID, first(ProjectAddress) as Address from (select ProjectUUID, ProjectAddress from ProjectInfoItem) as col group by col.ProjectUUID
         ''')
     buildingInfoDF = spark.sql('''
         select
