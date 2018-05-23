@@ -27,7 +27,7 @@ def kwarguments(tableName, city, db='spark_test'):
 
 def main():
     appName = 'xuzhou_house'
-    spark = SparkSession.builder.appName(appName).getOrCreate()
+    spark = SparkSession.builder.appName(appName).config('spark.cores.max', 4).getOrCreate()
     # spark.conf.set("spark.sql.execution.arrow.enabled", "true")
     # spark.conf.set("spark.network.timeout", "800s")
 

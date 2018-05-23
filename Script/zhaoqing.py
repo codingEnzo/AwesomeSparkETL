@@ -80,9 +80,6 @@ spark = SparkSession \
     .builder \
     .appName(appName) \
     .config('spark.cores.max', 4) \
-    .config('spark.sql.execution.arrow.enabled', "true") \
-    .config("spark.sql.codegen", "true") \
-    .config("spark.local.dir", "~/.tmp") \
     .getOrCreate()
 
 projectArgs = kwarguments('ProjectInfoItem', '肇庆')

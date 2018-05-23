@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
+import re
 import bisect
 import datetime
 import json
@@ -95,3 +96,22 @@ def dropColumn(data, columns=[]):
     for column in columns:
         del data[column]
     return Row(**data)
+
+
+def cleanUnit(x):
+    x = x.replace('㎡', '').replace('万', '0000')\
+        .replace('待定', '').replace('元/', '').replace('/', '-')\
+        .replace('%', '').replace(' ', '').replace('\t', '')\
+        .replace('\n', '').replace('无', '')
+    return x
+
+
+def cleanDate(x):
+    rule = re.compile(r'\d{4}\-\d{1,2}\-\d{1,2}|\d{4}\-\d{1,2}')
+    x = x.replace('年', '-').replace('月', '-')\
+        .replace('.', '-').replace('日', '')
+    if rule.search(x):
+        x = rule.search(x).group()
+    else:
+        x = ''
+    return x

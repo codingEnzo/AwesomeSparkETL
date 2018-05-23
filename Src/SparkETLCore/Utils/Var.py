@@ -7,6 +7,9 @@ ENGINE = create_engine(
 
 
 NUMTAB = {f: t for f, t in zip('1234567890', '一二三四五六七八九零')}
+SYMBOLSTAB = {ord(f): ord(t) for f, t in zip(
+    '，。！？【】（）％＃＠＆１２３４５６７８９０', ',.!?[]()%#@&1234567890')}
+
 FLOORTYPES = {
     -1: '低层(1-3)',
     0: '',

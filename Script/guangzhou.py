@@ -63,7 +63,7 @@ else:
 spark = SparkSession\
     .builder\
     .appName('_'.join([city, appName]))\
-    .config("spark.cores.max", 16)\
+    .config("spark.cores.max", 4)\
     .getOrCreate()
 
 # Load The Initial DF of Project, Building, Presell, House
