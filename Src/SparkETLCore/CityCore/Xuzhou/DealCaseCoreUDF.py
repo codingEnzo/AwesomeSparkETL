@@ -63,7 +63,7 @@ def presale_permit_number_clean(s):
 @pandas_udf(StringType())
 def state_extract(s):
     def func(value):
-        if values == '可销售':
+        if value == '可销售':
             return '明确成交'
         else:
             return '历史成交'
