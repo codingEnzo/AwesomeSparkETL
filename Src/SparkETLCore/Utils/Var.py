@@ -1,5 +1,4 @@
 # coding=utf-8
-import string
 from sqlalchemy import create_engine
 from collections import UserDict
 
