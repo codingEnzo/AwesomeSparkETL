@@ -94,7 +94,7 @@ def houseUUID(data):
 
 
 def address(data):
-    data['Address'] = Meth.cleanName(data['ProjectAddress'])
+    data['Address'] = Meth.cleanName(data['Address'])
     return data
 
 
@@ -305,7 +305,7 @@ def price(data):
 
 
 def priceType(data):
-    data['PriceType'] = '预售方案备案单价'.decode('utf-8')
+    data['PriceType'] = '预售方案备案单价'
     return data
 
 

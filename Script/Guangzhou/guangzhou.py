@@ -5,7 +5,6 @@ import sys
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
-
 from SparkETLCore.Utils.Var import *
 from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore, PresellCore, HouseCore, DealCaseCore, SupplyCaseCore, QuitCaseCore
 
@@ -59,10 +58,11 @@ city = "Guangzhou"
 if len(sys.argv) < 2:
     appName = 'test'
 else:
-    appName = sys.argv[1]
-spark = SparkSession\
-    .builder\
-    .appName('_'.join([city, appName]))\
+    appName = '_'.join([city, sys.argv[1]])
+
+spark = SparkSession \
+    .builder \
+    .appName(appName) \
     .config('spark.cores.max', 4) \
     .getOrCreate()
 

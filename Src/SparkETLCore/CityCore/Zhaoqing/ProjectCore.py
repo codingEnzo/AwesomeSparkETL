@@ -93,7 +93,7 @@ def regionName(data):
 
 
 def projectAddress(data):
-    data['ProjectAddress'] = Meth.cleanName(data['ProjectAddress'])
+    data['ProjectAddress'] = Meth.cleanName(data.get('ProjectAddress', ''))
     return data
 
 
@@ -181,6 +181,7 @@ def presalePermitNumber(data):
     if '' in arr:
         arr.remove('')
     data['PresalePermitNumber'] = Meth.jsonDumps(arr)
+    return data
 
 
 def houseBuildingCount(data):

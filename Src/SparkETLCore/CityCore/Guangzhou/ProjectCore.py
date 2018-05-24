@@ -10,10 +10,6 @@ sys.path.append('/home/chiufung/AwesomeSparkETL/Src/SparkETLCore')
 from pyspark.sql import SparkSession
 from SparkETLCore.Utils import Var, Meth, Config
 
-spark = SparkSession\
-        .builder\
-        .appName('guangzhou')\
-        .getOrCreate()
 
 METHODS = ['approvalPresaleAmount', 'approvalPresaleArea', 'averagePrice', 'buildingPermit', 'buildingType', 'certificateOfUseOfStateOwnedLand', 'completionDate', 'constructionPermitNumber', 'decoration', 'developer', 'districtName', 'earliestOpeningTime', 'earliestStartDate', 'extraJson', 'floorArea',
            'floorAreaRatio', 'greeningRate', 'houseBuildingCount', 'houseUseType', 'housingCount', 'landLevel', 'landUse', 'landUsePermit', 'latestDeliversHouseDate', 'legalPerson', 'legalPersonNumber', 'lssueDate',

@@ -76,8 +76,8 @@ def unitID(data):
 
 
 def presalePermitNumber(data):
-    arr = data['PresalePermitNumber'].replace('，'.decode('utf-8'), ',').split(',')
-    data['PresalePermitNumber'] = Meth.jsonDumps(filter(lambda x: x and x.strip(), arr))
+    arr = data['PresalePermitNumber'].replace('，', ',').split(',')
+    data['PresalePermitNumber'] = Meth.jsonDumps(list(filter(lambda x: x and x.strip(), arr)))
     return data
 
 

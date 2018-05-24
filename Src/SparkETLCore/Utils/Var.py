@@ -375,6 +375,17 @@ QUIT_FIELDS = [
     'UnitUUID',
 ]
 
+PERMIT_FIELDS = ['ApprovalPresaleAmount', 'ApprovalPresaleArea', 'ApprovalPresaleHouseAmount',
+                 'ApprovalPresaleHouseArea', 'ApprovalPresalePosition', 'BuiltFloorCount', 'City',
+                 'ConstructionFloorCount', 'ConstructionTotalArea', 'Contacts', 'EarliestOpeningDate',
+                 'EarliestStartDate', 'ExtraJson', 'GroundArea', 'HouseSpread', 'LandUse', 'LatestDeliversHouseDate',
+                 'LssueDate', 'LssuingAuthority', 'PeriodsCount', 'PermitID', 'PresaleBuildingAmount',
+                 'PresaleBuildingSupportingAreaInfo', 'PresaleHouseCount', 'PresaleHousingLandIsMortgage',
+                 'PresalePermitNumber', 'PresalePermitTie', 'PresaleRegistrationManagementDepartment',
+                 'PresaleTotalBuidlingArea', 'ProjectName', 'ProjectUUID', 'RealEstateProjectID', 'RecordTime',
+                 'Remarks', 'SourceUrl', 'TotalBuidlingArea', 'UnderGroundArea', 'ValidityDateClosingDate',
+                 'ValidityDateDescribe', 'ValidityDateStartDate']
+
 
 class NiceDict(UserDict):
 
