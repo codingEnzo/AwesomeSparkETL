@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-
+import sys
 from pyspark.sql import Row, SparkSession
 
 from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore, HouseCore, SupplyCaseCore, DealCaseCore, QuitCaseCore
@@ -132,7 +132,7 @@ quitDF = spark.read \
 quitDF.createOrReplaceTempView("QuitInfoItem")
 
 
-def projectETL(pjDF=ProjectDF):
+def projectETL(pjDF=projectDF):
     # Load the DF of Table join with Project
     # Initialize The pre ProjectDF
     # ---
@@ -264,7 +264,6 @@ def quitETL(quitDF=quitDF):
 def main():
     methodsDict = {'projectETL': projectETL,
                    'buildingETL': buildingETL,
-                   'presellETL': presellETL,
                    'houseETL': houseETL,
                    'dealETL': dealETL,
                    'supplyETL': supplyETL,

@@ -124,7 +124,7 @@ def main():
     # df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID") \
     #    .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
     # name_list = set(Var.PROJECT_FIELDS) - set(['ProjectUUID'])
-    # df = df.dropDuplicates(['x.ProjectUUID'])
+    df = df.dropDuplicates(['x.ProjectID'])
     df.select(Var.PROJECT_FIELDS).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",

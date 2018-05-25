@@ -68,7 +68,7 @@ def main():
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
     name_list = set(Var.BUILDING_FIELDS) - set(['BuildingUUID'])
-    df = df.dropDuplicates(['BuildingUUID'])
+    df = df.dropDuplicates(['BuildingID'])
     df.select('x.BuildingUUID', *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",

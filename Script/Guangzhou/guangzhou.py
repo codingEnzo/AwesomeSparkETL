@@ -68,7 +68,7 @@ spark = SparkSession \
 
 # Load The Initial DF of Project, Building, Presell, House
 # ---
-projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectUUID')
+projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectID')
 projectDF = spark.read \
     .format("jdbc") \
     .options(**projectArgs) \
@@ -76,7 +76,7 @@ projectDF = spark.read \
     .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingUUID')
+buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -84,7 +84,7 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-houseArgs = kwarguments('HouseInfoItem', '广州', 'HouseUUID')
+houseArgs = kwarguments('HouseInfoItem', '广州', 'HouseID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -94,10 +94,10 @@ houseDF.createOrReplaceTempView("HouseInfoItem")
 
 dealArgs = kwarguments(query='''
     (SELECT * FROM HouseInfoItem
-    WHERE City="广州" AND RecordTime BETWEEN '{0}' AND '{1}'
+    WHERE City="广州"
     AND find_in_set("已签约",HouseLabel) AND ! find_in_set("已签约",HouseLabelLatest)
     AND HouseUseType!="详见附注" AND HouseStateLatest !="") DealInfoItem
-    '''.format('2018-04-21', '2018-04-26'))
+    ''')
 dealDF = spark.read \
     .format("jdbc") \
     .options(**dealArgs) \
@@ -107,10 +107,10 @@ dealDF.createOrReplaceTempView("DealInfoItem")
 
 supplyArgs = kwarguments(query='''
     (SELECT * FROM HouseInfoItem
-    WHERE City="广州" AND RecordTime BETWEEN '{0}' AND '{1}'
+    WHERE City="广州"
     AND HouseState in ("预售可售","确权可售")
     AND HouseStateLatest in ("预售可售","确权可售")) SupplyInfoItem
-    '''.format('2018-04-21', '2018-04-26'))
+    ''')
 supplyDF = spark.read \
     .format("jdbc") \
     .options(**supplyArgs) \
@@ -121,11 +121,10 @@ supplyDF.createOrReplaceTempView("SupplyInfoItem")
 quitArgs = kwarguments(query='''
     (SELECT * FROM HouseInfoItem
     WHERE City="广州"
-    AND RecordTime BETWEEN '{0}' AND '{1}'
     AND HouseLabel ="" AND find_in_set("已签约",HouseLabelLatest)
     AND HouseState in ("预售可售","确权可售") AND find_in_set("已签约",HouseState)
     AND find_in_set("不可",HouseStateLatest)) QuitInfoItem
-    '''.format('2018-04-01', '2018-04-26'))
+    ''')
 quitDF = spark.read \
     .format("jdbc") \
     .options(**quitArgs) \
@@ -243,6 +242,7 @@ def dealETL(dlDF=dealDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
+    dlDF = dlDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
     projectRawDF = spark.read \
         .format("jdbc") \
         .options(**kwarguments('ProjectInfoItem', '广州')) \
@@ -282,6 +282,7 @@ def supplyETL(spDF=supplyDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
+    spDF = spDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
@@ -304,6 +305,7 @@ def quitETL(qtDF=quitDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
+    qtDF = qtDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')

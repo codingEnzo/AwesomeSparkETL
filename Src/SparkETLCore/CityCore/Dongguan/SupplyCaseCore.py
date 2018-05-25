@@ -5,7 +5,7 @@ import datetime
 from SparkETLCore.Utils import Meth
 
 METHODS = [
-    'RecordTime',
+    'recordTime',
     'projectUUID',
     'buildingUUID',
     'houseUUID',
@@ -24,7 +24,7 @@ METHODS = [
     'buildingStructure',
     'sellSchedule',
     'sellState',
-    'SourceUrl',
+    'sourceUrl',
     'caseTime',
     'caseFrom',
     'unitShape',
@@ -49,7 +49,6 @@ METHODS = [
     'houseUseType',
     'dwelling',
     'state',
-    'dealType',
     'remarks',
     'unitUUID',
 ]

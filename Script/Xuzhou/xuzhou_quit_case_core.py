@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-
+import datetime
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
 
@@ -53,7 +53,7 @@ def main():
 
     # ProjectCore Block --->
     x = projectDF.alias('x')
-    y = houseDF.alias('y')
+    y = houseDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).alias('y')
     z = presellDF.alias('z')
 
     # 1. 字段清洗 + 提取
@@ -100,7 +100,7 @@ def main():
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
     name_list = set(Var.QUIT_FIELDS) - set(['ProjectUUID'])
-    df = df.dropDuplicates(subset=['HouseUUID'])
+    df = df.dropDuplicates(subset=['HouseID'])
     df.select('y.ProjectUUID', *name_list).write.format("jdbc") \
         .options(
             url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",

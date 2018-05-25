@@ -1,9 +1,10 @@
 # coding=utf-8
+import sys
+import datetime
 from pyspark.sql import Row, SparkSession
 from SparkETLCore.Utils.Var import NiceDict
 from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS, PRESELL_FIELDS, HOUSE_FIELDS, DEAL_FIELDS, SUPPLY_FIELDS, QUIT_FIELDS
 from SparkETLCore.CityCore.Zhaoqing import ProjectCore, BuildingCore, PresellCore, HouseCore, DealCaseCore, SupplyCore, QuitCaseCore
-import sys
 
 
 def kwarguments(tableName, city, groupKey=None, db='spark_test'):
@@ -68,7 +69,7 @@ spark = SparkSession\
     .config("spark.sql.codegen", "true") \
     .getOrCreate()
 
-projectArgs = kwarguments('ProjectInfoItem', '肇庆', 'ProjectUUID')
+projectArgs = kwarguments('ProjectInfoItem', '肇庆', 'ProjectID')
 projectDF = spark.read \
     .format("jdbc") \
     .options(**projectArgs) \
@@ -76,7 +77,7 @@ projectDF = spark.read \
     .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-buildingArgs = kwarguments('buildinginfoitem', '肇庆', 'BuildingUUID')
+buildingArgs = kwarguments('buildinginfoitem', '肇庆', 'BuildingID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -84,7 +85,7 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("buildinginfoitem")
 
-houseArgs = kwarguments('houseinfoitem', '肇庆', 'HouseUUID')
+houseArgs = kwarguments('houseinfoitem', '肇庆', 'HouseID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -223,7 +224,7 @@ def houseETL(hDF=houseDF):
 
 
 def supplyETL(df=houseDF):
-    supply_df = df.filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
+    supply_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
         ~ (df.HouseStateLatest.like('待售'))))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',
@@ -260,7 +261,7 @@ def supplyETL(df=houseDF):
 
 
 def dealETL(df=houseDF):
-    deal_df = df.filter((df.HouseStateLatest.isin(['期房待售', '现房待售', ''])) & (
+    deal_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseStateLatest.isin(['期房待售', '现房待售', ''])) & (
         df.HouseState.isin(['已签约', '已备案', '已登记'])))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',
@@ -297,7 +298,7 @@ def dealETL(df=houseDF):
 
 
 def quitETL(df=houseDF):
-    quit_df = df.filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
+    quit_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
         df.HouseStateLatest.isin(['已签约', '已备案', '已登记'])))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',

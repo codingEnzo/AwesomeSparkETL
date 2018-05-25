@@ -1,5 +1,6 @@
 # coding:utf-8
 import sys
+import datetime
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
 from SparkETLCore.CityCore.Hefei import ProjectCore, BuildingCore, HouseCore,\
@@ -136,7 +137,8 @@ def dealCaseETL(sc):
     hdf = sc.sql(
         '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('已签约','已备案','已办产权','网签备案单') 
-            AND HouseStateLatest in ('可售','抵押可售','摇号销售','现房销售')''')
+            AND HouseStateLatest in ('可售','抵押可售','摇号销售','现房销售')''') \
+        .filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
 
     project, building, house = pdf.alias(
         'project'), bdf.alias('building'), hdf.alias('house')
@@ -165,7 +167,7 @@ def supplyCaseETL(sc):
         '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('可售','抵押可售','摇号销售','现房销售') 
             AND HouseStateLatest=''
-            ''')
+            ''').filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
     project, building, house = pdf.alias(
         'project'), bdf.alias('building'), hdf.alias('house')
     house = house.join(project, 'ProjectUUID', 'left')\
@@ -193,7 +195,7 @@ def quitCaseETL(sc):
         '''SELECT * FROM HouseInfoItem 
             WHERE HouseState in ('可售','抵押可售','摇号销售','现房销售')
             AND HouseStateLatest in ('已签约','已备案','已办产权','网签备案单') 
-            ''')
+            ''').filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
     project, building, house = pdf.alias(
         'project'), bdf.alias('building'), hdf.alias('house')
     house = house.join(project, 'ProjectUUID', 'left')\
@@ -212,13 +214,13 @@ def main():
         .config('spark.sql.execution.arrow.enabled', 'true')\
         .config('spark.sql.codegen', 'true').getOrCreate()
     projectDF = kwarguments(sc=sc, tableName='ProjectInfoItem',
-                            city='合肥', groupKey='ProjectUUID',
+                            city='合肥', groupKey='ProjectID',
                             query=None)
     buildingDF = kwarguments(sc=sc, tableName='BuildingInfoItem',
-                             city='合肥', groupKey='BuildingUUID',
+                             city='合肥', groupKey='BuildingID',
                              query=None)
     houseDF = kwarguments(sc=sc, tableName='HouseInfoItem',
-                          city='合肥', groupKey='HouseUUID',
+                          city='合肥', groupKey='HouseID',
                           query=None,)
     methodsDict = {'projectETL': projectETL,
                    'buildingETL': buildingETL,
