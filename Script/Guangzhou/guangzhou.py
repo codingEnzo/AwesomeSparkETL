@@ -2,7 +2,6 @@
 from __future__ import print_function
 import sys
 import datetime
-
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
