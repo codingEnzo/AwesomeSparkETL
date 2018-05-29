@@ -1,28 +1,44 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
 import datetime
+
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-
 from SparkETLCore.CityCore.Xuzhou import SupplyCaseCoreUDF
 from SparkETLCore.Utils import Var
 
 
-def kwarguments(tableName, city, db='spark_test'):
-    return {
-        "url":
-        "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8".
-        format(db),
-        "driver":
-        "com.mysql.jdbc.Driver",
-        "dbtable":
-        "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".
-        format(ct=city, tb=tableName),
-        "user":
-        "root",
-        "password":
-        "yunfangdata"
-    }
+def kwarguments(tableName, city, db='naive'):
+    if db != 'achievement':
+        return {
+            "url":
+            "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
+            .format(db),
+            "driver":
+            "com.mysql.jdbc.Driver",
+            "dbtable":
+            "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".
+            format(ct=city, tb=tableName),
+            "user":
+            "root",
+            "password":
+            "yunfangdata"
+        }
+    else:
+        return {
+            "url":
+            "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
+            .format(db),
+            "driver":
+            "com.mysql.jdbc.Driver",
+            "dbtable":
+            "(SELECT * FROM {tb}) {tb}".format(tb=tableName),
+            "user":
+            "root",
+            "password":
+            "yunfangdata"
+        }
 
 
 def main():
@@ -53,7 +69,9 @@ def main():
 
     # ProjectCore Block --->
     x = projectDF.alias('x')
-    y = houseDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).alias('y')
+    y = houseDF.filter(
+        "RecordTime>='%s'" %
+        str(datetime.datetime.now() - datetime.timedelta(days=7))).alias('y')
     z = presellDF.alias('z')
 
     # 1. 字段清洗 + 提取
@@ -99,15 +117,28 @@ def main():
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
     name_list = set(Var.SUPPLY_FIELDS) - set(['ProjectUUID'])
+    df = df.select('y.ProjectUUID', *name_list)
+    try:
+        originArgs = kwarguments(
+            'supply_case_info_xuzhou', '徐州', db='achievement')
+        originDF = spark.read \
+                     .format("jdbc") \
+                     .options(**originArgs) \
+                     .load() \
+                     .fillna("")
+        df = df.unionByName(originDF)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
     df = df.dropDuplicates(subset=['HouseID'])
-    df.select('y.ProjectUUID', *name_list).write.format("jdbc") \
+    df.write.format("jdbc") \
         .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
+            url="jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
             dbtable='supply_case_info_xuzhou',
             user="root",
             password="yunfangdata") \
-        .mode("append") \
+        .mode("overwrite") \
         .save()
     # <--- HouseCore End Block
 

@@ -3,31 +3,46 @@ from __future__ import print_function
 
 from pyspark.sql import Row, SparkSession
 from pyspark.sql import functions as F
-
 from SparkETLCore.CityCore.Xuzhou import ProjectCoreUDF
 from SparkETLCore.Utils import Var
 
 
-def kwarguments(tableName, city, db='spark_test'):
-    return {
-        "url":
-        "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
-        .format(db),
-        "driver":
-        "com.mysql.jdbc.Driver",
-        "dbtable":
-        "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".format(
-            ct=city, tb=tableName),
-        "user":
-        "root",
-        "password":
-        "yunfangdata"
-    }
+def kwarguments(tableName, city, db='naive'):
+    if db != 'achievement':
+        return {
+            "url":
+            "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
+            .format(db),
+            "driver":
+            "com.mysql.jdbc.Driver",
+            "dbtable":
+            "(SELECT * FROM {tb} WHERE City = '{ct}' ORDER BY RecordTime DESC) {tb}".
+            format(ct=city, tb=tableName),
+            "user":
+            "root",
+            "password":
+            "yunfangdata"
+        }
+    else:
+        return {
+            "url":
+            "jdbc:mysql://10.30.1.7:3306/{}?useUnicode=true&characterEncoding=utf8"
+            .format(db),
+            "driver":
+            "com.mysql.jdbc.Driver",
+            "dbtable":
+            "(SELECT * FROM {tb}) {tb}".format(tb=tableName),
+            "user":
+            "root",
+            "password":
+            "yunfangdata"
+        }
 
 
 def main():
     appName = 'xuzhou_project'
-    spark = SparkSession.builder.appName(appName).config('spark.cores.max', 4).getOrCreate()
+    spark = SparkSession.builder.appName(appName).config('spark.cores.max',
+                                                         8).getOrCreate()
     spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 
     projectArgs = kwarguments('ProjectInfoItem', '徐州')
@@ -121,18 +136,28 @@ def main():
     for i, c in enumerate(Var.PROJECT_FIELDS):
         if c not in columns:
             df = df.withColumn(c, F.lit(""))
-    # df = df.withColumnRenamed("y.ProjectUUID", "yProjectUUID") \
-    #    .withColumnRenamed("z.ProjectUUID", "zProjectUUID")
-    # name_list = set(Var.PROJECT_FIELDS) - set(['ProjectUUID'])
-    df = df.dropDuplicates(['x.ProjectID'])
-    df.select(Var.PROJECT_FIELDS).write.format("jdbc") \
+    df = df.select(Var.PROJECT_FIELDS)
+    try:
+        originArgs = kwarguments('project_info_xuzhou', '徐州', db='achievement')
+        originDF = spark.read \
+                     .format("jdbc") \
+                     .options(**originArgs) \
+                     .load() \
+                     .fillna("")
+        df = df.unionByName(originDF)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+    df = df.dropDuplicates(['ProjectID'])
+    df.write.format("jdbc") \
         .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
+            url="jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
             dbtable='project_info_xuzhou',
             user="root",
             password="yunfangdata") \
-        .mode("append") \
+        .mode("overwrite") \
         .save()
     # <--- ProjectCore End Block
 
