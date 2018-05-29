@@ -9,7 +9,7 @@ from SparkETLCore.Utils.Var import *
 from SparkETLCore.CityCore.Guangzhou import ProjectCore, BuildingCore, PresellCore, HouseCore, DealCaseCore, SupplyCaseCore, QuitCaseCore
 
 
-def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='spark_test'):
+def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='naive'):
     if groupKey:
         dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
             city=city, tableName=tableName, groupKey=groupKey)
@@ -34,24 +34,37 @@ def cleanFields(row, methods, target, fields):
     return row
 
 
-def groupedWork(data, methods, target, fields, tableName):
+def groupedWork(data, methods, target, fields, tableName, distinctKey=[]):
+    res = None
     df = data
     df = df.rdd.repartition(1000).map(lambda r: cleanFields(
         r, methods, target, fields))
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
+                'driver': "com.mysql.jdbc.Driver",
+                'dbtable': tableName,
+                'user': "root",
+                'password': "yunfangdata"}
     try:
-        df = df.toDF().select(fields).write.format("jdbc") \
-            .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
-            driver="com.mysql.jdbc.Driver",
-            dbtable=tableName,
-            user="root",
-            password="yunfangdata") \
+        df.toDF().select(fields).write.format("jdbc") \
+            .options(**argsDict) \
             .mode("append") \
+            .save()
+        dfTmp = spark.read \
+            .format("jdbc") \
+            .options(**argsDict) \
+            .load() \
+            .fillna("") \
+            .sort('RecordTime', ascending=False)
+        if distinctKey:
+            dfTmp = dfTmp.dropDuplicates(distinctKey)
+        res = dfTmp.rdd.toDF().write.format("jdbc") \
+            .options(**argsDict) \
+            .mode("overwrite") \
             .save()
     except ValueError as e:
         import traceback
         traceback.print_exc()
-    return df
+    return res
 
 
 city = "Guangzhou"
@@ -68,7 +81,7 @@ spark = SparkSession \
 
 # Load The Initial DF of Project, Building, Presell, House
 # ---
-projectArgs = kwarguments('ProjectInfoItem', '广州', 'ProjectID')
+projectArgs = kwarguments('projectinfoitem', '广州', 'ProjectID')
 projectDF = spark.read \
     .format("jdbc") \
     .options(**projectArgs) \
@@ -76,7 +89,7 @@ projectDF = spark.read \
     .fillna("")
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
-buildingArgs = kwarguments('BuildingInfoItem', '广州', 'BuildingID')
+buildingArgs = kwarguments('buildinginfoitem', '广州', 'BuildingID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -84,7 +97,7 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-houseArgs = kwarguments('HouseInfoItem', '广州', 'HouseID')
+houseArgs = kwarguments('houseinfoitem', '广州', 'HouseID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -93,7 +106,7 @@ houseDF = spark.read \
 houseDF.createOrReplaceTempView("HouseInfoItem")
 
 dealArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="广州"
     AND find_in_set("已签约",HouseLabel) AND ! find_in_set("已签约",HouseLabelLatest)
     AND HouseUseType!="详见附注" AND HouseStateLatest !="") DealInfoItem
@@ -106,7 +119,7 @@ dealDF = spark.read \
 dealDF.createOrReplaceTempView("DealInfoItem")
 
 supplyArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="广州"
     AND HouseState in ("预售可售","确权可售")
     AND HouseStateLatest in ("预售可售","确权可售")) SupplyInfoItem
@@ -119,7 +132,7 @@ supplyDF = spark.read \
 supplyDF.createOrReplaceTempView("SupplyInfoItem")
 
 quitArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="广州"
     AND HouseLabel ="" AND find_in_set("已签约",HouseLabelLatest)
     AND HouseState in ("预售可售","确权可售") AND find_in_set("已签约",HouseState)
@@ -173,7 +186,7 @@ def projectETL(pjDF=projectDF):
         .dropDuplicates()
     # print(preProjectDF.count())
     return groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
-                       PROJECT_FIELDS, 'project_info_guangzhou')
+                       PROJECT_FIELDS, 'project_info_guangzhou', ['ProjectID'])
 
 
 def buildingETL(bdDF=buildingDF):
@@ -206,7 +219,7 @@ def buildingETL(bdDF=buildingDF):
                    buildingInfoDF.BuildingStructure])\
         .dropDuplicates()
     return groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
-                       BUILDING_FIELDS, 'building_info_guangzhou')
+                       BUILDING_FIELDS, 'building_info_guangzhou', ['BuildingID'])
 
 
 def presellETL(psDF=presellDF):
@@ -217,7 +230,7 @@ def presellETL(psDF=presellDF):
     psDF = psDF.drop(*dropColumn)
     prePresellDF = psDF.dropDuplicates()
     return groupedWork(prePresellDF, PresellCore.METHODS, PresellCore,
-                       PRESELL_FIELDS, 'presell_info_guangzhou')
+                       PRESELL_FIELDS, 'presell_info_guangzhou', ['PresalePermitNumber'])
 
 
 def houseETL(hsDF=houseDF):
@@ -235,14 +248,15 @@ def houseETL(hsDF=houseDF):
                    projectInfoDF.Address])\
         .dropDuplicates()
     return groupedWork(preHouseDF, HouseCore.METHODS, HouseCore,
-                       HOUSE_FIELDS, 'house_info_guangzhou')
+                       HOUSE_FIELDS, 'house_info_guangzhou', ['HouseID'])
 
 
 def dealETL(dlDF=dealDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    dlDF = dlDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
+    dlDF = dlDF.filter("RecordTime>='%s'" % str(
+        datetime.datetime.now() - datetime.timedelta(days=7)))
     projectRawDF = spark.read \
         .format("jdbc") \
         .options(**kwarguments('ProjectInfoItem', '广州')) \
@@ -275,14 +289,15 @@ def dealETL(dlDF=dealDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preDealDF, DealCaseCore.METHODS, DealCaseCore,
-                       DEAL_FIELDS, 'deal_info_guangzhou')
+                       DEAL_FIELDS, 'deal_info_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def supplyETL(spDF=supplyDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    spDF = spDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
+    spDF = spDF.filter("RecordTime>='%s'" % str(
+        datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
@@ -298,14 +313,15 @@ def supplyETL(spDF=supplyDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preSupplyDF, SupplyCaseCore.METHODS, SupplyCaseCore,
-                       SUPPLY_FIELDS, 'supply_info_guangzhou')
+                       SUPPLY_FIELDS, 'supply_info_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def quitETL(qtDF=quitDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    qtDF = qtDF.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7)))
+    qtDF = qtDF.filter("RecordTime>='%s'" % str(
+        datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
@@ -321,7 +337,7 @@ def quitETL(qtDF=quitDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preQuitDF, QuitCaseCore.METHODS, QuitCaseCore,
-                       QUIT_FIELDS, 'quit_info_guangzhou')
+                       QUIT_FIELDS, 'quit_info_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def main():
