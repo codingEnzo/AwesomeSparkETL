@@ -39,22 +39,39 @@ def cleanFields(row, methods, target, fields):
     return row
 
 
-def groupedWork(data, methods, target, fields, tableName):
-    df = data.rdd.map(lambda r: cleanFields(
-        r, methods, target, fields))
+def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
+    res = None
+    df = data
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
+                'driver': "com.mysql.jdbc.Driver",
+                'dbtable': tableName,
+                'user': "root",
+                'password': "yunfangdata"}
     try:
-        df = df.toDF().select(fields).write.format("jdbc")\
-            .options(
-            url='''jdbc:mysql://10.30.1.7:3306/mirror?
-                    useUnicode=true&characterEncoding=utf-8''',
-            user="root", password="yunfangdata",
-            driver="com.mysql.jdbc.Driver",
-            dbtable=tableName)\
-            .mode("append").save()
-    except ValueError as e:
+        df = df.unionByName(spark.read
+                            .format("jdbc")
+                            .options(**argsDict)
+                            .load()
+                            .fillna(""))
+    except Exception as e:
         import traceback
         traceback.print_exc()
-    return df
+    if distinctKey:
+        df = df.dropDuplicates(distinctKey)
+    res = df.write.format("jdbc") \
+        .options(**argsDict) \
+        .mode("overwrite") \
+        .save()
+    return res
+
+
+sc = SparkSession.builder.appName("Hefei" + '_' + sys.argv[1])\
+    .config('spark.cores.max', 6)\
+    .config('spark.sql.execution.arrow.enabled', 'true')\
+    .config('spark.sql.codegen', 'true').getOrCreate()
+spark = sc
 
 
 def projectETL(sc):
@@ -73,7 +90,7 @@ def projectETL(sc):
          building.PresalePermitNumber,
          building.BuildingExtraJson])
     return groupedWork(project, ProjectCore.METHODS, ProjectCore,
-                       PROJECT_FIELDS, 'project_info_hefei')
+                       PROJECT_FIELDS, 'project_info_hefei', ['ProjectID'])
 
 
 def buildingETL(sc):
@@ -96,7 +113,7 @@ def buildingETL(sc):
                 [project.Address, house.Floors])
     # building.select(project.Address).show(30)
     return groupedWork(building, BuildingCore.METHODS, BuildingCore,
-                       BUILDING_FIELDS, 'building_info_hefei')
+                       BUILDING_FIELDS, 'building_info_hefei', ['BuildingID'])
 
 
 def houseETL(sc):
@@ -120,7 +137,7 @@ def houseETL(sc):
                  project.Address,
                  building.PresalePermitNumber])
     return groupedWork(house, HouseCore.METHODS, HouseCore,
-                       HOUSE_FIELDS, 'house_info_hefei')
+                       HOUSE_FIELDS, 'house_info_hefei', ['HouseID'])
 
 
 def dealCaseETL(sc):
@@ -149,7 +166,7 @@ def dealCaseETL(sc):
                  project.Address,
                  building.PresalePermitNumber])
     return groupedWork(house, DealCaseCore.METHODS, DealCaseCore,
-                       DEAL_FIELDS, 'deal_case_hefei')
+                       DEAL_FIELDS, 'deal_case_hefei', ['RecordTime', 'HouseID'])
 
 
 def supplyCaseETL(sc):
@@ -177,7 +194,7 @@ def supplyCaseETL(sc):
                  project.Address,
                  building.PresalePermitNumber])
     return groupedWork(house, SupplyCaseCore.METHODS, SupplyCaseCore,
-                       SUPPLY_FIELDS, 'supply_case_hefei')
+                       SUPPLY_FIELDS, 'supply_case_hefei', ['RecordTime', 'HouseID'])
 
 
 def quitCaseETL(sc):
@@ -205,14 +222,10 @@ def quitCaseETL(sc):
                  project.Address,
                  building.PresalePermitNumber])
     return groupedWork(house, QuitCaseCore.METHODS, QuitCaseCore,
-                       QUIT_FIELDS, 'quit_case_hefei')
+                       QUIT_FIELDS, 'quit_case_hefei', ['RecordTime', 'HouseID'])
 
 
 def main():
-    sc = SparkSession.builder.appName("Hefei" + '_' + sys.argv[1])\
-        .config('spark.cores.max', 4)\
-        .config('spark.sql.execution.arrow.enabled', 'true')\
-        .config('spark.sql.codegen', 'true').getOrCreate()
     projectDF = kwarguments(sc=sc, tableName='ProjectInfoItem',
                             city='合肥', groupKey='ProjectID',
                             query=None)

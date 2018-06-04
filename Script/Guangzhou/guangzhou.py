@@ -34,36 +34,31 @@ def cleanFields(row, methods, target, fields):
     return row
 
 
-def groupedWork(data, methods, target, fields, tableName, distinctKey=[]):
+def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     res = None
     df = data
     df = df.rdd.repartition(1000).map(lambda r: cleanFields(
-        r, methods, target, fields))
+        r, methods, target, fields)).toDF().select(fields)
     argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
                 'driver': "com.mysql.jdbc.Driver",
                 'dbtable': tableName,
                 'user': "root",
                 'password': "yunfangdata"}
     try:
-        df.toDF().select(fields).write.format("jdbc") \
-            .options(**argsDict) \
-            .mode("append") \
-            .save()
-        dfTmp = spark.read \
-            .format("jdbc") \
-            .options(**argsDict) \
-            .load() \
-            .fillna("") \
-            .sort('RecordTime', ascending=False)
-        if distinctKey:
-            dfTmp = dfTmp.dropDuplicates(distinctKey)
-        res = dfTmp.rdd.toDF().write.format("jdbc") \
-            .options(**argsDict) \
-            .mode("overwrite") \
-            .save()
-    except ValueError as e:
+        df = df.unionByName(spark.read
+                            .format("jdbc")
+                            .options(**argsDict)
+                            .load()
+                            .fillna(""))
+    except Exception as e:
         import traceback
         traceback.print_exc()
+    if distinctKey:
+        df = df.dropDuplicates(distinctKey)
+    res = df.write.format("jdbc") \
+        .options(**argsDict) \
+        .mode("overwrite") \
+        .save()
     return res
 
 
@@ -76,7 +71,7 @@ else:
 spark = SparkSession \
     .builder \
     .appName(appName) \
-    .config('spark.cores.max', 4) \
+    .config('spark.cores.max', 6) \
     .getOrCreate()
 
 # Load The Initial DF of Project, Building, Presell, House

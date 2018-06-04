@@ -32,24 +32,32 @@ def cleanFields(row, methods, target, fields):
     return row
 
 
-def groupedWork(data, methods, target, fields, tableName):
+def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
+    res = None
     df = data
-    df = df.rdd.map(lambda r: cleanFields(
-        r, methods, target, fields))
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
+                'driver': "com.mysql.jdbc.Driver",
+                'dbtable': tableName,
+                'user': "root",
+                'password': "yunfangdata"}
     try:
-        df.toDF().select(fields).write.format("jdbc") \
-            .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true",
-            driver="com.mysql.jdbc.Driver",
-            dbtable=tableName,
-            user="root",
-            password="yunfangdata") \
-            .mode("append") \
-            .save()
-    except ValueError as e:
+        df = df.unionByName(spark.read
+                            .format("jdbc")
+                            .options(**argsDict)
+                            .load()
+                            .fillna(""))
+    except Exception as e:
         import traceback
         traceback.print_exc()
-    return df
+    if distinctKey:
+        df = df.dropDuplicates(distinctKey)
+    res = df.write.format("jdbc") \
+        .options(**argsDict) \
+        .mode("overwrite") \
+        .save()
+    return res
 
 
 city = "Dongguan"
@@ -60,13 +68,13 @@ else:
 spark = SparkSession \
     .builder \
     .appName(appName) \
-    .config('spark.cores.max', 4) \
+    .config('spark.cores.max', 6) \
     .config('spark.sql.execution.arrow.enabled', "true") \
     .config("spark.sql.codegen", "true") \
     .getOrCreate()
 
-projectArgs = kwarguments(tableName='ProjectInfoItem',
-                          city='东莞', groupKey='ProjectUUID')
+projectArgs = kwarguments(tableName='projectinfoitem',
+                          city='东莞', groupKey='ProjectID')
 projectDF = spark.read \
     .format("jdbc") \
     .options(**projectArgs) \
@@ -75,7 +83,7 @@ projectDF = spark.read \
 projectDF.createOrReplaceTempView("ProjectInfoItem")
 
 buildingArgs = kwarguments(
-    tableName='BuildingInfoItem', city='东莞', groupKey='BuildingUUID')
+    tableName='buildinginfoitem', city='东莞', groupKey='BuildingID')
 buildingDF = spark.read \
     .format("jdbc") \
     .options(**buildingArgs) \
@@ -83,8 +91,8 @@ buildingDF = spark.read \
     .fillna("")
 buildingDF.createOrReplaceTempView("BuildingInfoItem")
 
-houseArgs = kwarguments(tableName='HouseInfoItem',
-                        city='东莞', groupKey='HouseUUID')
+houseArgs = kwarguments(tableName='houseinfoitem',
+                        city='东莞', groupKey='HouseID')
 houseDF = spark.read \
     .format("jdbc") \
     .options(**houseArgs) \
@@ -93,7 +101,7 @@ houseDF = spark.read \
 houseDF.createOrReplaceTempView("HouseInfoItem")
 
 supplyArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('可售', '待售', '')) SupplyInfoItem
@@ -106,7 +114,7 @@ supplyDF = spark.read \
 supplyDF.createOrReplaceTempView("SupplyInfoItem")
 
 dealArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
     AND HouseState in ('不可售','已售') 
     AND HouseStateLatest in ('可售', '待售', '')) DealInfoItem
@@ -119,7 +127,7 @@ dealDF = spark.read \
 dealDF.createOrReplaceTempView("DealInfoItem")
 
 quitArgs = kwarguments(query='''
-    (SELECT * FROM HouseInfoItem
+    (SELECT * FROM houseinfoitem
     WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('不可售', '已售')) QuitInfoItem
@@ -152,7 +160,7 @@ def projectETL(pjDF=projectDF):
         .dropDuplicates()
     print(preProjectDF.count())
     groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
-                PROJECT_FIELDS, 'project_info_dongguan')
+                PROJECT_FIELDS, 'project_info_dongguan', ['ProjectID'])
 
 
 def buildingETL(bdDF=buildingDF):
@@ -176,7 +184,7 @@ def buildingETL(bdDF=buildingDF):
                    buildingHousingCountDF.HousingCount]) \
         .dropDuplicates()
     groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
-                BUILDING_FIELDS, 'building_info_dongguan')
+                BUILDING_FIELDS, 'building_info_dongguan', ['BuildingID'])
 
 
 def houseETL(hsDF=houseDF):
@@ -192,7 +200,7 @@ def houseETL(hsDF=houseDF):
                    districtNameDF.Address]) \
         .dropDuplicates()
     groupedWork(preHouseDF, HouseCore.METHODS, HouseCore,
-                HOUSE_FIELDS, 'house_info_dongguan')
+                HOUSE_FIELDS, 'house_info_dongguan', ['HouseID'])
 
 
 def supplyETL(spDF=supplyDF):
@@ -214,7 +222,7 @@ def supplyETL(spDF=supplyDF):
                    BuildingHouseDF.Floors]) \
         .dropDuplicates()
     groupedWork(preHouseDF, SupplyCaseCore.METHODS, SupplyCaseCore,
-                SUPPLY_FIELDS, 'supply_case_dongguan')
+                SUPPLY_FIELDS, 'supply_case_dongguan', ['RecordTime', 'HouseID'])
 
 
 def dealETL(dealDF=dealDF):
@@ -236,7 +244,7 @@ def dealETL(dealDF=dealDF):
                    BuildingHouseDF.Floors]) \
         .dropDuplicates()
     groupedWork(preHouseDF, DealCaseCore.METHODS, DealCaseCore,
-                DEAL_FIELDS, 'deal_case_dongguan')
+                DEAL_FIELDS, 'deal_case_dongguan', ['RecordTime', 'HouseID'])
 
 
 def quitETL(quitDF=quitDF):
@@ -258,7 +266,7 @@ def quitETL(quitDF=quitDF):
                    BuildingHouseDF.Floors]) \
         .dropDuplicates()
     groupedWork(preHouseDF, QuitCaseCore.METHODS, QuitCaseCore,
-                QUIT_FIELDS, 'quit_case_dongguan')
+                QUIT_FIELDS, 'quit_case_dongguan', ['RecordTime', 'HouseID'])
 
 
 def main():

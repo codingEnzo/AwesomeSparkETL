@@ -33,27 +33,32 @@ def cleanFields(row, methods, target, fields):
     return row
 
 
-def groupedWork(data, methods, target, fields, tableName):
+def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
+    res = None
     df = data
-    df = df.rdd.repartition(500).map(
-        lambda r: cleanFields(r, methods, target, fields))
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
+                'driver': "com.mysql.jdbc.Driver",
+                'dbtable': tableName,
+                'user': "root",
+                'password': "yunfangdata"}
     try:
-        df.toDF().select(fields)\
-            .write.format("jdbc") \
-            .options(
-            url="jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements"
-                "=true",
-            driver="com.mysql.jdbc.Driver",
-            dbtable=tableName,
-            user="root",
-            password="yunfangdata") \
-            .mode("append") \
-            .save()
-    except ValueError as e:
+        df = df.unionByName(spark.read
+                            .format("jdbc")
+                            .options(**argsDict)
+                            .load()
+                            .fillna(""))
+    except Exception as e:
         import traceback
         traceback.print_exc()
-        print(df.take(1))
-    return df
+    if distinctKey:
+        df = df.dropDuplicates(distinctKey)
+    res = df.write.format("jdbc") \
+        .options(**argsDict) \
+        .mode("overwrite") \
+        .save()
+    return res
 
 
 city = 'zhaoqing'
@@ -69,7 +74,7 @@ spark = SparkSession\
     .config("spark.sql.codegen", "true") \
     .getOrCreate()
 
-projectArgs = kwarguments('ProjectInfoItem', '肇庆', 'ProjectID')
+projectArgs = kwarguments('projectinfoitem', '肇庆', 'ProjectID')
 projectDF = spark.read \
     .format("jdbc") \
     .options(**projectArgs) \
@@ -142,7 +147,7 @@ def projectETL(pjDF=projectDF):
         .dropDuplicates()\
         .fillna('')
     groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
-                PROJECT_FIELDS, 'project_info_zhaoqing')
+                PROJECT_FIELDS, 'project_info_zhaoqing', ['ProjectID'])
 
     return 0
 
@@ -158,7 +163,7 @@ def presellETL(preDF=presellDF):
         .dropDuplicates() \
         .fillna('')
     groupedWork(df, PresellCore.METHODS, PresellCore,
-                PRESELL_FIELDS, 'presell_info_zhaoqing')
+                PRESELL_FIELDS, 'presell_info_zhaoqing', ['PresalePermitNumber'])
 
 
 def buildingETL(buildDF=buildingDF):
@@ -195,7 +200,7 @@ def buildingETL(buildDF=buildingDF):
         .dropDuplicates()
 
     groupedWork(bDF, BuildingCore.METHODS, BuildingCore,
-                BUILDING_FIELDS, 'building_info_zhaoqing')
+                BUILDING_FIELDS, 'building_info_zhaoqing', ['BuildingID'])
 
 
 def houseETL(hDF=houseDF):
@@ -220,7 +225,7 @@ def houseETL(hDF=houseDF):
                    b_df.BuildingAveragePrice]) \
         .dropDuplicates()
     groupedWork(df, HouseCore.METHODS, HouseCore,
-                HOUSE_FIELDS, 'house_info_zhaoqing')
+                HOUSE_FIELDS, 'house_info_zhaoqing', ['HouseID'])
 
 
 def supplyETL(df=houseDF):
@@ -257,7 +262,7 @@ def supplyETL(df=houseDF):
                    floorDF.Floors]) \
         .dropDuplicates()
     groupedWork(supply_df, SupplyCore.METHODS, SupplyCore,
-                SUPPLY_FIELDS, 'supply_case_zhaoqing')
+                SUPPLY_FIELDS, 'supply_case_zhaoqing', ['RecordTime', 'HouseID'])
 
 
 def dealETL(df=houseDF):
@@ -294,7 +299,7 @@ def dealETL(df=houseDF):
                    floorDF.Floors]) \
         .dropDuplicates()
     groupedWork(deal_df, DealCaseCore.METHODS, DealCaseCore,
-                DEAL_FIELDS, 'deal_case_zhaoqing')
+                DEAL_FIELDS, 'deal_case_zhaoqing', ['RecordTime', 'HouseID'])
 
 
 def quitETL(df=houseDF):
@@ -331,7 +336,7 @@ def quitETL(df=houseDF):
                    floorDF.Floors]) \
         .dropDuplicates()
     groupedWork(quit_df, QuitCaseCore.METHODS, QuitCaseCore,
-                QUIT_FIELDS, 'quit_case_zhaoqing')
+                QUIT_FIELDS, 'quit_case_zhaoqing', ['RecordTime', 'HouseID'])
 
 
 def main():
