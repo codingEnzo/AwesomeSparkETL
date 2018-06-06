@@ -7,7 +7,7 @@ from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS, PRESELL_FIEL
 from SparkETLCore.CityCore.Zhaoqing import ProjectCore, BuildingCore, PresellCore, HouseCore, DealCaseCore, SupplyCore, QuitCaseCore
 
 
-def kwarguments(tableName, city, groupKey=None, db='spark_test'):
+def kwarguments(tableName, city, groupKey=None, db='naive'):
     if groupKey:
         dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE City="{city}" ORDER BY RecordTime DESC) AS col ' \
                   'Group BY {groupKey}) {tableName}'.format(

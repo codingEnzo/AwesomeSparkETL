@@ -9,7 +9,7 @@ from SparkETLCore.Utils.Var import PROJECT_FIELDS, BUILDING_FIELDS,\
     HOUSE_FIELDS, DEAL_FIELDS, SUPPLY_FIELDS, QUIT_FIELDS, NiceDict
 
 
-def kwarguments(sc, tableName=None, city=None, groupKey=None, query=None, db='spark_test'):
+def kwarguments(sc, tableName=None, city=None, groupKey=None, query=None, db='naive'):
     if groupKey:
         dbtable = '''(SELECT * FROM
                      (SELECT * FROM {tableName}

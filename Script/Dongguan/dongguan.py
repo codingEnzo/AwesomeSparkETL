@@ -7,7 +7,7 @@ from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore, HouseCore,
 from SparkETLCore.Utils.Var import *
 
 
-def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='spark_test'):
+def kwarguments(tableName=None, city=None, groupKey=None, query=None, db='naive'):
     if groupKey:
         dbtable = '(SELECT * FROM(SELECT * FROM {tableName} WHERE city="{city}" ORDER BY RecordTime DESC) AS col Group BY {groupKey}) {tableName}'.format(
             city=city, tableName=tableName, groupKey=groupKey)
