@@ -135,7 +135,7 @@ def main():
         .options(
             url="jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
             driver="com.mysql.jdbc.Driver",
-            dbtable='supply_case_info_xuzhou',
+            dbtable='supply_case_xuzhou',
             user="root",
             password="yunfangdata") \
         .mode("overwrite") \

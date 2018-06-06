@@ -284,7 +284,7 @@ def dealETL(dlDF=dealDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preDealDF, DealCaseCore.METHODS, DealCaseCore,
-                       DEAL_FIELDS, 'deal_info_guangzhou', ['RecordTime', 'HouseID'])
+                       DEAL_FIELDS, 'deal_case_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def supplyETL(spDF=supplyDF):
@@ -308,7 +308,7 @@ def supplyETL(spDF=supplyDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preSupplyDF, SupplyCaseCore.METHODS, SupplyCaseCore,
-                       SUPPLY_FIELDS, 'supply_info_guangzhou', ['RecordTime', 'HouseID'])
+                       SUPPLY_FIELDS, 'supply_case_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def quitETL(qtDF=quitDF):
@@ -332,7 +332,7 @@ def quitETL(qtDF=quitDF):
         .dropDuplicates()\
         .fillna('')
     return groupedWork(preQuitDF, QuitCaseCore.METHODS, QuitCaseCore,
-                       QUIT_FIELDS, 'quit_info_guangzhou', ['RecordTime', 'HouseID'])
+                       QUIT_FIELDS, 'quit_case_guangzhou', ['RecordTime', 'HouseID'])
 
 
 def main():

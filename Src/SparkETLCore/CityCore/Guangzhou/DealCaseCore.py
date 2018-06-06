@@ -255,24 +255,33 @@ def totalPrice(data):
 def price(data):
     def calculatePrice(nowInfo, oldInfo=None, houseUseType='Other', measuredArea=0.0):
         totalprice, price = 0, 0
+        nowInfo = nowInfo or {}
+        oldInfo = oldInfo or {}
         if nowInfo['Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)] not in ['0', '']:
             now_avg_price = float(nowInfo[
                                   'Extra{houseUseType}TotalSoldPrice'.format(houseUseType=houseUseType)])
             now_total_area = float(nowInfo[
                                    'Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)])
+            new_total_amount = float(nowInfo[
+                'Extra{houseUseType}SoldAmount'.format(houseUseType=houseUseType)])
             old_avg_price = float(oldInfo[
                                   'Extra{houseUseType}TotalSoldPrice'.format(houseUseType=houseUseType)] or 0) if oldInfo else 0
             old_total_area = float(oldInfo[
                                    'Extra{houseUseType}TotalSoldArea'.format(houseUseType=houseUseType)] or 0) if oldInfo else 0
-            if (now_total_area != old_total_area) or (now_avg_price != old_avg_price):
-                now_total_value = now_avg_price * now_total_area
-                old_total_value = old_avg_price * old_total_area
-                avg_price = (now_total_value - old_total_value) / (
-                    now_total_area - old_total_area)
-                if avg_price < 0:
-                    avg_price = now_avg_price
-            else:
+            old_total_amount = float(oldInfo[
+                'Extra{houseUseType}SoldAmount'.format(houseUseType=houseUseType)] or 0)
+            if new_total_amount - old_total_amount < 1:
                 avg_price = now_avg_price
+            else:
+                if (now_total_area != old_total_area) or (now_avg_price != old_avg_price):
+                    now_total_value = now_avg_price * now_total_area
+                    old_total_value = old_avg_price * old_total_area
+                    avg_price = (now_total_value - old_total_value) / (
+                        now_total_area - old_total_area)
+                    if avg_price < 0:
+                        avg_price = now_avg_price
+                else:
+                    avg_price = now_avg_price
             totalprice = round((avg_price * measuredArea), 3)
             price = round(avg_price, 3)
         return totalprice, price
