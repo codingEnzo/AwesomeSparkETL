@@ -2,8 +2,9 @@
 from __future__ import print_function
 import sys
 from pyspark.sql import Row, SparkSession
-
-from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore, HouseCore, SupplyCaseCore, DealCaseCore, QuitCaseCore
+import datetime
+from SparkETLCore.CityCore.Dongguan import ProjectCore, BuildingCore, HouseCore, SupplyCaseCore, DealCaseCore, \
+    QuitCaseCore
 from SparkETLCore.Utils.Var import *
 
 
@@ -37,7 +38,7 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     df = data
     df = df.rdd.repartition(1000).map(lambda r: cleanFields(
         r, methods, target, fields)).toDF().select(fields)
-    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
                 'driver': "com.mysql.jdbc.Driver",
                 'dbtable': tableName,
                 'user': "root",
@@ -102,10 +103,10 @@ houseDF.createOrReplaceTempView("HouseInfoItem")
 
 supplyArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
+    WHERE City="东莞" AND RecordTime >= '{}'  
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('可售', '待售', '')) SupplyInfoItem
-    '''.format('2018-00-21', '2018-04-26'))
+    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
 supplyDF = spark.read \
     .format("jdbc") \
     .options(**supplyArgs) \
@@ -115,10 +116,10 @@ supplyDF.createOrReplaceTempView("SupplyInfoItem")
 
 dealArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
+    WHERE City="东莞" AND RecordTime >= '{}'
     AND HouseState in ('不可售','已售') 
     AND HouseStateLatest in ('可售', '待售', '')) DealInfoItem
-    '''.format('2018-00-21', '2018-04-26'))
+    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
 dealDF = spark.read \
     .format("jdbc") \
     .options(**dealArgs) \
@@ -128,10 +129,10 @@ dealDF.createOrReplaceTempView("DealInfoItem")
 
 quitArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime BETWEEN '{0}' AND '{1}' 
+    WHERE City="东莞" AND RecordTime >= '{}'  
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('不可售', '已售')) QuitInfoItem
-    '''.format('2018-00-21', '2018-04-26'))
+    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
 quitDF = spark.read \
     .format("jdbc") \
     .options(**quitArgs) \
@@ -141,9 +142,6 @@ quitDF.createOrReplaceTempView("QuitInfoItem")
 
 
 def projectETL(pjDF=projectDF):
-    # Load the DF of Table join with Project
-    # Initialize The pre ProjectDF
-    # ---
     projectHouseDF = spark.sql('''
         select ProjectUUID, 
         count(distinct HouseID) as HousingCount, 
@@ -270,13 +268,14 @@ def quitETL(quitDF=quitDF):
 
 
 def main():
-    methodsDict = {'projectETL': projectETL,
-                   'buildingETL': buildingETL,
-                   'houseETL': houseETL,
-                   'dealETL': dealETL,
-                   'supplyETL': supplyETL,
-                   'quitETL': quitETL,
-                   }
+    methodsDict = {
+        'projectETL': projectETL,
+        'buildingETL': buildingETL,
+        'houseETL': houseETL,
+        'dealETL': dealETL,
+        'supplyETL': supplyETL,
+        'quitETL': quitETL,
+    }
     if len(sys.argv) < 2:
         return 0
     else:
