@@ -135,6 +135,7 @@ def sellSchedule(data):
 
 
 def sellState(data):
+    data['SellState'] = data['HouseState']
     return data
 
 
