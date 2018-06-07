@@ -38,7 +38,7 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     df = data
     df = df.rdd.repartition(1000).map(lambda r: cleanFields(
         r, methods, target, fields)).toDF().select(fields)
-    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/mirror?useUnicode=true&characterEncoding=utf8",
+    argsDict = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
                 'driver': "com.mysql.jdbc.Driver",
                 'dbtable': tableName,
                 'user': "root",
