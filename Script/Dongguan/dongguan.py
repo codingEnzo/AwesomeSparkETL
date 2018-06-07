@@ -144,17 +144,15 @@ quitDF.createOrReplaceTempView("QuitInfoItem")
 def projectETL(pjDF=projectDF):
     projectHouseDF = spark.sql('''
         select ProjectUUID, 
-        count(distinct HouseID) as HousingCount, 
         concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType 
         from HouseInfoItem  group by ProjectUUID
         ''')
 
-    dropColumn = ['HousingCount', 'HouseUseType']
+    dropColumn = ['HouseUseType']
     pjDF = pjDF.drop(*dropColumn).dropDuplicates()
     preProjectDF = pjDF.join(projectHouseDF, 'ProjectUUID', 'left') \
         .select(list(filter(lambda x: x not in dropColumn, pjDF.columns))
-                + [projectHouseDF.HousingCount,
-                   projectHouseDF.HouseUseType]) \
+                + [projectHouseDF.HouseUseType]) \
         .dropDuplicates()
     print(preProjectDF.count())
     groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
