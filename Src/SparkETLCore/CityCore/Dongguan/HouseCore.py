@@ -78,7 +78,7 @@ def recordTime(data):
 
 
 def caseTime(data):
-    data['CaseTime'] = str(datetime.datetime.now()) if data['CaseTime'] == '' else data['CaseTime']
+    data['CaseTime'] = data['RecordTime']
     return data
 
 

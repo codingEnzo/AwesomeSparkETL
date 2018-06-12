@@ -159,8 +159,7 @@ def sourceUrl(data):
 
 
 def caseTime(data):
-    data['CaseTime'] = str(datetime.datetime.now()) if data[
-        'CaseTime'] == '' else data['CaseTime']
+    data['CaseTime'] = data['RecordTime']
     return data
 
 
@@ -214,6 +213,7 @@ def presalePermitNumber(data):
 
 
 def houseName(data):
+    data['HouseName'] = data['HouseNumber']
     return data
 
 

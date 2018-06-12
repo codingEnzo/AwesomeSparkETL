@@ -174,8 +174,7 @@ def sourceLink(data):
 
 def caseTime(data):
     # print(data, inspect.stack()[0][3])
-    data['CaseTime'] = str(datetime.datetime.now()) if data[
-        'CaseTime'] == '' else data['CaseTime']
+    data['CaseTime'] = data['RecordTime']
     return data
 
 
@@ -238,7 +237,7 @@ def presalePermitNumber(data):
 
 def houseName(data):
     # print(data, inspect.stack()[0][3])
-    data['HouseName'] = data['FloorName'] + data['HouseNumber']
+    data['HouseName'] = data['HouseNumber']
     return data
 
 
