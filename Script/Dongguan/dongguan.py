@@ -166,17 +166,15 @@ def buildingETL(bdDF=buildingDF):
 
     buildingHousingCountDF = spark.sql('''
         select BuildingUUID, 
-        count(distinct HouseID) as HousingCount 
         from HouseInfoItem group by BuildingUUID
         ''')
 
-    dropColumn = ['Address', 'HousingCount']
+    dropColumn = ['Address']
     bdDF = bdDF.drop(*dropColumn)
     preBuildingDF = bdDF.join(buildingAddressPresalePermitNumberDF, 'ProjectUUID', 'left') \
         .join(buildingHousingCountDF, 'BuildingUUID', 'left') \
         .select(list(filter(lambda x: x not in dropColumn, bdDF.columns))
-                + [buildingAddressPresalePermitNumberDF.Address,
-                   buildingHousingCountDF.HousingCount]) \
+                + [buildingAddressPresalePermitNumberDF.Address]) \
         .dropDuplicates()
     groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
                 BUILDING_FIELDS, 'building_info_dongguan', ['BuildingID'])
