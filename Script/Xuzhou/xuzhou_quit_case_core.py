@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import datetime
-
-from pyspark.sql import Row, SparkSession
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from SparkETLCore.CityCore.Xuzhou import QuitCaseCoreUDF
 from SparkETLCore.Utils import Var
@@ -56,10 +54,10 @@ def main():
 
     houseArgs = kwarguments('HouseInfoItem', '徐州')
     houseDF = spark.read \
-                     .format("jdbc") \
-                     .options(**houseArgs) \
-                     .load() \
-                     .fillna("")
+                   .format("jdbc") \
+                   .options(**houseArgs) \
+                   .load() \
+                   .fillna("").filter("HouseStateLatest = '已备案' AND HouseState IN ('自留', '可销售')")
 
     presellArgs = kwarguments('PresellInfoItem', '徐州')
     presellDF = spark.read \
@@ -70,9 +68,7 @@ def main():
 
     # ProjectCore Block --->
     x = projectDF.alias('x')
-    y = houseDF.filter(
-        "RecordTime>='%s'" %
-        str(datetime.datetime.now() - datetime.timedelta(days=7))).alias('y')
+    y = houseDF.alias('y')
     z = presellDF.alias('z')
 
     # 1. 字段清洗 + 提取
@@ -124,10 +120,10 @@ def main():
         originArgs = kwarguments(
             'quit_case_info_xuzhou', '徐州', db='achievement')
         originDF = spark.read \
-                     .format("jdbc") \
-                     .options(**originArgs) \
-                     .load() \
-                     .fillna("")
+                        .format("jdbc") \
+                        .options(**originArgs) \
+                        .load() \
+                        .fillna("")
         df = df.unionByName(originDF)
     except Exception as e:
         import traceback
