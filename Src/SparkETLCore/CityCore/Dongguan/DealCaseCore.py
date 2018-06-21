@@ -243,15 +243,16 @@ def dwelling(data):
     return data
 
 
-def state(data):
+def dealType(data):
     if data['HouseStateLatest'] == u'可售':
-        data['State'] = u'明确成交'
+        data['DealType'] = u'最新成交'
     else:
-        data['State'] = u'历史成交'
+        data['DealType'] = u'历史成交'
     return data
 
 
-def dealType(data):
+def state(data):
+    data['State'] = '明确成交'
     return data
 
 
