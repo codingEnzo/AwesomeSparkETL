@@ -37,8 +37,6 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     res = None
     maxRecordTime = "1970-01-01 00:00:00"
     df = data
-    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
-        r, methods, target, fields)).toDF().select(fields)
     argsDictRead = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
                     'driver': "com.mysql.jdbc.Driver",
                     'dbtable': "(select max(RecordTime) as RecordTime from {tableName}) {tableName}".format(tableName=tableName),
@@ -60,6 +58,8 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
         import traceback
         traceback.print_exc()
     df = df.filter("RecordTime>='%s'" % str(maxRecordTime))
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
     if distinctKey:
         df = df.dropDuplicates(distinctKey)
     res = df.write.format("jdbc") \
@@ -237,7 +237,7 @@ def houseETL(hDF=houseDF):
 
 
 def supplyETL(df=houseDF):
-    supply_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
+    supply_df = df.filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
         ~ (df.HouseStateLatest.like('待售'))))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',
@@ -274,7 +274,7 @@ def supplyETL(df=houseDF):
 
 
 def dealETL(df=houseDF):
-    deal_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseStateLatest.isin(['期房待售', '现房待售', ''])) & (
+    deal_df = df.filter((df.HouseStateLatest.isin(['期房待售', '现房待售', ''])) & (
         df.HouseState.isin(['已签约', '已备案', '已登记'])))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',
@@ -311,7 +311,7 @@ def dealETL(df=houseDF):
 
 
 def quitETL(df=houseDF):
-    quit_df = df.filter("RecordTime>='%s'" % str(datetime.datetime.now() - datetime.timedelta(days=7))).filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
+    quit_df = df.filter((df.HouseState.isin(['期房待售', '现房待售'])) & (
         df.HouseStateLatest.isin(['已签约', '已备案', '已登记'])))
 
     dropColumn = ['ProjectID', 'RealEstateProjectID', 'BuildingID', 'DistrictName', 'RegionName', 'Address',

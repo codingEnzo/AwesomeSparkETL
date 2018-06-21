@@ -38,8 +38,6 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     res = None
     maxRecordTime = "1970-01-01 00:00:00"
     df = data
-    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
-        r, methods, target, fields)).toDF().select(fields)
     argsDictRead = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
                     'driver': "com.mysql.jdbc.Driver",
                     'dbtable': "(select max(RecordTime) as RecordTime from {tableName}) {tableName}".format(tableName=tableName),
@@ -61,6 +59,8 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
         import traceback
         traceback.print_exc()
     df = df.filter("RecordTime>='%s'" % str(maxRecordTime))
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
     if distinctKey:
         df = df.dropDuplicates(distinctKey)
     res = df.write.format("jdbc") \
@@ -258,8 +258,8 @@ def dealETL(dlDF=dealDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    dlDF = dlDF.filter("RecordTime>='%s'" % str(
-        datetime.datetime.now() - datetime.timedelta(days=7)))
+    # dlDF = dlDF.filter("RecordTime>='%s'" % str(
+    #     datetime.datetime.now() - datetime.timedelta(days=7)))
     projectRawDF = spark.read \
         .format("jdbc") \
         .options(**kwarguments('ProjectInfoItem', '广州')) \
@@ -299,8 +299,8 @@ def supplyETL(spDF=supplyDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    spDF = spDF.filter("RecordTime>='%s'" % str(
-        datetime.datetime.now() - datetime.timedelta(days=7)))
+    # spDF = spDF.filter("RecordTime>='%s'" % str(
+    #     datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')
@@ -323,8 +323,8 @@ def quitETL(qtDF=quitDF):
     # Load the DF of Table join with Building
     # Initialize The pre BuildingDF
     # ---
-    qtDF = qtDF.filter("RecordTime>='%s'" % str(
-        datetime.datetime.now() - datetime.timedelta(days=7)))
+    # qtDF = qtDF.filter("RecordTime>='%s'" % str(
+    #     datetime.datetime.now() - datetime.timedelta(days=7)))
     projectInfoDF = spark.sql('''
         select ProjectUUID, DistrictName, RegionName, ProjectAddress as Address, PresalePermitNumber from ProjectInfoItem
         ''')

@@ -37,8 +37,6 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
     res = None
     maxRecordTime = "1970-01-01 00:00:00"
     df = data
-    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
-        r, methods, target, fields)).toDF().select(fields)
     argsDictRead = {'url': "jdbc:mysql://10.30.1.7:3306/achievement?useUnicode=true&characterEncoding=utf8",
                     'driver': "com.mysql.jdbc.Driver",
                     'dbtable': "(select max(RecordTime) as RecordTime from {tableName}) {tableName}".format(tableName=tableName),
@@ -60,6 +58,8 @@ def groupedWork(data, methods, target, fields, tableName, distinctKey=None):
         import traceback
         traceback.print_exc()
     df = df.filter("RecordTime>='%s'" % str(maxRecordTime))
+    df = df.rdd.repartition(1000).map(lambda r: cleanFields(
+        r, methods, target, fields)).toDF().select(fields)
     if distinctKey:
         df = df.dropDuplicates(distinctKey)
     res = df.write.format("jdbc") \
@@ -111,10 +111,10 @@ houseDF.createOrReplaceTempView("HouseInfoItem")
 
 supplyArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime >= '{}'  
+    WHERE City="东莞" 
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('可售', '待售', '')) SupplyInfoItem
-    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
+    ''')
 supplyDF = spark.read \
     .format("jdbc") \
     .options(**supplyArgs) \
@@ -124,10 +124,10 @@ supplyDF.createOrReplaceTempView("SupplyInfoItem")
 
 dealArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime >= '{}'
+    WHERE City="东莞" 
     AND HouseState in ('不可售','已售') 
     AND HouseStateLatest in ('可售', '待售', '')) DealInfoItem
-    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
+    ''')
 dealDF = spark.read \
     .format("jdbc") \
     .options(**dealArgs) \
@@ -137,10 +137,10 @@ dealDF.createOrReplaceTempView("DealInfoItem")
 
 quitArgs = kwarguments(query='''
     (SELECT * FROM houseinfoitem
-    WHERE City="东莞" AND RecordTime >= '{}'  
+    WHERE City="东莞" 
     AND HouseState in ('可售','待售') 
     AND HouseStateLatest in ('不可售', '已售')) QuitInfoItem
-    '''.format(str(datetime.datetime.now() - datetime.timedelta(days=7))))
+    ''')
 quitDF = spark.read \
     .format("jdbc") \
     .options(**quitArgs) \
