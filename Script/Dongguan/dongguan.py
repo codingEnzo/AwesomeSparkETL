@@ -144,17 +144,15 @@ quitDF.createOrReplaceTempView("QuitInfoItem")
 def projectETL(pjDF=projectDF):
     projectHouseDF = spark.sql('''
         select ProjectUUID, 
-        count(distinct HouseID) as HousingCount, 
         concat_ws('@#$', collect_list(distinct HouseUseType)) as HouseUseType 
         from HouseInfoItem  group by ProjectUUID
         ''')
 
-    dropColumn = ['HousingCount', 'HouseUseType']
+    dropColumn = ['HouseUseType']
     pjDF = pjDF.drop(*dropColumn).dropDuplicates()
     preProjectDF = pjDF.join(projectHouseDF, 'ProjectUUID', 'left') \
         .select(list(filter(lambda x: x not in dropColumn, pjDF.columns))
-                + [projectHouseDF.HousingCount,
-                   projectHouseDF.HouseUseType]) \
+                + [projectHouseDF.HouseUseType]) \
         .dropDuplicates()
     print(preProjectDF.count())
     groupedWork(preProjectDF, ProjectCore.METHODS, ProjectCore,
@@ -163,23 +161,20 @@ def projectETL(pjDF=projectDF):
 
 def buildingETL(bdDF=buildingDF):
     buildingAddressPresalePermitNumberDF = spark.sql('''
-       select ProjectUUID, ProjectAddress as Address,PresalePermitNumber from ProjectInfoItem
+       select ProjectUUID, ProjectAddress as Address from ProjectInfoItem
         ''')
 
     buildingHousingCountDF = spark.sql('''
         select BuildingUUID, 
-        count(distinct HouseID) as HousingCount 
         from HouseInfoItem group by BuildingUUID
         ''')
 
-    dropColumn = ['Address', 'PresalePermitNumber', 'HousingCount']
+    dropColumn = ['Address']
     bdDF = bdDF.drop(*dropColumn)
     preBuildingDF = bdDF.join(buildingAddressPresalePermitNumberDF, 'ProjectUUID', 'left') \
         .join(buildingHousingCountDF, 'BuildingUUID', 'left') \
         .select(list(filter(lambda x: x not in dropColumn, bdDF.columns))
-                + [buildingAddressPresalePermitNumberDF.PresalePermitNumber,
-                   buildingAddressPresalePermitNumberDF.Address,
-                   buildingHousingCountDF.HousingCount]) \
+                + [buildingAddressPresalePermitNumberDF.Address]) \
         .dropDuplicates()
     groupedWork(preBuildingDF, BuildingCore.METHODS, BuildingCore,
                 BUILDING_FIELDS, 'building_info_dongguan', ['BuildingID'])
