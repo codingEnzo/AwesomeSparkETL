@@ -71,3 +71,14 @@ def record_time_clean(s):
     nt = datetime.datetime.now()
     s = s.apply(lambda t: nt.strftime("%Y-%m-%d %H:%M:%S") if not t else t)
     return s
+
+
+@pandas_udf(StringType())
+def price_apply(s):
+    def func(v):
+        r = [i for i in v if i != '']
+        r = list(set(','.join(r).split(',')))
+        return r[0] if r else ''
+
+    s = s.apply(lambda x: func(x))
+    return s

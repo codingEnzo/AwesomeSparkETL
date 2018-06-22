@@ -90,6 +90,7 @@ def main():
     x = x.groupBy("ProjectUUID").agg(
         F.collect_list("ProjectAddress").alias("Address"),
         F.collect_list("DistrictName").alias("DistrictName"),
+        F.collect_list("AveragePrice").alias("Price"),
     )
 
     z = z.groupBy("ProjectUUID").agg(
@@ -101,6 +102,7 @@ def main():
     x = x.withColumn("Address", DealCaseCoreUDF.address_apply(x.Address))
     x = x.withColumn("DistrictName",
                      DealCaseCoreUDF.district_name_apply(x.DistrictName))
+    x = x.withColumn("Price", DealCaseCoreUDF.price_apply(x.Price))
 
     z = z.withColumn("RegionName",
                      DealCaseCoreUDF.region_name_apply(z.RegionName))
